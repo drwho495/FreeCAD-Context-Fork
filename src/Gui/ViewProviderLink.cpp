@@ -148,6 +148,7 @@ public:
 
     std::array<CoinPtr<SoSeparator>,LinkView::SnapshotMax> pcSnapshots;
     std::array<CoinPtr<SoFCSwitch>,LinkView::SnapshotMax> pcSwitches;
+    std::array<CoinPtr<SoTransform>,LinkView::SnapshotMax> pcTransforms;
     CoinPtr<SoSwitch> pcLinkedSwitch;
 
     // for group type view providers
@@ -393,6 +394,25 @@ public:
         }
     }
 
+    void addChild(SoGroup *parent, SoNode *child, int &count) {
+        int num = parent->getNumChildren();
+        if (num == count)
+            parent->addChild(child);
+        else {
+            assert(num > count);
+            if (parent->getChild(count) != child) {
+                for (int i=count+1; i<num; ++i) {
+                    if (parent->getChild(i) == child) {
+                        parent->removeChild(i);
+                        break;
+                    }
+                }
+                parent->insertChild(child, count);
+            }
+        }
+        ++count;
+    }
+
     SoSeparator *getSnapshot(int type, bool update=false) {
         if(type<0 || type>=LinkView::SnapshotMax)
             return 0;
@@ -408,6 +428,7 @@ public:
 
         auto &pcSnapshot = pcSnapshots[type];
         auto &pcModeSwitch = pcSwitches[type];
+        auto &pcTransform = pcTransforms[type];
         if(pcSnapshot) {
             if(!update) return pcSnapshot;
         }else{
@@ -431,9 +452,15 @@ public:
 
         pcLinkedSwitch.reset();
 
-        coinRemoveAllChildren(pcSnapshot);
         pcModeSwitch->whichChild = -1;
-        coinRemoveAllChildren(pcModeSwitch);
+
+        int childCount = 0;
+        int modeCount = 0;
+        // opt to incremental update instead of remove all and re-add to reduce
+        // impact on existing SoPath.
+        //
+        // coinRemoveAllChildren(pcSnapshot);
+        // coinRemoveAllChildren(pcModeSwitch);
 
         SoSwitch *pcUpdateSwitch = pcModeSwitch;
 
@@ -445,15 +472,16 @@ public:
             SoNode *node = root->getChild(i);
             if(node==pcLinked->getTransformNode()) {
                 if(type!=LinkView::SnapshotTransform)
-                    pcSnapshot->addChild(node);
+                    addChild(pcSnapshot, node, childCount);
                 else {
                     auto transform = pcLinked->getTransformNode();
                     const auto &scale = transform->scaleFactor.getValue();
                     if(scale[0]!=1.0 || scale[1]!=1.0 || scale[2]!=1.0) {
-                        SoTransform *trans = new SoTransform;
-                        pcSnapshot->addChild(trans);
-                        trans->scaleFactor.setValue(scale);
-                        trans->scaleOrientation = transform->scaleOrientation;
+                        if (!pcTransform)
+                            pcTransform = new SoTransform;
+                        addChild(pcSnapshot, pcTransform, childCount);
+                        pcTransform->scaleFactor.setValue(scale);
+                        pcTransform->scaleOrientation = transform->scaleOrientation;
                         if(transformSensor.getAttachedNode()!=transform) {
                             transformSensor.detach();
                             transformSensor.attach(transform);
@@ -462,7 +490,7 @@ public:
                 }
                 continue;
             } else if(node!=pcLinked->getModeSwitch()) {
-                pcSnapshot->addChild(node);
+                addChild(pcSnapshot, node, childCount);
                 continue;
             }
 
@@ -473,16 +501,16 @@ public:
                 pcUpdateSwitch = 0;
             }
 
-            pcSnapshot->addChild(pcModeSwitch);
+            addChild(pcSnapshot, pcModeSwitch, childCount);
             for(int i=0,count=pcLinkedSwitch->getNumChildren();i<count;++i) {
                 auto child = pcLinkedSwitch->getChild(i);
                 if(pcChildGroup && child==childRoot)
-                    pcModeSwitch->addChild(pcChildGroup);
+                    addChild(pcModeSwitch, pcChildGroup, childCount);
                 else
-                    pcModeSwitch->addChild(child);
+                    addChild(pcModeSwitch, child, modeCount);
             }
             if(pcChildGroup && !childRoot) {
-                pcModeSwitch->addChild(pcChildGroup);
+                addChild(pcModeSwitch, pcChildGroup, modeCount);
 #if 0
                 if(type==LinkView::SnapshotChild
                         && App::GeoFeatureGroupExtension::isNonGeoGroup(pcLinked->getObject()))
@@ -493,6 +521,12 @@ public:
 #endif
             }
         }
+
+        while(childCount < pcSnapshot->getNumChildren())
+            pcSnapshot->removeChild(pcSnapshot->getNumChildren()-1);
+        while(modeCount < pcModeSwitch->getNumChildren())
+            pcModeSwitch->removeChild(pcModeSwitch->getNumChildren()-1);
+
         updateSwitch(pcUpdateSwitch);
 
         return pcSnapshot;
@@ -546,10 +580,10 @@ public:
     }
 
     void _updateChildren(const std::vector<App::DocumentObject *> &children) {
+
+        int childCount = 0;
         if(!pcChildGroup)
             pcChildGroup = new SoGroup;
-        else
-            coinRemoveAllChildren(pcChildGroup);
 
         NodeMap nodeMap;
         for(auto child : children) {
@@ -558,8 +592,11 @@ public:
             SoNode *node = info->getSnapshot(LinkView::SnapshotChild);
             if(!node) continue;
             nodeMap[node] = info;
-            pcChildGroup->addChild(node);
+            addChild(pcChildGroup, node, childCount);
         }
+
+        while(childCount < pcChildGroup->getNumChildren())
+            pcChildGroup->removeChild(pcChildGroup->getNumChildren()-1);
 
         // Use swap instead of clear() here to avoid potential link
         // destruction
