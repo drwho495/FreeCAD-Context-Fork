@@ -229,6 +229,21 @@ struct DocumentP
         UndoMaxStackSize = 20;
     }
 
+    long addObject(App::DocumentObject *pcObject) {
+        int id = pcObject->getID();
+        for (;;) {
+            auto &entry = this->objectIdMap[id ? id : ++this->lastObjectId];
+            if (entry) {
+                id = 0;
+                continue;
+            }
+            entry = pcObject;
+            break;
+        }
+        this->objectArray.push_back(pcObject);
+        return id ? id : this->lastObjectId;
+    }
+
     void addRecomputeLog(const char *why, App::DocumentObject *obj) {
         addRecomputeLog(new DocumentObjectExecReturn(why,obj));
     }
@@ -4268,12 +4283,9 @@ DocumentObject * Document::addObject(const char* sType, const char* pObjectName,
     // insert in the name map
     d->objectMap[ObjectName] = pcObject;
     // generate object id and add to id map;
-    pcObject->_Id = ++d->lastObjectId;
-    d->objectIdMap[pcObject->_Id] = pcObject;
+    pcObject->_Id = d->addObject(pcObject);
     // cache the pointer to the name string in the Object (for performance of DocumentObject::getNameInDocument())
     pcObject->pcNameInDocument = &(d->objectMap.find(ObjectName)->first);
-    // insert in the vector
-    d->objectArray.push_back(pcObject);
     // insert in the adjacence list and reference through the ConectionMap
     //_DepConMap[pcObject] = add_vertex(_DepList);
 
@@ -4373,12 +4385,9 @@ std::vector<DocumentObject *> Document::addObjects(const char* sType, const std:
         // insert in the name map
         d->objectMap[ObjectName] = pcObject;
         // generate object id and add to id map;
-        pcObject->_Id = ++d->lastObjectId;
-        d->objectIdMap[pcObject->_Id] = pcObject;
+        pcObject->_Id = d->addObject(pcObject);
         // cache the pointer to the name string in the Object (for performance of DocumentObject::getNameInDocument())
         pcObject->pcNameInDocument = &(d->objectMap.find(ObjectName)->first);
-        // insert in the vector
-        d->objectArray.push_back(pcObject);
 
         pcObject->Label.setValue(ObjectName);
 
@@ -4438,12 +4447,9 @@ void Document::addObject(DocumentObject* pcObject, const char* pObjectName, bool
     // insert in the name map
     d->objectMap[ObjectName] = pcObject;
     // generate object id and add to id map;
-    if(!pcObject->_Id) pcObject->_Id = ++d->lastObjectId;
-    d->objectIdMap[pcObject->_Id] = pcObject;
+    pcObject->_Id = d->addObject(pcObject);
     // cache the pointer to the name string in the Object (for performance of DocumentObject::getNameInDocument())
     pcObject->pcNameInDocument = &(d->objectMap.find(ObjectName)->first);
-    // insert in the vector
-    d->objectArray.push_back(pcObject);
 
     pcObject->Label.setValue( ObjectName );
 
@@ -4470,9 +4476,7 @@ void Document::_addObject(DocumentObject* pcObject, const char* pObjectName)
     std::string ObjectName = getUniqueObjectName(pObjectName);
     d->objectMap[ObjectName] = pcObject;
     // generate object id and add to id map;
-    if(!pcObject->_Id) pcObject->_Id = ++d->lastObjectId;
-    d->objectIdMap[pcObject->_Id] = pcObject;
-    d->objectArray.push_back(pcObject);
+    pcObject->_Id = d->addObject(pcObject);
     // cache the pointer to the name string in the Object (for performance of DocumentObject::getNameInDocument())
     pcObject->pcNameInDocument = &(d->objectMap.find(ObjectName)->first);
 
@@ -5122,4 +5126,16 @@ bool Document::mustExecute() const
         if ((*It)->isTouched() || (*It)->mustExecute()==1)
             return true;
     return false;
+}
+
+long Document::getLastObjectId() const {
+    return d->lastObjectId;
+}
+
+void Document::setLastObjectId(long id) {
+    d->lastObjectId = id;
+}
+
+void Document::afterImport(App::DocumentObject *obj) {
+    obj->onDocumentRestored();
 }
