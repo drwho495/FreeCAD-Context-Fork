@@ -510,7 +510,7 @@ public:
             for(int i=0,count=pcLinkedSwitch->getNumChildren();i<count;++i) {
                 auto child = pcLinkedSwitch->getChild(i);
                 if(pcChildGroup && child==childRoot)
-                    addChild(pcModeSwitch, pcChildGroup, childCount);
+                    addChild(pcModeSwitch, pcChildGroup, modeCount);
                 else
                     addChild(pcModeSwitch, child, modeCount);
             }
