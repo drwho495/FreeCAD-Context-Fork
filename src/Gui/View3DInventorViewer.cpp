@@ -1031,7 +1031,6 @@ void View3DInventorViewer::clearGroupOnTop(bool alt) {
     if (alt && guiDocument && _pimpl->objectsOnTop.size()) {
         _pimpl->objectsOnTop.clear();
         guiDocument->signalOnTopObject(SelectionChanges::ClrSelection, App::SubObjectT());
-    }
 
     if(objectsOnTopSel.empty() && objectsOnTopPreSel.empty())
         return;
@@ -1131,7 +1130,6 @@ bool View3DInventorViewer::isInGroupOnTop(const std::string &key, bool altOnly) 
 }
 
 void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool alt) {
-
     bool preselect = false;
 
     switch(Reason.Type) {
@@ -1361,6 +1359,23 @@ void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool 
 
     SoTempPath path(10);
     path.ref();
+
+    if (alt && guiDocument) {
+        switch(Reason.Type) {
+        case SelectionChanges::AddSelection:
+        case SelectionChanges::RmvSelection: {
+            auto objT = Reason.Object;
+            objT.setSubName(objT.getSubNameNoElement());
+            if (Reason.Type == SelectionChanges::AddSelection)
+                _pimpl->objectsOnTop.insert(objT);
+            else
+                _pimpl->objectsOnTop.erase(objT);
+            guiDocument->signalOnTopObject(Reason.Type, objT);
+            break;
+        } default:
+            break;
+        }
+    }
 
     if (alt && guiDocument) {
         switch(Reason.Type) {
