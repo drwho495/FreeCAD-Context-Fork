@@ -450,6 +450,8 @@ struct View3DInventorViewer::Private
 
     boost::signals2::scoped_connection connDocChange;
 
+    std::set<App::SubObjectT> objectsOnTop;
+
     Private(View3DInventorViewer *owner)
         :owner(owner)
         ,pickAction(SbViewportRegion())
@@ -1020,7 +1022,17 @@ void View3DInventorViewer::OnTopInfo::clearElements() {
     elements.clear();
 }
 
+const std::set<App::SubObjectT> &View3DInventorViewer::getObjectsOnTop() const
+{
+    return _pimpl->objectsOnTop;
+}
+
 void View3DInventorViewer::clearGroupOnTop(bool alt) {
+    if (alt && guiDocument && _pimpl->objectsOnTop.size()) {
+        _pimpl->objectsOnTop.clear();
+        guiDocument->signalOnTopObject(SelectionChanges::ClrSelection, App::SubObjectT());
+    }
+
     if(objectsOnTopSel.empty() && objectsOnTopPreSel.empty())
         return;
 
@@ -1349,6 +1361,23 @@ void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool 
 
     SoTempPath path(10);
     path.ref();
+
+    if (alt && guiDocument) {
+        switch(Reason.Type) {
+        case SelectionChanges::AddSelection:
+        case SelectionChanges::RmvSelection: {
+            auto objT = Reason.Object;
+            objT.setSubName(objT.getSubNameNoElement());
+            if (Reason.Type == SelectionChanges::AddSelection)
+                _pimpl->objectsOnTop.insert(objT);
+            else
+                _pimpl->objectsOnTop.erase(objT);
+            guiDocument->signalOnTopObject(Reason.Type, objT);
+            break;
+        } default:
+            break;
+        }
+    }
 
     SoDetail *det = 0;
     if(vp->getDetailPath(subname, &path,true,det) && path.getLength()) {
