@@ -138,6 +138,7 @@ protected:
 protected Q_SLOTS:
     void changeGroup(QListWidgetItem *current, QListWidgetItem *previous);
     void on_buttonBox_clicked(QAbstractButton*);
+    void adjustListBox();
 
 private:
     /** @name for internal use only */
