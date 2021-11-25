@@ -250,6 +250,7 @@ public:
     const char *getName() const { return name; }
 
     bool isNumber() const;
+    bool isBoolean(bool *value = nullptr) const;
 
     virtual ExpressionPtr simplify() const;
 
