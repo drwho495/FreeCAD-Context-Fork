@@ -594,6 +594,7 @@ public:
         CREATE,
         STR,
         HREF,
+        HIDDEN_REF,
 
         // double binding, used by PropertyExpressionEngine to make a property both driving and driven
         DBIND, 
