@@ -53,6 +53,7 @@ public:
     App::PropertyBool Relative;
     App::PropertyBool Fuse;
     App::PropertyBool MakeFace;
+    App::PropertyBool Refine;
     App::PropertyEnumeration FillStyle;
     App::PropertyEnumeration BindMode;
     App::PropertyBool PartialLoad;
