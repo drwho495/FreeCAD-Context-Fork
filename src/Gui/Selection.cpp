@@ -2074,7 +2074,11 @@ PyMethodDef SelectionSingleton::Methods[] = {
      "getPickedList(docName='') -- Return a list of objects under the last mouse click\n"
      "\ndocName - document name. Empty string means the active document, and '*' means all document"},
     {"enablePickedList",      (PyCFunction) SelectionSingleton::sEnablePickedList, METH_VARARGS,
-     "enablePickedList(boolean) -- Enable/disable pick list"},
+     "Enable/disable picked list\n"
+     "enablePickedList(boolean)"},
+    {"needPickedList",      (PyCFunction) SelectionSingleton::sNeedPickedList, METH_VARARGS,
+     "Check whether picked list is enabled\n"
+     "needPickedList() -> boolean"},
     {"getCompleteSelection", (PyCFunction) SelectionSingleton::sGetCompleteSelection, METH_VARARGS,
      "getCompleteSelection(resolve=1) -- Return a list of selected objects of all documents."},
     {"getSelectionEx",         (PyCFunction) SelectionSingleton::sGetSelectionEx, METH_VARARGS,
@@ -2346,6 +2350,14 @@ PyObject *SelectionSingleton::sEnablePickedList(PyObject * /*self*/, PyObject *a
 
     Selection().enablePickedList(PyObject_IsTrue(enable));
     Py_Return;
+}
+
+PyObject *SelectionSingleton::sNeedPickedList(PyObject * /*self*/, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ""))
+        return nullptr;
+
+    return Py::new_reference_to(Py::Boolean(Selection().needPickedList()));
 }
 
 PyObject *SelectionSingleton::sSetPreselection(PyObject * /*self*/, PyObject *args, PyObject *kwd)
