@@ -40,6 +40,11 @@ class gp_Dir;
 
 class BRepBuilderAPI_MakeShape;
 
+namespace App
+{
+class PropertyLinkList;
+}
+
 namespace Part
 {
 
@@ -70,19 +75,9 @@ public:
 
     virtual PyObject* getPyObject(void) override;
 
-    struct HistoryItem {
-        App::DocumentObject *obj;
-        long tag;
-        std::string element;
-        std::vector<std::string> intermediates;
-        HistoryItem(App::DocumentObject *obj, const char *name)
-            :obj(obj),tag(0),element(name)
-        {
-            if(obj)
-                tag = obj->getID();
-        }
-    };
-    static std::list<HistoryItem> getElementHistory(App::DocumentObject *obj,
+    virtual App::PropertyLinkList *getShapeLinksProperty() {return nullptr;}
+
+    static std::list<Data::HistoryItem> getElementHistory(App::DocumentObject *obj,
             const char *name, bool recursive=true, bool sameType=false);
 
     static std::vector<std::pair<std::string,std::string> > 
