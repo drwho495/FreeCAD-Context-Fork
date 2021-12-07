@@ -75,18 +75,17 @@
 		</Methode>
 		<Methode Name="canDragAndDropObject">
 			<Documentation>
-                <UserDocu>
+                <UserDocu>Check whether the child object can be removed from other parent and added here by drag and drop
 canDragAndDropObject(obj)
-Check whether the child object can be removed from other parent and added here by drag and drop
-                </UserDocu>
-			</Documentation>
-		</Methode>
-		<Methode Name="replaceObject">
-			<Documentation>
-                <UserDocu>
-replaceObject(oldObj, newObj) -> Int: replace a child object
-
-Returns 1 if succeeded, 0 if not found, -1 if not supported
+</UserDocu>
+            </Documentation>
+        </Methode>
+        <Methode Name="replaceObject">
+            <Documentation>
+                <UserDocu>replace a child object
+replaceObject(oldObj, newObj)
+--
+Throw exception if failed
 </UserDocu>
             </Documentation>
         </Methode>
@@ -100,10 +99,10 @@ canReplaceObject(oldObj, newObj) -> Boolean
         <Methode Name="reorderObjects">
             <Documentation>
                 <UserDocu>reorder child object(s)
-reorderObjects(obj, before) -> Boolean
-reorderObjects([obj...], before) -> Boolean
+reorderObjects(obj, before)
+reorderObjects([obj...], before)
 --
-Returns True if succeeded, or else failed
+Throw exception if failed
 </UserDocu>
             </Documentation>
         </Methode>
