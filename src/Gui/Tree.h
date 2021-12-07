@@ -124,8 +124,7 @@ public:
                                      App::SubObjectT *resT = nullptr,
                                      bool sync = false,
                                      bool select = false);
-
-    static int iconSize();
+   static int iconSize();
 
     int iconHeight() const;
     void setIconHeight(int height);
@@ -173,6 +172,9 @@ public:
     void resetItemSearch();
     void startItemSearch(QLineEdit*);
     void itemSearch(const QString &text, bool select);
+    void hideSelectedItems();
+    void toggleShowHiddenItems();
+
 
 protected:
     void _selectAllInstances(const ViewProviderDocumentObject &vpd);
