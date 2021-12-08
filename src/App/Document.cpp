@@ -1211,6 +1211,7 @@ void Document::_checkTransaction(DocumentObject* pcDelObj, const Property *What,
                             ignore = true;
                         else if(!Base::freecad_dynamic_cast<Document>(What->getContainer())
                                 && !DocumentParams::ViewObjectTransaction()
+                                && !AutoTransaction::recordViewObjectChange()
                                 && !Base::freecad_dynamic_cast<DocumentObject>(What->getContainer()))
                             ignore = true;
                     }
