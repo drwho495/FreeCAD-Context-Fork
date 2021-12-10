@@ -2641,7 +2641,7 @@ void Application::LoadParameters(void)
 }
 
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(BOOST_DYN_LINK)
 // fix weird error while linking boost (all versions of VC)
 // VS2010: https://forum.freecadweb.org/viewtopic.php?f=4&t=1886&p=12553&hilit=boost%3A%3Afilesystem%3A%3Aget#p12553
 namespace boost { namespace program_options { std::string arg="arg"; } }

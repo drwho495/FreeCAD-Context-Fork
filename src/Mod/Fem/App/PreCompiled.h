@@ -126,6 +126,7 @@
 #endif
 
 // Opencascade
+#include <Standard_Version.hxx>
 #include <gp_Dir.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
@@ -135,7 +136,9 @@
 #include <Bnd_Box.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepAdaptor_Curve.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <BRepAdaptor_HSurface.hxx>
+#endif
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepBuilderAPI_Copy.hxx>

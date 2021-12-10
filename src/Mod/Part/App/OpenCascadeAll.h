@@ -192,8 +192,10 @@
 #include <BRepAdaptor_CompCurve.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <BRepAdaptor_HCurve.hxx>
 #include <BRepAdaptor_HCompCurve.hxx>
+#endif
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
@@ -322,7 +324,9 @@
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <Geom2dAdaptor_HCurve.hxx>
+#endif
 #include <Geom2dAPI_ExtremaCurveCurve.hxx>
 #include <Geom2dAPI_InterCurveCurve.hxx>
 #include <Geom2dAPI_Interpolate.hxx>
@@ -360,7 +364,9 @@
 #include <Geom_Plane.hxx>
 #include <Geom_ToroidalSurface.hxx>
 #include <GeomAdaptor.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <GeomAdaptor_HCurve.hxx>
+#endif
 #include <GeomAdaptor_Surface.hxx>
 #include <GeomAPI.hxx>
 #include <GeomAPI_ExtremaCurveCurve.hxx>
@@ -430,8 +436,10 @@
 #include <gp_Quaternion.hxx>
 
 // Adaptors
+# if OCC_VERSION_HEX < 0x070600
 #include <Adaptor3d_HCurve.hxx>
 #include <Adaptor3d_HCurveOnSurface.hxx>
+#endif
 
 #include <Approx_Curve3d.hxx>
 
@@ -444,15 +452,19 @@
 #include <HLRAppli_ReflectLines.hxx>
 #include <IntTools_FClass2d.hxx>
 #include <Law_Constant.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <MMgt_TShared.hxx>
+#endif
 #include <Message_MsgFile.hxx>
 #include <Precision.hxx>
 #include <UnitsAPI.hxx>
+# if OCC_VERSION_HEX < 0x070600
 #include <Quantity_Factor.hxx>
 #include <Quantity_Length.hxx>
+#include <Quantity_PlaneAngle.hxx>
+#endif
 #include <Quantity_NameOfColor.hxx>
 #include <Quantity_PhysicalQuantity.hxx>
-#include <Quantity_PlaneAngle.hxx>
 #include <Quantity_TypeOfColor.hxx>
 
 // Shape
