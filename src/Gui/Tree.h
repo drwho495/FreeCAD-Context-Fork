@@ -172,9 +172,6 @@ public:
     void resetItemSearch();
     void startItemSearch(QLineEdit*);
     void itemSearch(const QString &text, bool select);
-    void hideSelectedItems();
-    void toggleShowHiddenItems();
-
 
 protected:
     void _selectAllInstances(const ViewProviderDocumentObject &vpd);

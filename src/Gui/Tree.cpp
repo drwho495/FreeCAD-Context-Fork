@@ -1537,22 +1537,6 @@ void TreeWidget::itemSearch(const QString &text, bool select) {
     }
 }
 
-void TreeWidget::hideSelectedItems() {
-	auto sels = this->selectedItems();
-    for (auto& sel : sels) {
-        auto* const item = static_cast<DocumentObjectItem*>(sel);
-        item->object()->ShowInTree.setValue(!item->object()->showInTree());
-    }
-}
-
-void TreeWidget::toggleShowHiddenItems() {
-	auto* const item = static_cast<DocumentObjectItem*>(this->currentItem());
-    if (item) {
-        DocumentItem* const docItem = item->getOwnerDocument();
-        docItem->setShowHidden(!docItem->showHidden());
-    }
-}
-
 Gui::Document *TreeWidget::selectedDocument() {
     for(auto tree : Instances) {
         if(!tree->isVisible())

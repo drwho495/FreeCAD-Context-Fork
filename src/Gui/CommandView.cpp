@@ -93,6 +93,7 @@
 #include <App/ComplexGeoDataPy.h>
 #include <App/GeoFeatureGroupExtension.h>
 #include <App/DocumentObserver.h>
+#include <App/AutoTransaction.h>
 #include "TreeParams.h"
 
 #include <QDomDocument>
@@ -3731,13 +3732,17 @@ StdTreeHideSelection::StdTreeHideSelection()
 
 void StdTreeHideSelection::activated(int)
 {
-    if (Gui::Selection().hasSelection()) {
-        for (auto tree : getMainWindow()->findChildren<TreeWidget*>()) {
-            if (tree->isVisible()) {
-                tree->hideSelectedItems();
-                break;
-            }
-        }
+    auto sels = Gui::Selection().getSelectionT();
+    std::set<App::SubObjectT> objs(sels.begin(), sels.end());
+    std::ostringstream ss;
+    App::AutoTransaction guard(QT_TRANSLATE_NOOP("Command", "Toggle tree item"),
+                               false, /*not a temporary transaction*/
+                               true /*enable view object undo*/);
+    for (auto &objT : objs) {
+        ss.str("");
+        ss << objT.getObjectPython() << ".ViewObject.ShowInTree = not "
+           << objT.getObjectPython() << ".ViewObject.ShowInTree";
+        runCommand(Command::Gui, ss.str().c_str());
     }
 }
 
@@ -3761,14 +3766,12 @@ StdTreeToggleShowHidden::StdTreeToggleShowHidden()
 
 void StdTreeToggleShowHidden::activated(int)
 {
-	if (Gui::Selection().hasSelection()) {
-		for (auto tree : getMainWindow()->findChildren<TreeWidget*>()) {
-			if (tree->isVisible()) {
-				tree->toggleShowHiddenItems();
-				break;
-			}
-		}
-	}
+    if (auto doc = App::GetApplication().getActiveDocument()) {
+        std::ostringstream ss;
+        ss << "App.getDocument('" << doc->getName() << "').ShowHidden = not "
+              "App.getDocument('" << doc->getName() << "').ShowHidden";
+        runCommand(Command::Gui, ss.str().c_str());
+    }
 }
 
 
