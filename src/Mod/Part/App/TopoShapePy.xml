@@ -560,7 +560,9 @@ If the shape is an edge it returns True if its vertices are the same.
     </Methode>
     <Methode Name="findPlane" Const="true">
       <Documentation>
-          <UserDocu>findPlane(tol=None) -- return a plane if the shape is planar</UserDocu>
+          <UserDocu>return a plane if the shape is planar
+findPlane(tol=None) -> Plane
+          </UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="fix">
