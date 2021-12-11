@@ -90,6 +90,7 @@
 # include <BRepFill_Filling.hxx>
 #endif
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <cstdio>
 #include <fstream>
 
@@ -282,6 +283,13 @@ public:
         );
         add_varargs_method("makeFilledFace",&Module::makeFilledFace,
             "makeFilledFace(list) -- Create a face out of a list of edges."
+        );
+        add_varargs_method("makeBSplineFace",&Module::makeBSplineFace,
+            "makeSplineFace(list, style='stretch') -- Create a face with BSpline surface out of a list of edges.\n\n"
+            "'style' controls the flattness of the generated surface. Possible values are,\n"
+             "- 'stretch': with the flattest patches,\n"
+             "- 'coons': a rounded style with less depth than 'curved',\n"
+             "- 'curved': the style with the most rounded patches."
         );
         add_varargs_method("makeSolid",&Module::makeSolid,
             "makeSolid(shape): Create a solid out of shells of shape. If shape is a compsolid, the overall volume solid is created."
@@ -925,6 +933,25 @@ private:
             throw Py::Exception(Base::BaseExceptionFreeCADError, e.what());
         }
 #endif
+    }
+    Py::Object makeBSplineFace(const Py::Tuple& args)
+    {
+        PyObject *obj;
+        const char *style=0;
+        const char *op=0;
+        if (!PyArg_ParseTuple(args.ptr(), "O|ss", &obj, &style, &op))
+            throw Py::Exception();
+        
+        auto s = TopoShape::FillingStyle_Strech;
+        if (style && style[0]) {
+            if (boost::iequals(style, "coons"))
+                s = TopoShape::FillingStyle_Coons;
+            else if (boost::iequals(style, "curved"))
+                s = TopoShape::FillingStyle_Curved;
+            else if (!boost::iequals(style, "stretch"))
+                throw Base::ValueError("invalid style");
+        }
+        return shape2pyshape(TopoShape().makEBSplineFace(getPyShapes(obj),s,op));
     }
     Py::Object makeFilledFace(const Py::Tuple& args)
     {
