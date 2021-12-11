@@ -551,6 +551,7 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
                         try {
                             result = result.makEBSplineFace(
                                     static_cast<Part::TopoShape::FillingStyle>(FillStyle.getValue()));
+                            done = true;
                         } catch(Base::Exception & e) {
                             FC_LOG(getFullName() << " Failed to make bspline face: " << e.what());
                         } catch(Standard_Failure & e) {
