@@ -399,6 +399,9 @@ public:
         FillingStyle_Coons,
         FillingStyle_Curved,
     };
+    TopoShape &makEBSplineFace(const std::vector<TopoShape> &input,
+                               FillingStyle style = FillingStyle_Strech,
+                               const char *op=0);
     TopoShape &makEBSplineFace(const TopoShape &input,
                                FillingStyle style = FillingStyle_Strech,
                                const char *op=0);
