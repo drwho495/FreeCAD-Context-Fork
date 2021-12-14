@@ -533,31 +533,31 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
                 gp_Pln pln;
                 if (_Version.getValue() > 4 && !result.findPlane(pln)) {
                     try {
-                        Part::TopoShape filledFace(getID(), getDocument()->getStringHasher());
-                        filledFace.makEFilledFace({result}, Part::TopoShape());
-                        if (filledFace.hasSubShape(TopAbs_FACE)) {
-                            done = true;
-                            result = filledFace;
-                        }
+                        result = result.makEBSplineFace(
+                                static_cast<Part::TopoShape::FillingStyle>(FillStyle.getValue()));
+                        done = true;
                     } catch(Base::Exception & e) {
-                        FC_LOG(getFullName() << " Failed to make filled face: " << e.what());
+                        FC_LOG(getFullName() << " Failed to make bspline face: " << e.what());
                     } catch(Standard_Failure & e) {
-                        FC_LOG(getFullName() << " Failed to make filled face: " << e.GetMessageString());
+                        FC_LOG(getFullName() << " Failed to make bspline face: " << e.GetMessageString());
                     } catch(...) {
-                        FC_LOG(getFullName() << " Failed to make filled face");
+                        FC_LOG(getFullName() << " Failed to make bspline face");
                     }
 
-                    if (!result.hasSubShape(TopAbs_FACE)) {
+                    if (!done) {
                         try {
-                            result = result.makEBSplineFace(
-                                    static_cast<Part::TopoShape::FillingStyle>(FillStyle.getValue()));
-                            done = true;
+                            Part::TopoShape filledFace(-getID(), getDocument()->getStringHasher());
+                            filledFace.makEFilledFace({result}, Part::TopoShape());
+                            if (filledFace.hasSubShape(TopAbs_FACE)) {
+                                done = true;
+                                result = filledFace;
+                            }
                         } catch(Base::Exception & e) {
-                            FC_LOG(getFullName() << " Failed to make bspline face: " << e.what());
+                            FC_LOG(getFullName() << " Failed to make filled face: " << e.what());
                         } catch(Standard_Failure & e) {
-                            FC_LOG(getFullName() << " Failed to make bspline face: " << e.GetMessageString());
+                            FC_LOG(getFullName() << " Failed to make filled face: " << e.GetMessageString());
                         } catch(...) {
-                            FC_LOG(getFullName() << " Failed to make bspline face");
+                            FC_LOG(getFullName() << " Failed to make filled face");
                         }
                     }
                 }
