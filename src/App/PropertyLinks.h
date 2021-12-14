@@ -1207,6 +1207,7 @@ protected:
     std::vector<int> _mapped;
     std::vector<int> _revisions;
     PropertyLinkBase *parentProp;
+    mutable std::string tmpShadow;
 };
 
 

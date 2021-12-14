@@ -1265,13 +1265,22 @@ const std::vector<std::string>& PropertyLinkSub::getSubValues(void) const
 }
 
 static inline const std::string &getSubNameWithStyle(const std::string &subName,
-        const PropertyLinkBase::ShadowSub &shadow, bool newStyle)
+        const PropertyLinkBase::ShadowSub &shadow, bool newStyle, std::string &tmp)
 {
     if(!newStyle) {
         if(shadow.second.size())
             return shadow.second;
-    }else if(shadow.first.size())
+    }else if(shadow.first.size()) {
+        if (Data::ComplexGeoData::hasMissingElement(shadow.second.c_str())) {
+            auto pos = shadow.first.rfind('.');
+            if (pos != std::string::npos) {
+                tmp = shadow.first.substr(0, pos+1);
+                tmp += shadow.second;
+                return tmp;
+            }
+        }
         return shadow.first;
+    }
     return subName;
 }
 
@@ -1279,8 +1288,9 @@ std::vector<std::string> PropertyLinkSub::getSubValues(bool newStyle) const {
     assert(_cSubList.size() == _ShadowSubList.size());
     std::vector<std::string> ret;
     ret.reserve(_cSubList.size());
+    std::string tmp;
     for(size_t i=0;i<_ShadowSubList.size();++i)
-        ret.push_back(getSubNameWithStyle(_cSubList[i],_ShadowSubList[i],newStyle));
+        ret.push_back(getSubNameWithStyle(_cSubList[i],_ShadowSubList[i],newStyle,tmp));
     return ret;
 }
 
@@ -1288,8 +1298,9 @@ std::vector<std::string> PropertyLinkSub::getSubValuesStartsWith(const char* sta
 {
     assert(_cSubList.size() == _ShadowSubList.size());
     std::vector<std::string> ret;
+    std::string tmp;
     for(size_t i=0;i<_ShadowSubList.size();++i) {
-        const auto &sub = getSubNameWithStyle(_cSubList[i],_ShadowSubList[i],newStyle);
+        const auto &sub = getSubNameWithStyle(_cSubList[i],_ShadowSubList[i],newStyle,tmp);
         auto element = Data::ComplexGeoData::findElementName(sub.c_str());
         if(element && boost::starts_with(element,starter))
             ret.emplace_back(element);
@@ -2821,8 +2832,9 @@ std::vector<std::string> PropertyLinkSubList::getSubValues(bool newStyle) const 
     assert(_lSubList.size() == _ShadowSubList.size());
     std::vector<std::string> ret;
     ret.reserve(_ShadowSubList.size());
+    std::string tmp;
     for(size_t i=0;i<_ShadowSubList.size();++i)
-        ret.push_back(getSubNameWithStyle(_lSubList[i],_ShadowSubList[i],newStyle));
+        ret.push_back(getSubNameWithStyle(_lSubList[i],_ShadowSubList[i],newStyle,tmp));
     return ret;
 }
 
@@ -4123,7 +4135,7 @@ void PropertyXLink::setPyObject(PyObject *value) {
 const char *PropertyXLink::getSubName(bool newStyle) const {
     if(_SubList.empty() || _ShadowSubList.empty())
         return "";
-    return getSubNameWithStyle(_SubList[0],_ShadowSubList[0],newStyle).c_str();
+    return getSubNameWithStyle(_SubList[0],_ShadowSubList[0],newStyle,tmpShadow).c_str();
 }
 
 void PropertyXLink::getLinks(std::vector<App::DocumentObject *> &objs,
@@ -4154,8 +4166,9 @@ std::vector<std::string> PropertyXLink::getSubValues(bool newStyle) const {
     assert(_SubList.size() == _ShadowSubList.size());
     std::vector<std::string> ret;
     ret.reserve(_SubList.size());
+    std::string tmp;
     for(size_t i=0;i<_ShadowSubList.size();++i)
-        ret.push_back(getSubNameWithStyle(_SubList[i],_ShadowSubList[i],newStyle));
+        ret.push_back(getSubNameWithStyle(_SubList[i],_ShadowSubList[i],newStyle,tmp));
     return ret;
 }
 
@@ -4163,8 +4176,9 @@ std::vector<std::string> PropertyXLink::getSubValuesStartsWith(const char* start
 {
     assert(_SubList.size() == _ShadowSubList.size());
     std::vector<std::string> ret;
+    std::string tmp;
     for(size_t i=0;i<_ShadowSubList.size();++i) {
-        const auto &sub = getSubNameWithStyle(_SubList[i],_ShadowSubList[i],newStyle);
+        const auto &sub = getSubNameWithStyle(_SubList[i],_ShadowSubList[i],newStyle,tmp);
         auto element = Data::ComplexGeoData::findElementName(sub.c_str());
         if(element && boost::starts_with(element,starter))
             ret.emplace_back(element);
