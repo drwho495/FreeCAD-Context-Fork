@@ -26,6 +26,7 @@
 #ifndef _PreComp_
 #endif
 
+#include <deque>
 #include <boost/io/ios_state.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
