@@ -44,6 +44,8 @@
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
 
+#include <TopExp.hxx>
+
 #include <utilities.h>
 
 #include <list>

@@ -66,6 +66,9 @@
 #include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <BRepBndLib.hxx>
+#include <BRepMesh_IncrementalMesh.hxx>
+#include <TopoDS_Solid.hxx>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4067)
