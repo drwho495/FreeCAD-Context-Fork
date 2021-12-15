@@ -730,20 +730,29 @@ std::vector< std::string > ViewProviderBody::getDisplayModes(void) const {
 bool ViewProviderBody::canDropObject(App::DocumentObject* obj) const
 {
     PartDesign::Body* body = Base::freecad_dynamic_cast<PartDesign::Body>(getObject());
-    if (!body)
+    if (!body || !obj)
+        return false;
+
+    // Selection context is set in TreeWidget::checkDropEvent/dropEvent().
+    // Position 0 (default) stores the dragging object. We want to check
+    // whether the parent of the dragging object is an aux group. More
+    // specifically, we want to know if the user is dragging an object out of
+    // an aux group and drop it on to the owner body, which indicates the user
+    // wants to remove and object from the aux group.
+    if (auto group = Base::freecad_dynamic_cast<PartDesign::AuxGroup>(
+                Gui::Selection().getContext().getParent().getSubObject()))
+    {
+        return PartDesign::Body::findBodyOf(group) == body
+            && group->getGroupType() == PartDesign::AuxGroup::OtherGroup;
+    }
+
+    if (!PartDesign::Body::isAllowed(obj) || PartDesign::Body::findBodyOf(obj) == body)
         return false;
 
     if (!body->getPrevSolidFeature()
             && !body->BaseFeature.getValue()
             && obj->isDerivedFrom(Part::Feature::getClassTypeId()))
         return true;
-
-    if (obj->isDerivedFrom(PartDesign::AuxGroup::getClassTypeId())
-                || !PartDesign::Body::isAllowed(obj))
-        return false;
-
-    if (!body || PartDesign::Body::findBodyOf(obj) == body)
-        return false;
 
     // App::Part checking is too restrictive. It may mess up things, or it may
     // not. Just let user undo if anything is wrong.
@@ -759,7 +768,19 @@ bool ViewProviderBody::canDropObject(App::DocumentObject* obj) const
 bool ViewProviderBody::canDragAndDropObject(App::DocumentObject * obj) const
 {
     PartDesign::Body* body = Base::freecad_dynamic_cast<PartDesign::Body>(getObject());
-    if (body && !body->getPrevSolidFeature()
+    if (!body)
+        return true;
+
+    // Check if the parent of the dragging object is an aux group
+    if (auto group = Base::freecad_dynamic_cast<PartDesign::AuxGroup>(
+                Gui::Selection().getContext().getParent().getSubObject()))
+    {
+        if (PartDesign::Body::findBodyOf(group) == body
+                && group->getGroupType() == PartDesign::AuxGroup::OtherGroup)
+            return true;
+    }
+    
+    if (!body->getPrevSolidFeature()
              && !body->BaseFeature.getValue()
              && obj->isDerivedFrom(Part::Feature::getClassTypeId())
              && !obj->isDerivedFrom(PartDesign::Feature::getClassTypeId()))
@@ -773,7 +794,15 @@ bool ViewProviderBody::canDragObject(App::DocumentObject *obj) const
         return false;
     PartDesign::Body* body = Base::freecad_dynamic_cast<PartDesign::Body>(getObject());
     if (!body)
+        return true;
+
+    // Selection context is set in TreeWidget::checkDropEvent/dropEvent().
+    // position 1 stores full object path to the dropping target.
+    // position 0 (default) stores the dragging source, which points to this object.
+    auto target = Gui::Selection().getContext(1).getSubObject();
+    if (PartDesign::Body::findBodyOf(target) == body)
         return false;
+
     if (body->BaseFeature.getValue() == obj)
         return false;
 
@@ -807,11 +836,17 @@ std::string ViewProviderBody::dropObjectEx(App::DocumentObject *obj,
         move.insert(std::end(move), std::begin(deps), std::end(deps));
 
         PartDesign::Body* source = PartDesign::Body::findBodyOf(obj);
-        if (source == body)
-            FC_THROWM(Base::RuntimeError, "Feature already inside the body");
-        if(source)
-            source->removeObjects(move);
-        body->addObjects(move);
+        if (source == body) {
+            // To allow object to be dragged out of an aux group, we do not
+            // consider it as an error to add an object already in the body.
+            //
+            // FC_THROWM(Base::RuntimeError, "Feature already inside the body");
+        }
+        else {
+            if(source)
+                source->removeObjects(move);
+            body->addObjects(move);
+        }
     } else {
         bool canWrap = true;
         bool hasDep = false;
@@ -879,6 +914,17 @@ bool ViewProviderBody::canReplaceObject(App::DocumentObject *oldObj,
             || newObj == body->BaseFeature.getValue())
         return false;
 
+    // Selection context is set in TreeWidget::checkDropEvent/dropEvent().
+    // position 1 stores full object path to the dropping target. Here, it is the newObj.
+    // position 0 (default) stores the dragging source, which is the oldObj.
+    auto newObjParent = Gui::Selection().getContext(1).getParent().getSubObject(); 
+    auto oldObjParent = Gui::Selection().getContext(0).getParent().getSubObject(); 
+    if (newObjParent && oldObjParent
+            && newObjParent != oldObjParent
+            && (newObjParent->isDerivedFrom(PartDesign::AuxGroup::getClassTypeId())
+                || oldObjParent->isDerivedFrom(PartDesign::AuxGroup::getClassTypeId())))
+        return false;
+
     if (!body->Group.find(oldObj->getNameInDocument())
             || !body->Group.find(newObj->getNameInDocument()))
         return false;
@@ -926,7 +972,7 @@ bool ViewProviderBody::reorderObjects(const std::vector<App::DocumentObject *> &
 
     last = before;
     for (auto obj : objs) {
-        if (!_reorderObject(body, obj, last, true, needCheckSiblings))
+        if (!_reorderObject(body, obj, last, false, needCheckSiblings))
             return false;
         last = obj;
     }
@@ -970,7 +1016,9 @@ bool ViewProviderBody::_reorderObject(PartDesign::Body *body,
         }
     }
 
-    // first, second refers to the order after replaceObject() operation
+    // This function is used by both reorderObjects() and replaceObject().
+    // 'first', 'second' here refers to the order after replaceObject()
+    // operation
     if (canSwap && i > j)
         std::swap(secondFeat, firstFeat);
 

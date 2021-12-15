@@ -142,27 +142,21 @@ void AuxGroup::refresh()
     }
     std::vector<App::DocumentObject *> children;
     if (getGroupType() == OtherGroup) {
-        bool touched = false;
-        const auto & group = Group.getValues();
-        for (auto it=group.begin(); it!=group.end(); ++it) {
-            auto obj = *it;
-            if (body->Group.find(obj->getNameInDocument()) == obj) {
-                if (touched)
-                    children.push_back(obj);
-            }
-            else if (!touched) {
-                touched = true;
-                children.insert(children.end(), group.begin(), it);
+        auto group = Group.getValues();
+        std::sort(group.begin(), group.end());
+        for (auto obj : body->Group.getValues()) {
+            auto it = std::lower_bound(group.begin(), group.end(), obj);
+            if (it != group.end() && *it == obj) {
+                children.push_back(obj);
+                group.erase(it);
             }
         }
-        if (touched)
-            Group.setValues(children);
     }
     else {
         for (auto obj : body->Group.getValues()) {
             if (isObjectAllowed(obj))
                 children.push_back(obj);
         }
-        Group.setValues(children);
     }
+    Group.setValues(children);
 }
