@@ -3057,6 +3057,7 @@ void TreeWidget::Private::checkDropEvent(QDropEvent *event, bool *pReplace, int 
 
         DocumentObjectItem* targetItemObj = static_cast<DocumentObjectItem*>(targetItem);
         Gui::ViewProviderDocumentObject* vp = targetItemObj->object();
+        SelectionContext sctx(targetItemObj->getSubObjectT());
 
         try {
             auto originalAction = event->dropAction();
@@ -3089,17 +3090,18 @@ void TreeWidget::Private::checkDropEvent(QDropEvent *event, bool *pReplace, int 
                     return;
                 }
                 auto item = static_cast<DocumentObjectItem*>(ti);
+                SelectionContext sctx(item->getSubObjectT());
 
                 auto obj = item->object()->getObject();
 
-                if(!dropOnly && item->getParentItem() && !vp->canDragAndDropObject(obj)) {
-                    if(!(event->possibleActions() & Qt::CopyAction)) {
-                        TREE_TRACE("Cannot drag object");
-                        event->ignore();
-                        this->setReorderingItem(nullptr);
-                        return;
-                    }
-                    event->setDropAction(Qt::CopyAction);
+                if(!dropOnly && item->getParentItem()
+                             && item->myOwner == targetItemObj->myOwner)
+                {
+                    auto parentItem = item->getParentItem();
+                    if (!vp->canDragAndDropObject(obj)
+                            || !parentItem->object()->canDragObjects()
+                            || !parentItem->object()->canDragObject(item->object()->getObject()))
+                        event->setDropAction(Qt::CopyAction);
                 }
 
                 std::ostringstream str;
@@ -3293,6 +3295,8 @@ void TreeWidget::dropEvent(QDropEvent *event)
         thisDoc = targetItemObj->getOwnerDocument()->document()->getDocument();
         Gui::ViewProviderDocumentObject* vp = targetItemObj->object();
 
+        SelectionContext sctx(targetItemObj->getSubObjectT());
+
         if(!vp || !vp->getObject() || !vp->getObject()->getNameInDocument()) {
             // Should have caught by checkDropEvent()
             if (FC_LOG_INSTANCE.isEnabled(FC_LOGLEVEL_LOG))
@@ -3334,6 +3338,9 @@ void TreeWidget::dropEvent(QDropEvent *event)
             infos.emplace_back();
             auto &info = infos.back();
             auto item = v.first;
+
+            SelectionContext sctx(item->getSubObjectT());
+
             Gui::ViewProviderDocumentObject* vpc = item->object();
             App::DocumentObject* obj = vpc->getObject();
 
@@ -3355,21 +3362,14 @@ void TreeWidget::dropEvent(QDropEvent *event)
             info.subs.swap(v.second);
 
             // check if items can be dragged
-            if(!dropOnly && item->myOwner == targetItemObj->myOwner
-                         && vp->canDragAndDropObject(item->object()->getObject()))
-            {
+            if(!dropOnly && item->myOwner == targetItemObj->myOwner) {
                 // check if items can be dragged
-                auto parentItem = item->getParentItem();
-                if(!parentItem)
-                    info.dragging = true;
-                else if(parentItem->object()->canDragObjects()
-                        && parentItem->object()->canDragObject(item->object()->getObject()))
-                {
-                    info.dragging = true;
+                if (auto parentItem = item->getParentItem()) {
                     auto vpp = parentItem->object();
                     info.parent = vpp->getObject()->getNameInDocument();
                     info.parentDoc = vpp->getObject()->getDocument()->getName();
                 }
+                info.dragging = true;
             }
 
             if(reorder)
@@ -3449,6 +3449,8 @@ void TreeWidget::dropEvent(QDropEvent *event)
                     FC_WARN("Cannot find dragging object " << info.obj);
                     continue;
                 }
+
+                SelectionContext sctx(App::SubObjectT(obj, subname.c_str()));
 
                 ViewProviderDocumentObject *vpp = 0;
                 if(da!=Qt::LinkAction && info.parentDoc.size()) {

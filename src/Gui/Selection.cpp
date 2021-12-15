@@ -388,13 +388,13 @@ bool SelectionNoTopParentCheck::enabled() {
 // -------------------------------------------
 
 SelectionContext::SelectionContext(const App::SubObjectT &sobj)
-    :_sobj(Selection().getContext())
 {
-    Selection().setContext(sobj);
+    Selection().pushContext(sobj);
 }
 
 SelectionContext::~SelectionContext()
 {
+    Selection().popContext();
 }
 
 // -------------------------------------------
@@ -805,14 +805,33 @@ void SelectionSingleton::slotSelectionChanged(const SelectionChanges& msg) {
     }
 }
 
-void SelectionSingleton::setContext(const App::SubObjectT &sobj)
+int SelectionSingleton::pushContext(const App::SubObjectT &sobj)
 {
-    ContextObject = sobj;
+    ContextObjectStack.push_back(sobj);
+    return (int)ContextObjectStack.size();
 }
 
-const App::SubObjectT &SelectionSingleton::getContext() const
+int SelectionSingleton::popContext()
 {
-    return ContextObject;
+    if (ContextObjectStack.empty())
+        return -1;
+    ContextObjectStack.pop_back();
+    return (int)ContextObjectStack.size();
+}
+
+int SelectionSingleton::setContext(const App::SubObjectT &sobj)
+{
+    if (ContextObjectStack.size())
+        ContextObjectStack.back() = sobj;
+    return (int)ContextObjectStack.size();
+}
+
+const App::SubObjectT &SelectionSingleton::getContext(int pos) const
+{
+    if (pos >= 0 && pos < (int)ContextObjectStack.size())
+        return ContextObjectStack[ContextObjectStack.size() - 1 - pos];
+    static App::SubObjectT dummy;
+    return dummy;
 }
 
 App::SubObjectT SelectionSingleton::getExtendedContext(App::DocumentObject *obj) const
@@ -823,16 +842,16 @@ App::SubObjectT SelectionSingleton::getExtendedContext(App::DocumentObject *obj)
             return false;
         if (!obj || obj == sobj)
             return true;
-        if (obj) {
-            auto objs = ContextObject.getSubObjectList();
+        if (obj && ContextObjectStack.size()) {
+            auto objs = ContextObjectStack.back().getSubObjectList();
             if (std::find(objs.begin(), objs.end(), obj) != objs.end())
                 return true;
         }
         return false;
     };
 
-    if (checkSel(ContextObject))
-        return ContextObject;
+    if (ContextObjectStack.size() && checkSel(ContextObjectStack.back()))
+        return ContextObjectStack.back();
 
     if (checkSel(CurrentPreselection.Object))
         return CurrentPreselection.Object;
@@ -2136,14 +2155,22 @@ PyMethodDef SelectionSingleton::Methods[] = {
      "checkTopParent(obj, subname='')\n\n"
      "Check object hierarchy to find the top parent of the given (sub)object.\n"
      "Returns (topParent,subname)\n"},
+    {"pushContext",   (PyCFunction) SelectionSingleton::sPushContext, METH_VARARGS,
+     "pushContext(obj, subname='') -> Int\n\n"
+     "Push a context object into stack for use by ViewObject.doubleClicked/setupContextMenu().\n"
+     "Return the stack size after push."},
+    {"popContext",   (PyCFunction) SelectionSingleton::sPopContext, METH_VARARGS,
+     "popContext() -> Int\n\n"
+      "Pop context object. Return the context stack size after push."},
     {"setContext",   (PyCFunction) SelectionSingleton::sSetContext, METH_VARARGS,
-     "setContext(obj, subname='')\n\n"
-     "Set the context sub-object when calling ViewObject.doubleClicked/setupContextMenu()."},
+     "setContext(obj, subname='') -> Int\n\n"
+     "Set the context object at the top of the stack. No effect if stack is empty.\n"
+     "Return the current stack size."},
     {"getContext",   (PyCFunction) SelectionSingleton::sGetContext, METH_VARARGS,
      "getContext(extended = False) -> (obj, subname)\n\n"
      "Obtain the current context sub-object.\n"
      "If extended is True, then try various options in the following order,\n"
-     " * Explicitly set context by calling setContext(),\n"
+     " * Explicitly set context by calling pushContext(),\n"
      " * Current pre-selected object,\n"
      " * If there is only one selection in the active document,\n"
      " * If the active document is in editing, then return the editing object."},
@@ -2682,18 +2709,36 @@ PyObject* SelectionSingleton::sCheckTopParent(PyObject *, PyObject *args) {
 PyObject *SelectionSingleton::sGetContext(PyObject *, PyObject *args)
 {
     PyObject *extended = Py_False;
-    if (!PyArg_ParseTuple(args, "|O", &extended))
+    int pos = 0;
+    if (!PyArg_ParseTuple(args, "|Oi", &extended, &pos))
         return 0;
     App::SubObjectT sobjT;
     if (PyObject_IsTrue(extended))
         sobjT = Selection().getExtendedContext();
     else
-        sobjT = Selection().ContextObject;
+        sobjT = Selection().getContext(pos);
     auto obj = sobjT.getObject();
     if (!obj)
         Py_Return;
     return Py::new_reference_to(Py::TupleN(Py::asObject(obj->getPyObject()),
                                            Py::String(sobjT.getSubName().c_str())));
+}
+
+PyObject *SelectionSingleton::sPushContext(PyObject *, PyObject *args)
+{
+    PyObject *pyObj;
+    char *subname = "";
+    if (!PyArg_ParseTuple(args, "O!|s", &App::DocumentObjectPy::Type,&pyObj,&subname))
+        return 0;
+    return Py::new_reference_to(Py::Int(Selection().pushContext(App::SubObjectT(
+            static_cast<App::DocumentObjectPy*>(pyObj)->getDocumentObjectPtr(), subname))));
+}
+
+PyObject *SelectionSingleton::sPopContext(PyObject *, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ""))
+        return 0;
+    return Py::new_reference_to(Py::Int(Selection().popContext()));
 }
 
 PyObject *SelectionSingleton::sSetContext(PyObject *, PyObject *args)
@@ -2702,9 +2747,8 @@ PyObject *SelectionSingleton::sSetContext(PyObject *, PyObject *args)
     char *subname = "";
     if (!PyArg_ParseTuple(args, "O!|s", &App::DocumentObjectPy::Type,&pyObj,&subname))
         return 0;
-    Selection().ContextObject = App::SubObjectT(
-            static_cast<App::DocumentObjectPy*>(pyObj)->getDocumentObjectPtr(), subname);
-    Py_Return;
+    return Py::new_reference_to(Py::Int(Selection().setContext(App::SubObjectT(
+            static_cast<App::DocumentObjectPy*>(pyObj)->getDocumentObjectPtr(), subname))));
 }
 
 PyObject *SelectionSingleton::sGetPreselectionText(PyObject *, PyObject *args)

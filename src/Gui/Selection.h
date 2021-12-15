@@ -421,10 +421,24 @@ public:
 
     void setFormatDecimal(int);
 
-    /// Used by tree view to set context object of double clicking and context menu
-    void setContext(const App::SubObjectT &sobj);
-    /// Obtain the selection context set by calling setContext()
-    const App::SubObjectT & getContext() const;
+    /** Push a context, used by tree view to set context object of double clicking and context menu
+     * @param sobj: the context object to be pushed
+     * @return Return the stack size after push
+     */
+    int pushContext(const App::SubObjectT &sobj);
+    /** Pop the previous pushed context
+     * @return Return the stack size after pop
+     */
+    int popContext();
+    /** Set the context at the top of the stack
+     * This function has no effect if no context has been pushed
+     * @return Return the current stack
+     */
+    int setContext(const App::SubObjectT &sobj);
+    /** Obtain the selection context set by calling pushContext()
+     * @param pos: stack position of the context required.
+     */
+    const App::SubObjectT & getContext(int pos = 0) const;
     /** Obtain the current selection context with fallback
      *
      * @param obj: optional object to check. If given, then will only return
@@ -725,6 +739,8 @@ protected:
     static PyObject *sGetSelectionFromStack(PyObject *self,PyObject *args);
     static PyObject *sCheckTopParent      (PyObject *self,PyObject *args);
     static PyObject *sGetContext          (PyObject *self,PyObject *args);
+    static PyObject *sPushContext         (PyObject *self,PyObject *args);
+    static PyObject *sPopContext          (PyObject *self,PyObject *args);
     static PyObject *sSetContext          (PyObject *self,PyObject *args);
     static PyObject *sSetPreselectionText (PyObject *self,PyObject *args);
     static PyObject *sGetPreselectionText (PyObject *self,PyObject *args);
@@ -801,7 +817,7 @@ protected:
 
     int fmtDecimal = -1;
 
-    App::SubObjectT ContextObject;
+    std::vector<App::SubObjectT> ContextObjectStack;
 };
 
 /**
@@ -851,8 +867,6 @@ class GuiExport SelectionContext {
 public:
     SelectionContext(const App::SubObjectT &sobj = App::SubObjectT());
     ~SelectionContext();
-private:
-    App::SubObjectT _sobj;
 };
 
 } //namespace Gui
