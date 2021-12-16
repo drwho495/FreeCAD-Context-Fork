@@ -6450,10 +6450,10 @@ bool CmdSketcherFixExternal::isActive(void)
 }
 
 
-class CmdSketcherExternalCmds : public Gui::Command
+class CmdSketcherExternalCmds : public Gui::GroupCommand
 {
 public:
-    CmdSketcherExternalCmds():Command("Sketcher_ExternalCmds") {
+    CmdSketcherExternalCmds():GroupCommand("Sketcher_ExternalCmds") {
         sGroup        = QT_TR_NOOP("Sketcher");
         sMenuText     = QT_TR_NOOP("External geometry actions");
         sToolTipText  = QT_TR_NOOP("Sketcher external geometry actions");
@@ -6462,80 +6462,16 @@ public:
         eType         = 0;
         bCanLog       = false;
 
-        Gui::CommandManager &mgr = Gui::Application::Instance->commandManager();
-        cmds.reserve(7);
-        cmds.emplace_back(new CmdSketcherExternal(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherDefining(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherDetach(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherAttach(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherToggleFreeze(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherSync(),cmds.size());
-        mgr.addCommand(cmds.back().first);
-        cmds.emplace_back(new CmdSketcherFixExternal(),cmds.size());
-        mgr.addCommand(cmds.back().first);
+        addCommand(new CmdSketcherExternal());
+        addCommand(new CmdSketcherDefining());
+        addCommand(new CmdSketcherDetach());
+        addCommand(new CmdSketcherAttach());
+        addCommand(new CmdSketcherToggleFreeze());
+        addCommand(new CmdSketcherSync());
+        addCommand(new CmdSketcherFixExternal());
     }
 
     virtual const char* className() const {return "CmdSketcherExternalCmds";}
-protected:
-
-    virtual void activated(int iMsg) {
-        if(iMsg<0 || iMsg>=(int)cmds.size())
-            return;
-
-        auto &v = cmds[iMsg];
-        if(!v.first)
-            return;
-
-        if(triggerSource()!=TriggerChildAction)
-            v.first->invoke(0);
-
-        Gui::Action* cmdAction = v.first->getAction();
-        if(_pcAction && cmdAction) {
-            _pcAction->setIcon(cmdAction->icon());
-            _pcAction->setProperty("defaultAction", QVariant((int)v.second));
-        }
-    }
-
-    virtual Gui::Action * createAction(void) {
-        auto pcAction = new Gui::ActionGroup(this, Gui::getMainWindow());
-        pcAction->setDropDownMenu(true);
-        applyCommandData(this->className(), pcAction);
-        for(auto &v : cmds) {
-            if(!v.first)
-                pcAction->addAction(QString::fromLatin1(""))->setSeparator(true);
-            else
-                v.first->addToGroup(pcAction);
-        }
-        pcAction->setIcon(Gui::BitmapFactory().iconFromTheme(cmds[0].first->getPixmap()));
-        return pcAction;
-    }
-
-    bool isActive(void)
-    {
-        auto* pcAction = qobject_cast<Gui::ActionGroup*>(_pcAction);
-        int idx = 0;
-        if(pcAction)
-            idx = pcAction->property("defaultAction").toInt();
-        if(idx >=0 && idx < (int)cmds.size() && cmds[idx].first) {
-            if(prevActive != cmds[idx].first->isActive()) {
-                prevActive = !prevActive;
-                QIcon icon(cmds[idx].first->getAction()->icon());
-                if(prevActive)
-                    pcAction->setIcon(icon);
-                else
-                    pcAction->setIcon(QIcon(icon.pixmap(64,QIcon::Disabled)));
-            }
-        }
-        return true;
-    }
-
-    std::vector<std::pair<Command*,size_t> > cmds;
-    bool prevActive = true;
 };
 
 
