@@ -7021,8 +7021,6 @@ void SketchObject::rebuildExternalGeometry(bool defining)
                     GeomAPI_ProjectPointOnSurf proj(cnt,gPlane);
                     cnt = proj.NearestPoint();
                     circle.SetLocation(cnt);
-                    cnt.Transform(mov);
-                    circle.Transform(mov);
 
                     double cosTheta = fabs(vec1.Dot(vec2));  // cos of angle between the two planes, assuming vectirs are normalized to 1
                     double minorRadius = circle.Radius() * cosTheta;
@@ -7163,6 +7161,7 @@ void SketchObject::rebuildExternalGeometry(bool defining)
                         }
                         else {  // general case, full circle
                             Base::Vector3d p(cnt.X(),cnt.Y(),cnt.Z());  // converting to FCAD style vector
+                            invPlm.multVec(p,p);  // transforming towards sketch's (x,y) coordinates
 
                             gp_Vec vecMajorAxis = vec1 ^ vec2;  // major axis in 3D space
                             Base::Vector3d vectorMajorAxis(vecMajorAxis.X(),vecMajorAxis.Y(),vecMajorAxis.Z());  // maj axis into FCAD style vector
