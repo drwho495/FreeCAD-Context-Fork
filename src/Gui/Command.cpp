@@ -997,6 +997,13 @@ Command *GroupCommand::addCommand(const char *name) {
     return cmd;
 }
 
+Command *GroupCommand::getCommand(int idx) const
+{
+    if (idx >= 0 && idx < (int)cmds.size())
+        return cmds[idx].first;
+    return nullptr;
+}
+
 Action * GroupCommand::createAction(void) {
     ActionGroup* pcAction = new ActionGroup(this, getMainWindow());
     pcAction->setMenuRole(QAction::NoRole);

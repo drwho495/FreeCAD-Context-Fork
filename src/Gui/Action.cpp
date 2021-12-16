@@ -231,13 +231,15 @@ void Action::setToolTip(const QString & s, const QString & title)
     _action->setToolTip(createToolTip(s,
                 title.isEmpty() ? _action->text() : title, 
                 _action->font(),
-                _action->shortcut().toString(QKeySequence::NativeText)));
+                _action->shortcut().toString(QKeySequence::NativeText),
+                this));
 }
 
 QString Action::createToolTip(QString _tooltip,
                               const QString & title,
                               const QFont &font,
-                              const QString &sc)
+                              const QString &sc,
+                              Action *act)
 {
     QString text = title;
     text.remove(QLatin1Char('&'));;
@@ -262,8 +264,25 @@ QString Action::createToolTip(QString _tooltip,
         shortcut = QString::fromLatin1(" (%1)").arg(shortcut);
 
     QString tooltip = QString::fromLatin1(
-            "<p style='white-space:pre'><b>%1</b>%2</p>").arg(
+            "<p style='white-space:pre; margin-bottom:0.5em;'><b>%1</b>%2</p>").arg(
             text.toHtmlEscaped(), shortcut.toHtmlEscaped());
+
+    QString cmdName;
+    auto pcCmd = act ? act->_pcCmd : nullptr;
+    if (pcCmd && pcCmd->getName()) {
+        cmdName = QString::fromLatin1(pcCmd->getName());
+        if (auto groupcmd = dynamic_cast<GroupCommand*>(pcCmd)) {
+            int idx = act->property("defaultAction").toInt();
+            auto cmd = groupcmd->getCommand(idx);
+            if (cmd && cmd->getName())
+                cmdName = QStringLiteral("%1 (%2:%3)")
+                    .arg(QString::fromLatin1(cmd->getName()))
+                    .arg(cmdName)
+                    .arg(idx);
+        }
+        cmdName = QStringLiteral("<p style='white-space:pre; margin-top:0.5em;'><i>%1</i></p>")
+            .arg(cmdName.toHtmlEscaped());
+    }
 
     if (shortcut.size() && _tooltip.endsWith(shortcut))
         _tooltip.resize(_tooltip.size() - shortcut.size());
@@ -272,16 +291,15 @@ QString Action::createToolTip(QString _tooltip,
             || _tooltip == text
             || _tooltip == title)
     {
-        return tooltip;
+        return tooltip + cmdName;
     }
     if (Qt::mightBeRichText(_tooltip)) {
         // already rich text, so let it be to avoid duplicated unwrapping
-        return tooltip + _tooltip;
+        return tooltip + _tooltip + cmdName;
     }
 
     tooltip += QString::fromLatin1(
-            "<style>p { margin: 0 }</style>" // remove any margin of a paragraph
-            "<p style='white-space:pre'>");
+            "<p style='white-space:pre; margin:0;'>");
 
     // If the user supplied tooltip contains line break, we shall honour it.
     if (_tooltip.indexOf(QLatin1Char('\n')) >= 0)
@@ -306,7 +324,7 @@ QString Action::createToolTip(QString _tooltip,
                 + _tooltip.right(_tooltip.size()-index).trimmed().toHtmlEscaped();
         }
     }
-    return tooltip;
+    return tooltip + cmdName;
 }
 
 QString Action::toolTip() const

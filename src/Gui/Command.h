@@ -647,6 +647,8 @@ public:
      */
     Command *addCommand(const char *cmdName);
 
+    Command *getCommand(int idx) const;
+
 protected:
     virtual void activated(int iMsg);
     virtual Gui::Action * createAction(void);

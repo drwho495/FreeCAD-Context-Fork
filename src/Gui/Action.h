@@ -114,7 +114,8 @@ public:
     static QString createToolTip(QString tooltip,
                                  const QString &title,
                                  const QFont &font,
-                                 const QString &shortcut);
+                                 const QString &shortcut,
+                                 Action *action = nullptr);
 
 public Q_SLOTS:
     virtual void onActivated ();
