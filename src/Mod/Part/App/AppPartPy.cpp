@@ -475,6 +475,10 @@ public:
             "If not recursive, then return tuple(sourceObject, sourceElementName, [intermediateNames...]),\n"
             "otherwise return a list of tuple."
         );
+        add_varargs_method("getElementHistoryName",&Module::getElementHistoryName,
+            "getElementHistoryName(obj,name,recursive=True,sameType=False)\n"
+            "Same as getElementHistory() but returns text names that are more human readable."
+        );
         add_varargs_method("splitSubname",&Module::splitSubname,
             "splitSubname(subname) -> list(sub,mapped,subElement)\n"
             "Split the given subname into a list\n\n"
@@ -2353,6 +2357,56 @@ private:
             for(auto &h : history.intermediates)
                 intermedates.append(Py::String(h));
             ret.setItem(2,intermedates);
+            list.append(ret);
+        }
+        return list;
+    }
+
+    Py::Object getElementHistoryName(const Py::Tuple& args) {
+        const char *name;
+        PyObject *recursive = Py_True;
+        PyObject *sameType = Py_False;
+        PyObject *pyobj;
+        if (!PyArg_ParseTuple(args.ptr(), "O!s|OO",&App::DocumentObjectPy::Type,&pyobj,&name,
+                    &recursive,&sameType))
+            throw Py::Exception();
+
+        auto feature = static_cast<App::DocumentObjectPy*>(pyobj)->getDocumentObjectPtr();
+        Py::List list;
+        std::string tmp;
+        for(auto &history : Part::Feature::getElementHistory(feature,name,
+                    PyObject_IsTrue(recursive),PyObject_IsTrue(sameType))) 
+        {
+            Py::Tuple ret(3);
+            if(history.obj) 
+                ret.setItem(0,Py::String(history.obj->getFullName()));
+            else
+                ret.setItem(0,Py::Int(history.tag));
+            tmp.clear();
+            history.element.toString(tmp);
+            std::pair<std::string, std::string> elementName;
+            if (App::GeoFeature::resolveElement(
+                        history.obj, tmp.c_str(), elementName)
+                    && elementName.second.size())
+            {
+                ret.setItem(1,Py::String(elementName.first));
+            } else
+                ret.setItem(1,Py::String(history.element.toString(tmp)));
+
+            Py::List intermediates;
+            for(auto &h : history.intermediates) {
+                tmp.clear();
+                h.toString(tmp);
+                std::pair<std::string, std::string> elementName;
+                if (App::GeoFeature::resolveElement(
+                            history.obj, tmp.c_str(), elementName, true)
+                        && elementName.second.size())
+                {
+                    intermediates.append(Py::String(elementName.first));
+                } else
+                    intermediates.append(Py::String(h.toString(tmp)));
+            }
+            ret.setItem(2,intermediates);
             list.append(ret);
         }
         return list;
