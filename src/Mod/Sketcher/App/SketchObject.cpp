@@ -9274,10 +9274,14 @@ std::pair<std::string,std::string> SketchObject::getElementName(
 {
     std::pair<std::string,std::string> ret;
     if(!name) return ret;
+
+    if(hasSketchMarker(name))
+        return Part2DObject::getElementName(name,type);
+
     const char *mapped = Data::ComplexGeoData::isMappedElement(name);
     if(!mapped) {
-        if(boost::starts_with(name,"Vertex") ||
-           boost::starts_with(name,"Edge"))
+        auto occindex = Part::TopoShape::shapeTypeAndIndex(name);
+        if (occindex.second)
             return Part2DObject::getElementName(name,type);
 
         ret.first = convertSubName(name,true);
@@ -9286,9 +9290,6 @@ std::pair<std::string,std::string> SketchObject::getElementName(
         ret.second = name;
         return ret;
     }
-
-    if(hasSketchMarker(mapped))
-        return Part2DObject::getElementName(name,type);
 
     ret.second = checkSubName(name);
     if(ret.second.size()) {
