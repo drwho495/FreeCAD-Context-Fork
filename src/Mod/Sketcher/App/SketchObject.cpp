@@ -7027,7 +7027,7 @@ void SketchObject::rebuildExternalGeometry(bool defining)
 
                     // Using plane direction to check for projection type may
                     // cause tolerance problem. Projecting a circle as ellipse
-                    // to a plane that has very small angle (within
+                    // to a plane that has very small angle (but greater than
                     // Precision::AngleConfusion()) difference to the sketch
                     // plane may actually result in the major and minor raidus
                     // being essentially equal (within Precision::Confusion()).
@@ -7040,6 +7040,7 @@ void SketchObject::rebuildExternalGeometry(bool defining)
                         if (firstPoint.SquareDistance(lastPoint) < Precision::Confusion()) {
                             Part::GeomCircle* gCircle = new Part::GeomCircle();
                             gCircle->setRadius(circle.Radius());
+                            cnt.Transform(mov);
                             gCircle->setCenter(Base::Vector3d(cnt.X(),cnt.Y(),cnt.Z()));
 
                             GeometryFacade::setConstruction(gCircle, true);
@@ -7047,6 +7048,7 @@ void SketchObject::rebuildExternalGeometry(bool defining)
                         }
                         else {
                             Part::GeomArcOfCircle* gArc = new Part::GeomArcOfCircle();
+                            circle.Transform(mov);
                             Handle(Geom_Curve) hCircle = new Geom_Circle(circle);
 
                             double firstParam, lastParam;
