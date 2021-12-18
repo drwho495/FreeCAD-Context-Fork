@@ -51,6 +51,7 @@ public:
 
     virtual void onDocumentRestored() override;
     virtual void onChanged(const App::Property* prop) override;
+    virtual bool allowDuplicateLabel() const override;
 
     bool isObjectAllowed(const App::DocumentObject *obj) const;
 

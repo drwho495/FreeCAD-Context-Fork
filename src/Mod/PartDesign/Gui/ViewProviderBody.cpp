@@ -191,10 +191,13 @@ void ViewProviderBody::setupContextMenu(QMenu* menu, QObject* receiver, const ch
                         ++pos;
                     auto sketchGroup = static_cast<PartDesign::AuxGroup*>(
                             body->getDocument()->addObject("PartDesign::AuxGroup", "Sketches"));
+                    sketchGroup->Label.setValue("Sketches");
                     auto datumGroup = static_cast<PartDesign::AuxGroup*>(
                             body->getDocument()->addObject("PartDesign::AuxGroup", "Datums"));
+                    datumGroup->Label.setValue("Datums");
                     auto miscGroup = static_cast<PartDesign::AuxGroup*>(
                             body->getDocument()->addObject("PartDesign::AuxGroup", "Misc"));
+                    miscGroup->Label.setValue("Misc");
                     children.insert(children.begin()+pos, miscGroup);
                     children.insert(children.begin()+pos, datumGroup);
                     children.insert(children.begin()+pos, sketchGroup);

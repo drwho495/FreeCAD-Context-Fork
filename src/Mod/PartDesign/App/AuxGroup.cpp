@@ -33,6 +33,7 @@
 #include <App/Document.h>
 #include <Mod/Part/App/Part2DObject.h>
 #include <Mod/Part/App/DatumFeature.h>
+#include <Mod/Part/App/PartParams.h>
 
 #include "Body.h"
 #include "Feature.h"
@@ -96,6 +97,12 @@ AuxGroup::GroupType AuxGroup::getGroupType() const
     else
         groupType = OtherGroup;
     return groupType;
+}
+
+bool AuxGroup::allowDuplicateLabel() const
+{
+    return getGroupType()!=OtherGroup
+        && !Part::PartParams::AuxGroupUniqueLabel();
 }
 
 bool AuxGroup::isObjectAllowed(const App::DocumentObject *obj) const
