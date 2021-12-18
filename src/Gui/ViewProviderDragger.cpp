@@ -344,8 +344,11 @@ void ViewProviderDragger::updatePlacementFromDragger(SoFCCSysDragger* draggerIn)
   App::GeoFeature *geoFeature = static_cast<App::GeoFeature *>(genericObject);
   Base::Placement originalPlacement = geoFeature->Placement.getValue();
   double pMatrix[16];
-  originalPlacement.toMatrix().getMatrix(pMatrix);
-  Base::Placement freshPlacement = originalPlacement;
+  auto offset = this->dragOffset;
+  offset.inverse();
+  auto mat = originalPlacement.toMatrix() * offset;
+  mat.getMatrix(pMatrix);
+  Base::Placement freshPlacement = mat;
 
   //local cache for brevity.
   double translationIncrement = draggerIn->translationIncrement.getValue();
