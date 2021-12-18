@@ -295,9 +295,11 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
                 }
             }else{
                 Base::Matrix4D mat;
+                resolvedSub += getNameInDocument();
+                resolvedSub += ".";
                 auto sobj = resolved->getSubObject(resolvedSub.c_str(),0,&mat);
                 if(sobj!=this) {
-                    FC_LOG(getFullName() << " skip invalid parent " << resolved->getFullName() 
+                    FC_WARN(getFullName() << " skip invalid parent " << resolved->getFullName() 
                             << '.' << resolvedSub);
                 }else if(_Version.getValue()==0) {
                     // For existing legacy SubShapeBinder, we use its Placement
