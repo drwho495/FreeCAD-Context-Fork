@@ -439,6 +439,8 @@ void ViewProvider::updateData(const App::Property* prop)
 void ViewProvider::updateVisual()
 {
     inherited::updateVisual();
+    if (testStatus(Gui::Detach))
+        return;
     auto feature = Base::freecad_dynamic_cast<PartDesign::Feature>(getObject());
     if (feature && feature->SuppressedShape.getShape().isNull()) {
         std::vector<int> faces;
