@@ -343,8 +343,6 @@ void ViewProvider::updateData(const App::Property* prop)
     } else if (prop == &feature->_Siblings) {
         pxTipIcon = QPixmap();
         signalChangeIcon();
-    } else if (prop == &feature->_Siblings) {
-
     } else if (prop == &feature->Shape) {
         if (!getObject()->getDocument()->isPerformingTransaction()
                 && !getObject()->getDocument()->testStatus(App::Document::Restoring)

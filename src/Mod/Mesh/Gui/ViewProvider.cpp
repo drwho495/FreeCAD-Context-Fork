@@ -386,10 +386,6 @@ void ViewProviderMesh::onChanged(const App::Property* prop)
         pcHighlight->style = SelectionStyle.getValue() ? Gui::SoFCSelection::BOX
                                                        : Gui::SoFCSelection::EMISSIVE;
     }
-    else if (prop == &SelectionStyle) {
-        pcHighlight->style = SelectionStyle.getValue()
-            ?Gui::SoFCSelection::BOX:Gui::SoFCSelection::EMISSIVE;
-    }
     else {
         // Set the inverse color for open edges
         if (prop == &ShapeColor) {
