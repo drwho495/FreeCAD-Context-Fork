@@ -1359,7 +1359,7 @@ DocumentObject::resolveRelativeLink(std::string &subname,
 
     link = *itlink;
     linkSub.erase(linkSub.begin(), linkSub.begin() + linksubs[itlink - linkobjs.begin()]);
-    subname.resize(mysubs[itself - myobjs.begin()]);
+    subname.erase(subname.begin(), subname.begin() + mysubs[itself - myobjs.begin()]);
     return *itself;
 }
 
