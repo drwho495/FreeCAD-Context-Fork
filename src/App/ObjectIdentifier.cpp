@@ -1275,9 +1275,9 @@ void ObjectIdentifier::getDep(
     Base::PyGILStateLocker lock;
     try {
         access(result,0,&deps);
-    }catch(Py::Exception &) {
-        Base::PyException e;
-    }catch(...){
+    }catch(Py::Exception &e) {
+        e.clear();
+    }catch(Base::Exception &) {
     }
 }
 
