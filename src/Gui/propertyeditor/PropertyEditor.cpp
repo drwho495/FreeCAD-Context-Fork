@@ -577,10 +577,6 @@ void PropertyEditor::buildUp(PropertyModel::PropertyList &&props, bool _checkDoc
     if (!propertyPath.isEmpty())
         this->selectedProperty = propertyPath;
     propertyModel->buildUp(props);
-    if (!this->selectedProperty.isEmpty()) {
-        QModelIndex index = propertyModel->propertyIndexFromPath(this->selectedProperty);
-        this->setCurrentIndex(index);
-    }
 
     propList = std::move(props);
     propOwners.clear();
@@ -600,6 +596,12 @@ void PropertyEditor::buildUp(PropertyModel::PropertyList &&props, bool _checkDoc
         expandAll();
 
     this->header()->setVisible(!_hideHeader && !propList.empty());
+
+    if (!this->selectedProperty.isEmpty()) {
+        QModelIndex index = propertyModel->propertyIndexFromPath(this->selectedProperty);
+        this->setCurrentIndex(index);
+        this->scrollTo(index);
+    }
 }
 
 void PropertyEditor::hideHeader(bool hide)
