@@ -2172,15 +2172,16 @@ struct EdgePoints {
     const TopoShape &edge;
     bool closed;
 
-    EdgePoints(std::list<TopoShape>::iterator it)
+    EdgePoints(std::list<TopoShape>::iterator it, double tol)
         :it(it), edge(*it), closed(false)
     {
         TopExp_Explorer xp(it->getShape(),TopAbs_VERTEX);
         v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
         xp.Next();
-        if (xp.More())
+        if (xp.More()) {
             v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
-        else {
+            closed = (v2.SquareDistance(v1) <= tol);
+        } else {
             v2 = v1;
             closed = true;
         }
@@ -2195,7 +2196,7 @@ TopoShape::sortEdges(std::list<TopoShape>& edges, bool keepOrder, double tol)
 
     std::list<EdgePoints>  edge_points;
     for (auto it = edges.begin(); it != edges.end(); ++it)
-        edge_points.emplace_back(it);
+        edge_points.emplace_back(it, tol3d);
 
     std::deque<TopoShape> sorted;
     if (edge_points.empty())
@@ -2249,42 +2250,11 @@ TopoShape::sortEdges(std::list<TopoShape>& edges, bool keepOrder, double tol)
             if (pEI->closed)
                 continue;
 
-            if (pEI->v2.SquareDistance(first) <= tol3d) {
-                if (keepOrder && sorted.size() == 1) {
+            if (keepOrder && sorted.size() == 1) {
+                if (pEI->v2.SquareDistance(first) <= tol3d
+                        || pEI->v1.SquareDistance(first) <= tol3d) {
                     sorted[0] = reverseEdge(sorted[0]);
                     std::swap(first, last);
-                    // will recheck v2 vs last below
-                } else {
-                    sorted.push_front(pEI->edge);
-                    first = pEI->v1;
-                    edges.erase(pEI->it);
-                    edge_points.erase(pEI);
-                    pEI = edge_points.begin();
-                    break;
-                }
-            }
-
-            if (pEI->v2.SquareDistance(last) <= tol3d) {
-                last = pEI->v1;
-                sorted.push_back(reverseEdge(pEI->edge));
-                edges.erase(pEI->it);
-                edge_points.erase(pEI);
-                pEI = edge_points.begin();
-                break;
-            }
-
-            if (pEI->v1.SquareDistance(first) <= tol3d) {
-                if (keepOrder && sorted.size() == 1) {
-                    sorted[0] = reverseEdge(sorted[0]);
-                    std::swap(first, last);
-                    // will recheck v1 vs last below
-                } else {
-                    first = pEI->v2;
-                    sorted.push_back(reverseEdge(pEI->edge));
-                    edges.erase(pEI->it);
-                    edge_points.erase(pEI);
-                    pEI = edge_points.begin();
-                    break;
                 }
             }
 
@@ -2296,7 +2266,30 @@ TopoShape::sortEdges(std::list<TopoShape>& edges, bool keepOrder, double tol)
                 pEI = edge_points.begin();
                 break;
             }
-
+            else if (pEI->v2.SquareDistance(first) <= tol3d) {
+                sorted.push_front(pEI->edge);
+                first = pEI->v1;
+                edges.erase(pEI->it);
+                edge_points.erase(pEI);
+                pEI = edge_points.begin();
+                break;
+            }
+            else if (pEI->v2.SquareDistance(last) <= tol3d) {
+                last = pEI->v1;
+                sorted.push_back(reverseEdge(pEI->edge));
+                edges.erase(pEI->it);
+                edge_points.erase(pEI);
+                pEI = edge_points.begin();
+                break;
+            }
+            else if (pEI->v1.SquareDistance(first) <= tol3d) {
+                first = pEI->v2;
+                sorted.push_back(reverseEdge(pEI->edge));
+                edges.erase(pEI->it);
+                edge_points.erase(pEI);
+                pEI = edge_points.begin();
+                break;
+            }
         }
 
         if ((pEI == edge_points.end()) || (last.SquareDistance(first) <= tol3d)) {
