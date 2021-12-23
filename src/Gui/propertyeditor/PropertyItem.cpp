@@ -194,7 +194,13 @@ void PropertyItem::setPropertyData(const std::vector<App::Property*>& items)
         try {
             // Check for 'DocumentObject' as parent because otherwise 'ObjectIdentifier' raises an exception
             App::DocumentObject * docObj = Base::freecad_dynamic_cast<App::DocumentObject>(p.getContainer());
-            if (docObj && !docObj->isReadOnly(&p) && !p.testStatus(App::Property::ReadOnly)) {
+
+            // No need to check for readonly here. Context menu 'Expression...'
+            // will check the flag, so that if the user dynamically remove the
+            // 'ReadOnly' bit, the menu can immediately reflect the changes.
+            //
+            // if (docObj && !docObj->isReadOnly(&p) && !p.testStatus(App::Property::ReadOnly))
+            if (docObj) {
                 bind(p);
             }
         }
