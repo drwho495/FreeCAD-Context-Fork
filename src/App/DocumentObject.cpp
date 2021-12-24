@@ -1317,15 +1317,27 @@ DocumentObject::resolveRelativeLink(std::string &subname,
                                     bool flatten) const
 {
     if(!link || !link->getNameInDocument() || !getNameInDocument())
-        return 0;
+        return nullptr;
 
     std::vector<int> mysubs;
     std::vector<int> linksubs;
     auto myobjs = getSubObjectList(subname.c_str(), &mysubs, flatten);
     auto linkobjs = link->getSubObjectList(linkSub.c_str(), &linksubs, flatten);
+    if (myobjs.empty() || linkobjs.empty())
+        return nullptr;
 
     auto itself = myobjs.begin();
     auto itlink = linkobjs.begin();
+
+    auto it = std::find(linkobjs.begin(), linkobjs.end(), *itself);
+    if (it != linkobjs.end())
+        itlink = it;
+    else {
+        it = std::find(myobjs.begin(), myobjs.end(), *itlink);
+        if (it != myobjs.end())
+            itself = it;
+    }
+
     while(true) {
         if (itlink == linkobjs.end())
             return nullptr;
@@ -1341,17 +1353,13 @@ DocumentObject::resolveRelativeLink(std::string &subname,
         ++itlink;
     }
 
-    if (itself == myobjs.begin()) {
-        auto it = std::find(linkobjs.begin(), linkobjs.end(), *itself);
-        if (it != linkobjs.end()) {
-            itlink = it + 1;
-        } else {
-            it = std::find(myobjs.begin(), myobjs.end(), *itlink);
-            if (it != myobjs.end()) {
-                itself = it;
-                ++itlink;
-            }
-        }
+    if (itself == myobjs.begin() && itlink == linkobjs.begin()) {
+        // This function is meant to return the first non-common parent of this
+        // object.  If no common parents found, return the immediate parent of
+        // this object, or the object itself if no parents.
+        itself = myobjs.end() - 1;
+        if (myobjs.size() > 1)
+            --itself;
     }
 
     if (itlink == linkobjs.end())
