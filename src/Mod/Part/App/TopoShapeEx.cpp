@@ -4673,7 +4673,7 @@ bool TopoShape::getRotation(Base::Rotation& rot) const
         if (edgecount == 0)
             return false;
         if (edgecount == 1 && isLinearEdge()) {
-            if (std::unique_ptr<Geometry> geo = Geometry::fromShape(getShape())) {
+            if (std::unique_ptr<Geometry> geo = Geometry::fromShape(getSubShape(TopAbs_EDGE, 1))) {
                 std::unique_ptr<GeomLine> gline(static_cast<GeomCurve*>(geo.get())->toLine());
                 if (gline) {
                     rot = Base::Rotation(Base::Vector3d(0,0,1), gline->getDir());
@@ -4682,7 +4682,7 @@ bool TopoShape::getRotation(Base::Rotation& rot) const
             }
         }
     } else if (facecount == 1) {
-        if (std::unique_ptr<Geometry> geo = Geometry::fromShape(getShape())) {
+        if (std::unique_ptr<Geometry> geo = Geometry::fromShape(getSubShape(TopAbs_FACE, 1))) {
             if (geo->isDerivedFrom(GeomElementarySurface::getClassTypeId())) {
                 auto dir = static_cast<GeomElementarySurface*>(geo.get())->getDir();
                 auto xdir = static_cast<GeomElementarySurface*>(geo.get())->getXDir();
