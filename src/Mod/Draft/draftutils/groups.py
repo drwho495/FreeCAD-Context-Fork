@@ -262,7 +262,7 @@ def get_group_contents(objectslist,
                     else:
                         children = obj.Group
 
-            if not children:
+            if not addgroups and not children:
                 subs = obj.getSubObjects()
                 for sub in subs:
                     if obj is not item:
