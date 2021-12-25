@@ -177,17 +177,26 @@ colors: color dictionary of type elementName:(r,g,b,a)
 			</Documentation>
 		</Methode>
         <Methode Name="getDetailPath" Const="true">
-			<Documentation>
-                <UserDocu>
-                    getDetailPath(subname,path,append=True): return Coin detail and path of an subelement
-
-                    subelement: dot separated string reference to the sub element
-                    pPath: output coin path leading to the returned element detail
-                    append: If true, path will be first appended with the root node and the mode 
-                    switch node of this view provider. 
-                </UserDocu>
-			</Documentation>
-		</Methode>
+            <Documentation>
+                <UserDocu>return Coin detail and path of an subelement
+getDetailPath(subname,path,append=True)
+--
+subname: dot separated string reference to the sub element
+pPath: output coin path leading to the returned element detail
+append: If true, path will be first appended with the root node and the mode
+switch node of this view provider.
+</UserDocu>
+            </Documentation>
+        </Methode>
+        <Methode Name="getDetailPathNode" Const="true">
+            <Documentation>
+                <UserDocu>return a Coin node that encapsulates all node along the path of the given subname
+getDetailPathNode(subname)
+--
+subname: dot separated string reference to the sub element
+</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="signalChangeIcon" Const="true">
 			<Documentation>
                 <UserDocu>Trigger icon changed signal</UserDocu>

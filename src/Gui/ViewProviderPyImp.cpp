@@ -39,6 +39,8 @@
 #include "ViewProvider.h"
 #include "WidgetFactory.h"
 #include "SoFCSelectionAction.h"
+#include "SoFCUnifiedSelection.h"
+#include "PythonWrapper.h"
 
 #include <Base/BoundBoxPy.h>
 
@@ -584,6 +586,24 @@ PyObject* ViewProviderPy::getDetailPath(PyObject* args)
     if(!det)
         return Py::new_reference_to(Py::True());
     return Base::Interpreter().createSWIGPointerObj("pivy.coin", "_p_SoDetail", (void*)det, 0);
+}
+
+PyObject* ViewProviderPy::getDetailPathNode(PyObject* args)
+{
+    const char *sub;
+    if (!PyArg_ParseTuple(args, "s", &sub))
+        return NULL;
+    CoinPtr<SoPath> path(new SoPath(10));
+    SoDetail *det = nullptr;
+    bool res = getViewProviderPtr()->getDetailPath(
+            sub,static_cast<SoFullPath*>(path.get()),true,det);
+    delete det;
+    if (!res)
+        Py_Return;
+    SoFCPathAnnotation *node = new SoFCPathAnnotation(getViewProviderPtr(), sub);
+    node->setPath(path);
+    node->ref();
+    return Base::Interpreter().createSWIGPointerObj("pivy.coin", "_p_SoSeparator", (SoSeparator*)node, 1);
 }
 
 PyObject *ViewProviderPy::signalChangeIcon(PyObject *args)
