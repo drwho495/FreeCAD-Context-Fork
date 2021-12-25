@@ -184,7 +184,8 @@ def get_windows(obj):
 
 def get_group_contents(objectslist,
                        walls=False, addgroups=False,
-                       spaces=False, noarchchild=False):
+                       spaces=False, noarchchild=False,
+                       nobodyfeature=True):
     """Return a list of objects from expanding the input groups.
 
     The function accepts any type of object, although it is most useful
@@ -223,6 +224,12 @@ def get_group_contents(objectslist,
         If it is `True`, the objects inside Building and BuildingParts
         (Arch Workbench) aren't added to the output list.
 
+    nobodyfeature: bool, optional
+        It defaults to `True`.
+        If it is `True`, replace any body feature in objectlist with its owner
+        body, because in most cases body feature can't be manipulated like
+        other normal feature.
+
     Returns
     -------
     list
@@ -238,6 +245,30 @@ def get_group_contents(objectslist,
         if isinstance(item, tuple):
             obj = item[0].getSubObject(item[1], retType=1)
         if obj:
+            if nobodyfeature and obj.isDerivedFrom('PartDesign::Feature'):
+                if not isinstance(item, tuple):
+                    group = obj.getParentGeoFeatureGroup()
+                    if group:
+                        newlist.append(group)
+                        continue
+                else:
+                    # if we are given a path, traverse the path instead of relying
+                    # on getParentGeoFeatureGroup() so that it works properly with
+                    # Link
+                    objs = item[0].getSubObjectList(item[1])
+                    obj = objs[-1]
+                    if obj.isDerivedFrom('PartDesign::Feature'):
+                        for i,parent in enumerate(reversed(objs[:-1])):
+                            linked = parent.getLinkedObject()
+                            if linked.isDerivedFrom('PartDesign::Body'):
+                                if linked.hasObject(obj):
+                                    sub = '.'.join([o.Name for o in objs[1:-(i+1)]])
+                                    if sub:
+                                        sub += '.'
+                                    newlist.append((item[0], sub))
+                                    continue
+                            break
+
             children = []
             if (obj.isDerivedFrom("App::DocumentObjectGroup")
                     or (utils.get_type(obj) in ("Building", "BuildingPart",
@@ -272,6 +303,8 @@ def get_group_contents(objectslist,
                         if sobj:
                             children.append(sobj)
             if children:
+                # Note: no need to pass down 'nobodyfeature' option as 'body' is
+                # not consider a group here, and will not be expanded
                 newlist += get_group_contents(children, walls, addgroups)
             elif not newlist or newlist[-1] is not item:
                 # print("adding ", obj.Name)
@@ -290,13 +323,15 @@ def get_group_contents(objectslist,
 
 def getGroupContents(objectslist,
                      walls=False, addgroups=False,
-                     spaces=False, noarchchild=False):
+                     spaces=False, noarchchild=False,
+                     nobodyfeature=True):
     """Return a list of objects from groups. DEPRECATED."""
     utils.use_instead("get_group_contents")
 
     return get_group_contents(objectslist,
                               walls, addgroups,
-                              spaces, noarchchild)
+                              spaces, noarchchild,
+                              nobodyfeature)
 
 
 def get_movable_children(objectslist, recursive=True):

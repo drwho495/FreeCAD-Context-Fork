@@ -87,14 +87,18 @@ class Move(gui_base_original.Modifier):
         """Continue with the command after a selection has been made."""
         if self.call:
             self.view.removeEventCallback("SoEvent", self.call)
-        self.selected_objects = Gui.Selection.getSelection()
-        self.selected_objects = \
-            groups.get_group_contents(self.selected_objects,
-                                      addgroups=True,
-                                      spaces=True,
-                                      noarchchild=True)
-        self.selected_subelements = Gui.Selection.getSelectionEx()
-        self.ui.lineUi(self.name)
+        sels = []
+        for sel in Gui.Selection.getSelectionEx('', 0):
+            if not sel.SubElementNames:
+                sels.append(sel.Object)
+            for sub in sel.SubElementNames:
+                sels.append((sel.Object, sub))
+        self.selected_objects = groups.get_group_contents(sels,
+                                              addgroups=True,
+                                              spaces=True,
+                                              noarchchild=True)
+        print(self.selected_objects)
+        self.ui.lineUi(title=translate("draft", self.featureName), icon="Draft_Move")
         self.ui.modUi()
         if self.copymode:
             self.ui.isCopy.setChecked(True)
@@ -182,11 +186,13 @@ class Move(gui_base_original.Modifier):
         """Set ghost for the subelements."""
         import Part
 
-        for object in self.selected_subelements:
-            for subelement in object.SubObjects:
-                if (isinstance(subelement, Part.Vertex)
-                        or isinstance(subelement, Part.Edge)):
-                    self.ghosts.append(trackers.ghostTracker(subelement))
+        for item in self.selected_objects:
+            if not isinstance(item, tuple):
+                continue;
+            subelement = item[0].getSubObject(item[1]);
+            if (isinstance(subelement, Part.Vertex)
+                    or isinstance(subelement, Part.Edge)):
+                self.ghosts.append(trackers.ghostTracker(subelement))
 
     def move(self):
         """Perform the move of the subelements or the entire object."""
@@ -199,10 +205,10 @@ class Move(gui_base_original.Modifier):
         """Move the subelements."""
         try:
             if self.ui.isCopy.isChecked():
-                self.commit(translate("draft", "Copy"),
+                self.commit(translate("draft", "Copy element"),
                             self.build_copy_subelements_command())
             else:
-                self.commit(translate("draft", "Move"),
+                self.commit(translate("draft", "Move element"),
                             self.build_move_subelements_command())
         except Exception:
             _err(translate("draft", "Some subelements could not be moved."))
@@ -214,14 +220,16 @@ class Move(gui_base_original.Modifier):
         command = []
         arguments = []
         E = len("Edge")
-        for obj in self.selected_subelements:
-            for index, subelement in enumerate(obj.SubObjects):
-                if not isinstance(subelement, Part.Edge):
-                    continue
-                _edge_index = int(obj.SubElementNames[index][E:]) - 1
+        for item in self.selected_objects:
+            if not isinstance(item, tuple):
+                continue
+            sub, _, subelement = Part.splitSubname(item[1])
+            obj = item[0].getSubObject(sub, retType=1)
+            if subelement.startswith('Edge'):
+                _edge_index = int(subelement[E:]) - 1
                 _cmd = '['
-                _cmd += 'FreeCAD.ActiveDocument.'
-                _cmd += obj.ObjectName + ', '
+                _cmd += 'FreeCAD.getDocument("%s").getObject("%s"), ' % \
+                        (obj.Document.Name, obj.Name)
                 _cmd += str(_edge_index) + ', '
                 _cmd += DraftVecUtils.toString(self.vector)
                 _cmd += ']'
@@ -236,41 +244,50 @@ class Move(gui_base_original.Modifier):
         """Build the string to commit to move the subelements."""
         import Part
 
+        Gui.addModule("Draft")
         command = []
         V = len("Vertex")
         E = len("Edge")
-        for obj in self.selected_subelements:
-            for index, subelement in enumerate(obj.SubObjects):
-                if isinstance(subelement, Part.Vertex):
-                    _vertex_index = int(obj.SubElementNames[index][V:]) - 1
-                    _cmd = 'Draft.moveVertex'
-                    _cmd += '('
-                    _cmd += 'FreeCAD.ActiveDocument.'
-                    _cmd += obj.ObjectName + ', '
-                    _cmd += str(_vertex_index) + ', '
-                    _cmd += DraftVecUtils.toString(self.vector)
-                    _cmd += ')'
-                    command.append(_cmd)
-                elif isinstance(subelement, Part.Edge):
-                    _edge_index = int(obj.SubElementNames[index][E:]) - 1
-                    _cmd = 'Draft.moveEdge'
-                    _cmd += '('
-                    _cmd += 'FreeCAD.ActiveDocument.'
-                    _cmd += obj.ObjectName + ', '
-                    _cmd += str(_edge_index) + ', '
-                    _cmd += DraftVecUtils.toString(self.vector)
-                    _cmd += ')'
-                    command.append(_cmd)
+        for item in self.selected_objects:
+            if not isinstance(item, tuple):
+                continue
+            sub, _, subelement = Part.splitSubname(item[1])
+            print('%s, %s' % (sub, subelement))
+            obj = item[0].getSubObject(sub, retType=1)
+            if subelement.startswith('Vertex'):
+                _vertex_index = int(subelement[V:]) - 1
+                _cmd = 'Draft.moveVertex'
+                _cmd += '('
+                _cmd += 'FreeCAD.getDocument("%s").getObject("%s"), ' %\
+                        (obj.Document.Name, obj.Name)
+                _cmd += str(_vertex_index) + ', '
+                _cmd += DraftVecUtils.toString(self.vector)
+                _cmd += ')'
+                command.append(_cmd)
+            elif subelement.startswith('Edge'):
+                _edge_index = int(subelement[E:]) - 1
+                _cmd = 'Draft.moveEdge'
+                _cmd += '('
+                _cmd += 'FreeCAD.getDocument("%s").getObject("%s"), ' %\
+                        (obj.Document.Name, obj.Name)
+                _cmd += str(_edge_index) + ', '
+                _cmd += DraftVecUtils.toString(self.vector)
+                _cmd += ')'
+                command.append(_cmd)
         command.append('FreeCAD.ActiveDocument.recompute()')
         return command
 
     def move_object(self):
         """Move the object."""
-        _doc = 'FreeCAD.ActiveDocument.'
-        _selected = self.selected_objects
+        _selected = []
+        for item  in self.selected_objects:
+            if isinstance(item, tuple):
+                item = item[0].getSubObject(item[1], retType=1)
+            _selected.append(item)
 
         objects = '['
-        objects += ', '.join([_doc + obj.Name for obj in _selected])
+        objects += ', '.join(['FreeCAD.getDocument("%s").getObject("%s")' % \
+            (obj.Document.Name, obj.Name) for obj in _selected])
         objects += ']'
         Gui.addModule("Draft")
 

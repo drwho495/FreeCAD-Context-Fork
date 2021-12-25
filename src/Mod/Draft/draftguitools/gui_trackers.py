@@ -733,12 +733,17 @@ class ghostTracker(Tracker):
     def getNode(self, obj):
         """Return a coin node representing the given object."""
         import Part
+        sub = ''
+        if isinstance(obj, tuple):
+            sub = obj[1]
+            obj = obj[0]
         if isinstance(obj, Part.Shape):
             return self.getNodeLight(obj)
-        elif obj.isDerivedFrom("Part::Feature"):
-            return self.getNodeFull(obj)
-        else:
-            return self.getNodeFull(obj)
+        #  elif obj.isDerivedFrom("Part::Feature"):
+        #      return self.getNodeFull(obj)
+        #  else:
+        #      return self.getNodeFull(obj)
+        return obj.ViewObject.getDetailPathNode(sub)
 
     def getNodeFull(self, obj):
         """Get a coin node which is a copy of the current representation."""
