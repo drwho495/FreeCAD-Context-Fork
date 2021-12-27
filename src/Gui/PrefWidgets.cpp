@@ -110,6 +110,13 @@ PrefWidget::~PrefWidget()
     m_EntryHandle->Detach(this);
 }
 
+void PrefWidget::initAutoSave(bool enable)
+{
+  onRestore();
+  setAutoSave(enable);
+  PrefParam::removeEntry(this);
+}
+
 /** Sets the preference name to \a name. */
 void PrefWidget::setEntryName( const QByteArray& name )
 {

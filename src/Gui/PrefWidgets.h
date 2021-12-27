@@ -111,6 +111,16 @@ public:
 
   virtual void setAutoSave(bool enable) = 0;
 
+  /** Initial auto save
+   *
+   * @param enable: enable auto save
+   *
+   * This is a convenience function that calls onRestore(), and then
+   * setAutoSave(enable), and finally PrefParam::removeEntry() to detach auto
+   * save setting from PrefParam::AutoSave() parameter.
+   */
+  void initAutoSave(bool enable = true);
+
   template<class F, class O>
   void autoSave(bool enable, O *o, F f, int delay=100) {
     if (m_Conn) {
