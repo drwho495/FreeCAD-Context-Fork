@@ -1176,3 +1176,81 @@ bool SoFCCSysDragger::isHiddenRotationZ()
   SoSwitch *sw = SO_GET_ANY_PART(this, "zRotatorSwitch", SoSwitch);
   return (sw->whichChild.getValue() == SO_SWITCH_NONE);
 }
+
+bool SoFCCSysDragger::getMovement(Base::Placement &freshPlacement, bool clear)
+{
+  double pMatrix[16];
+  freshPlacement.toMatrix().getMatrix(pMatrix);
+
+  //local cache for brevity.
+  double translationIncrement = this->translationIncrement.getValue();
+  double rotationIncrement = this->rotationIncrement.getValue();
+  int tCountX = this->translationIncrementCountX.getValue();
+  int tCountY = this->translationIncrementCountY.getValue();
+  int tCountZ = this->translationIncrementCountZ.getValue();
+  int rCountX = this->rotationIncrementCountX.getValue();
+  int rCountY = this->rotationIncrementCountY.getValue();
+  int rCountZ = this->rotationIncrementCountZ.getValue();
+
+  //just as a little sanity check make sure only 1 field has changed.
+  int numberOfFieldChanged = 0;
+  if (tCountX) numberOfFieldChanged++;
+  if (tCountY) numberOfFieldChanged++;
+  if (tCountZ) numberOfFieldChanged++;
+  if (rCountX) numberOfFieldChanged++;
+  if (rCountY) numberOfFieldChanged++;
+  if (rCountZ) numberOfFieldChanged++;
+  if (numberOfFieldChanged == 0)
+    return false;
+
+  // This function is meant to be called in drag finish callback, so it expects
+  // to have only one dragger field changing
+  assert(numberOfFieldChanged == 1);
+
+  //helper lamdas.
+  auto getVectorX = [&pMatrix]() {return Base::Vector3d(pMatrix[0], pMatrix[4], pMatrix[8]);};
+  auto getVectorY = [&pMatrix]() {return Base::Vector3d(pMatrix[1], pMatrix[5], pMatrix[9]);};
+  auto getVectorZ = [&pMatrix]() {return Base::Vector3d(pMatrix[2], pMatrix[6], pMatrix[10]);};
+
+  if (tCountX)
+  {
+    Base::Vector3d movementVector(getVectorX());
+    movementVector *= (tCountX * translationIncrement);
+    freshPlacement.move(movementVector);
+  }
+  else if (tCountY)
+  {
+    Base::Vector3d movementVector(getVectorY());
+    movementVector *= (tCountY * translationIncrement);
+    freshPlacement.move(movementVector);
+  }
+  else if (tCountZ)
+  {
+    Base::Vector3d movementVector(getVectorZ());
+    movementVector *= (tCountZ * translationIncrement);
+    freshPlacement.move(movementVector);
+  }
+  else if (rCountX)
+  {
+    Base::Vector3d rotationVector(getVectorX());
+    Base::Rotation rotation(rotationVector, rCountX * rotationIncrement);
+    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
+  }
+  else if (rCountY)
+  {
+    Base::Vector3d rotationVector(getVectorY());
+    Base::Rotation rotation(rotationVector, rCountY * rotationIncrement);
+    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
+  }
+  else if (rCountZ)
+  {
+    Base::Vector3d rotationVector(getVectorZ());
+    Base::Rotation rotation(rotationVector, rCountZ * rotationIncrement);
+    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
+  }
+
+  if (clear)
+    this->clearIncrementCounts();
+  return true;
+}
+

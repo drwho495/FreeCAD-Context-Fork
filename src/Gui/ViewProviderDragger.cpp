@@ -343,84 +343,11 @@ void ViewProviderDragger::updatePlacementFromDragger(SoFCCSysDragger* draggerIn)
     return;
   App::GeoFeature *geoFeature = static_cast<App::GeoFeature *>(genericObject);
   Base::Placement originalPlacement = geoFeature->Placement.getValue();
-  double pMatrix[16];
   auto offset = this->dragOffset;
   offset.inverse();
-  auto mat = originalPlacement.toMatrix() * offset;
-  mat.getMatrix(pMatrix);
-  Base::Placement freshPlacement = mat;
-
-  //local cache for brevity.
-  double translationIncrement = draggerIn->translationIncrement.getValue();
-  double rotationIncrement = draggerIn->rotationIncrement.getValue();
-  int tCountX = draggerIn->translationIncrementCountX.getValue();
-  int tCountY = draggerIn->translationIncrementCountY.getValue();
-  int tCountZ = draggerIn->translationIncrementCountZ.getValue();
-  int rCountX = draggerIn->rotationIncrementCountX.getValue();
-  int rCountY = draggerIn->rotationIncrementCountY.getValue();
-  int rCountZ = draggerIn->rotationIncrementCountZ.getValue();
-
-  //just as a little sanity check make sure only 1 field has changed.
-  int numberOfFieldChanged = 0;
-  if (tCountX) numberOfFieldChanged++;
-  if (tCountY) numberOfFieldChanged++;
-  if (tCountZ) numberOfFieldChanged++;
-  if (rCountX) numberOfFieldChanged++;
-  if (rCountY) numberOfFieldChanged++;
-  if (rCountZ) numberOfFieldChanged++;
-  if (numberOfFieldChanged == 0)
-    return;
-  assert(numberOfFieldChanged == 1);
-
-  //helper lamdas.
-  auto getVectorX = [&pMatrix]() {return Base::Vector3d(pMatrix[0], pMatrix[4], pMatrix[8]);};
-  auto getVectorY = [&pMatrix]() {return Base::Vector3d(pMatrix[1], pMatrix[5], pMatrix[9]);};
-  auto getVectorZ = [&pMatrix]() {return Base::Vector3d(pMatrix[2], pMatrix[6], pMatrix[10]);};
-
-  if (tCountX)
-  {
-    Base::Vector3d movementVector(getVectorX());
-    movementVector *= (tCountX * translationIncrement);
-    freshPlacement.move(movementVector);
+  Base::Placement freshPlacement = originalPlacement.toMatrix() * offset;
+  if (draggerIn->getMovement(freshPlacement))
     geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-  else if (tCountY)
-  {
-    Base::Vector3d movementVector(getVectorY());
-    movementVector *= (tCountY * translationIncrement);
-    freshPlacement.move(movementVector);
-    geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-  else if (tCountZ)
-  {
-    Base::Vector3d movementVector(getVectorZ());
-    movementVector *= (tCountZ * translationIncrement);
-    freshPlacement.move(movementVector);
-    geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-  else if (rCountX)
-  {
-    Base::Vector3d rotationVector(getVectorX());
-    Base::Rotation rotation(rotationVector, rCountX * rotationIncrement);
-    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
-    geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-  else if (rCountY)
-  {
-    Base::Vector3d rotationVector(getVectorY());
-    Base::Rotation rotation(rotationVector, rCountY * rotationIncrement);
-    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
-    geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-  else if (rCountZ)
-  {
-    Base::Vector3d rotationVector(getVectorZ());
-    Base::Rotation rotation(rotationVector, rCountZ * rotationIncrement);
-    freshPlacement.setRotation(rotation * freshPlacement.getRotation());
-    geoFeature->Placement.setValue(freshPlacement * this->dragOffset);
-  }
-
-  draggerIn->clearIncrementCounts();
 }
 
 void ViewProviderDragger::updateTransform(const Base::Placement& from, SoTransform* to)

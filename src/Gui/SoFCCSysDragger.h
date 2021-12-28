@@ -36,6 +36,11 @@
 
 class SoCamera;
 
+namespace Base
+{
+class Placement;
+}
+
 namespace Gui
 {
 /*! @brief Translation Dragger.
@@ -195,6 +200,18 @@ public:
     SoSFInt32 rotationIncrementCountZ; //!< used from outside for rotation z steps.
 
     void clearIncrementCounts(); //!< used to reset after drag update.
+
+    /** Get movement placement
+     * @param pla: input as the placement before counting increments, output as
+     *             the moved placement with the current inremental count.
+     * @param clear: whether to clear the incremental counter
+     * @return Return whether there is any movement
+     *
+     * Note this function assumes the dragger is moved (or rotated) in only in
+     * one direction. In most use cases, the placement will be recorded in drag
+     * start callback, and call this function in drag finish callback.
+     */
+    bool getMovement(Base::Placement &pla, bool clear = true);
 
     /*! @brief Overall scale of dragger node.
      *
