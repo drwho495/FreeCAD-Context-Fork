@@ -24,6 +24,8 @@
 #ifndef GUI_PREFWIDGETS_H
 #define GUI_PREFWIDGETS_H
 
+#include <boost_signals2.hpp>
+
 #include <memory>
 #include <QVector>
 #include <QCheckBox>
@@ -108,6 +110,8 @@ public:
 
   void restoreSubEntries();
   void saveSubEntries();
+
+  boost::signals2::signal<void (QObject *, const SubEntry *)> signalSubEntryChanged;
 
   virtual void setAutoSave(bool enable) = 0;
 
