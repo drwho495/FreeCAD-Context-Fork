@@ -803,9 +803,19 @@ PropertyStringItem::PropertyStringItem()
 QVariant PropertyStringItem::value(const App::Property* prop) const
 {
     assert(prop && prop->getTypeId().isDerivedFrom(App::PropertyString::getClassTypeId()));
+    const std::string &value = static_cast<const App::PropertyString*>(prop)->getStrValue();
+    if (value.size() < 128)
+        return QString::fromUtf8(value.c_str());
+    return QStringLiteral("%1\n...").arg(QString::fromUtf8(value.c_str(), 128));
+}
 
-    std::string value = static_cast<const App::PropertyString*>(prop)->getValue();
-    return QVariant(QString::fromUtf8(value.c_str()));
+QVariant PropertyStringItem::toolTip(const App::Property* prop) const
+{
+    assert(prop && prop->getTypeId().isDerivedFrom(App::PropertyString::getClassTypeId()));
+    const std::string &value = static_cast<const App::PropertyString*>(prop)->getStrValue();
+    if (value.size() < 2048)
+        return QString::fromUtf8(value.c_str());
+    return QStringLiteral("%1\n...").arg(QString::fromUtf8(value.c_str(), 2048));
 }
 
 void PropertyStringItem::setValue(const QVariant& value)
