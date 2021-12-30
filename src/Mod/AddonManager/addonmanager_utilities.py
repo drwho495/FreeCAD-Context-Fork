@@ -51,7 +51,11 @@ except ImportError:
     pass
 else:
     try:
-        ssl_ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        ca_path = os.environ.get('SSL_CERT_FILE', '')
+        if os.path.exists(ca_path):
+            ssl_ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=ca_path)
+        else:
+            ssl_ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
     except AttributeError:
         pass
 
@@ -126,6 +130,8 @@ def urlopen(url):
     try:
         u = urllib2.urlopen(req, timeout=timeout)
     except Exception:
+        import traceback
+        traceback.print_exc()
         return None
     else:
         return u
