@@ -277,6 +277,8 @@ void SheetTableView::editMode(QAction *action) {
             CellAddress addr(index.row(), index.column());
             auto cell = sheet->getCell(addr);
             if(cell) {
+                if (cell->getEditMode() == (Cell::EditMode)mode)
+                    mode = Cell::EditNormal;
                 Gui::cmdAppObject(sheet, std::ostringstream() << "setEditMode('"
                         << addr.toString() << "', '"
                         << Cell::editModeName((Cell::EditMode)mode) << "')");
