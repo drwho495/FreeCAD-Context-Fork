@@ -115,6 +115,7 @@ public:
     void updateSelection();
     void updateItemSelection(DocumentObjectItem *);
     void sortObjectItems();
+    bool updateOnTopObjects(const MDIView *);
 
     enum SelectionReason {
         SR_SELECT, // only select, no expansion
@@ -4111,6 +4112,8 @@ void TreeWidget::onUpdateStatus(void)
         return;
     }
 
+    bool clearTimer = true;
+
     for(auto &v : DocumentMap) {
         if(v.first->isPerformingTransaction()
                 || v.second->document()->isPerformingTransaction()) {
@@ -4210,7 +4213,9 @@ void TreeWidget::onUpdateStatus(void)
 
         auto doc = v.first->getDocument();
 
+        bool checkOnTop = false;
         if(!docItem->connectChgObject.connected()) {
+            checkOnTop = true;
             docItem->connectChgObject = docItem->document()->signalChangedObject.connect(
                     boost::bind(&TreeWidget::slotChangeObject, this, bp::_1, bp::_2));
             docItem->connectTouchedObject = doc->signalTouchedObject.connect(
@@ -4243,6 +4248,9 @@ void TreeWidget::onUpdateStatus(void)
         }
         docItem->_ExpandInfo.reset();
         docItem->sortObjectItems();
+
+        if (checkOnTop && docItem->updateOnTopObjects(docItem->document()->getActiveView()))
+            clearTimer = false;
     }
 
     if(Selection().hasSelection() && !selectTimer->isActive() && !this->isConnectionBlocked()) {
@@ -4311,7 +4319,8 @@ void TreeWidget::onUpdateStatus(void)
         scrollToItem(errItem);
 
     updateGeometries();
-    statusTimer->stop();
+    if (clearTimer)
+        statusTimer->stop();
 
     FC_LOG("done update status");
 }
@@ -5435,12 +5444,8 @@ DocumentItem::DocumentItem(const Gui::Document* doc, QTreeWidgetItem * parent)
 
     connActivateView = Application::Instance->signalActivateView.connect(
         [this](const MDIView *view) {
-            if (view->getGuiDocument() != document()) return;
-            if (auto view3d = Base::freecad_dynamic_cast<View3DInventor>(view)) {
-                slotOnTopObject(SelectionChanges::ClrSelection, App::SubObjectT());
-                for (auto &objT : view3d->getViewer()->getObjectsOnTop())
-                    slotOnTopObject(SelectionChanges::AddSelection, objT);
-            }
+            if (view->getGuiDocument() == document())
+                updateOnTopObjects(view);
         });
 
     setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable/*|Qt::ItemIsEditable*/);
@@ -5467,6 +5472,19 @@ DocumentItem::~DocumentItem()
     connectRecomputedObj.disconnect();
     connectChangedModified.disconnect();
     connectDetachView.disconnect();
+}
+
+bool DocumentItem::updateOnTopObjects(const MDIView *view)
+{
+    bool res = false;
+    if (auto view3d = Base::freecad_dynamic_cast<View3DInventor>(view)) {
+        slotOnTopObject(SelectionChanges::ClrSelection, App::SubObjectT());
+        for (auto &objT : view3d->getViewer()->getObjectsOnTop()) {
+            slotOnTopObject(SelectionChanges::AddSelection, objT);
+            res = true;
+        }
+    }
+    return res;
 }
 
 TreeWidget *DocumentItem::getTree() const{

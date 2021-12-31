@@ -159,9 +159,27 @@ struct DocumentP
     Connection connectPurgeTouchedObject;
     Connection connectChangePropertyEditor;
     Connection connectChanged;
+    Connection connectStartSave;
 
     typedef boost::signals2::shared_connection_block ConnectionBlock;
     ConnectionBlock connectActObjectBlocker;
+
+    App::PropertyStringList * getOnTopProperty(App::Document *doc) {
+        try {
+            if (!doc)
+                return nullptr;
+            auto prop = doc->getPropertyByName("OnTopObjects");
+            if (!prop || !prop->isDerivedFrom(App::PropertyStringList::getClassTypeId())) {
+                if (prop)
+                    doc->removeDynamicProperty("OnTopObjects");
+                prop = doc->addDynamicProperty("App::PropertyStringList", "OnTopObjects", "Views");
+            }
+            return static_cast<App::PropertyStringList*>(prop);
+        } catch (Base::Exception &e) {
+            e.ReportException();
+        }
+        return nullptr;
+    }
 };
 
 } // namespace Gui
@@ -252,6 +270,26 @@ Document::Document(App::Document* pcDocument,Application * app)
             }
         });
 
+    d->connectStartSave = pcDocument->signalStartSave.connect(
+        [this](const App::Document &doc, const std::string &) {
+            if (auto prop = d->getOnTopProperty(& const_cast<App::Document&>(doc))) {
+                try {
+                    std::vector<std::string> values;
+                    std::ostringstream ss;
+                    foreachView<View3DInventor>([&](View3DInventor* view) {
+                        for (auto &objT : view->getViewer()->getObjectsOnTop()) {
+                            ss.str("");
+                            ss << view->getID() << ":" << objT.getSubNameNoElement(true);
+                            values.push_back(ss.str());
+                        }
+                    });
+                    prop->setValues(std::move(values));
+                } catch (Base::Exception &e) {
+                    e.ReportException();
+                }
+            }
+        });
+
     // pointer to the python class
     // NOTE: As this Python object doesn't get returned to the interpreter we
     // mustn't increment it (Werner Jan-12-2006)
@@ -295,6 +333,7 @@ Document::~Document()
     d->connectPurgeTouchedObject.disconnect();
     d->connectChangePropertyEditor.disconnect();
     d->connectChanged.disconnect();
+    d->connectStartSave.disconnect();
 
     // e.g. if document gets closed from within a Python command
     d->_isClosing = true;
@@ -1629,8 +1668,22 @@ void Document::slotFinishRestoreDocument(const App::Document& doc)
         while(views.size() < d->_savedViews.size())
             views.push_back(createView(View3DInventor::getClassTypeId()));
 
-        std::map<int,View3DInventor*> viewMap;
         size_t i=0;
+        std::map<int, std::vector<std::pair<std::string,std::string>>> onTopObjs;
+        if (auto prop = d->getOnTopProperty(getDocument())) {
+            for (const auto &path : prop->getValues()) {
+                std::istringstream iss(path);
+                int id = -1;
+                std::string name, subname;
+                char c;
+                if (iss >> id >> c) {
+                    if (std::getline(iss, name, '.') && std::getline(iss, subname, '.'))
+                        onTopObjs[id].emplace_back(std::move(name), std::move(subname));
+                }
+            }
+        }
+
+        std::map<int,View3DInventor*> viewMap;
         for(auto v : views) {
             if(i == d->_savedViews.size())
                 break;
@@ -1639,6 +1692,15 @@ void Document::slotFinishRestoreDocument(const App::Document& doc)
             const char *ppReturn = 0;
             view->onMsg(info.settings.c_str(), &ppReturn);
             viewMap[info.id] = view;
+            auto it = onTopObjs.find(info.id);
+            if (it != onTopObjs.end()) {
+                const char *docName = getDocument()->getName();
+                for (auto &v : it->second) {
+                    view->getViewer()->checkGroupOnTop(SelectionChanges(
+                                SelectionChanges::AddSelection,
+                                docName, v.first.c_str(), v.second.c_str()), true);
+                }
+            }
         }
         i=0;
         for(auto v : views) {
