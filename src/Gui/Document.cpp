@@ -1677,7 +1677,7 @@ void Document::slotFinishRestoreDocument(const App::Document& doc)
                 std::string name, subname;
                 char c;
                 if (iss >> id >> c) {
-                    if (std::getline(iss, name, '.') && std::getline(iss, subname, '.'))
+                    if (std::getline(iss, name, '.') && std::getline(iss, subname))
                         onTopObjs[id].emplace_back(std::move(name), std::move(subname));
                 }
             }
