@@ -82,6 +82,7 @@ GuiExport bool isTreeViewDragging();
 GuiExport int isTreeViewDropping();
 GuiExport void setTreeViewFocus();
 GuiExport const QByteArray &treeVisibilityIconTag();
+GuiExport const QByteArray &treeUnselectableIconTag();
 GuiExport const QByteArray &treeMainIconTag();
 GuiExport const QByteArray &treeNoIconTag();
 

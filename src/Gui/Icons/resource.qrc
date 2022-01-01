@@ -105,6 +105,7 @@
         <file>TreeItemVisibleOnTop.svg</file>
         <file>TreeItemInvisible.svg</file>
         <file>TreeItemInvisibleOnTop.svg</file>
+        <file>TreeItemUnselectable.svg</file>
         <file>sel-back.svg</file>
         <file>sel-forward.svg</file>
         <file>sel-up.svg</file>

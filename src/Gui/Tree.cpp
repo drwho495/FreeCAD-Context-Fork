@@ -2346,6 +2346,12 @@ const QByteArray &treeVisibilityIconTag()
     return _tag;
 }
 
+const QByteArray &treeUnselectableIconTag()
+{
+    static QByteArray _tag("tree:unsel");
+    return _tag;
+}
+
 const QByteArray &treeMainIconTag()
 {
     static QByteArray _tag("tree:icon");
@@ -2608,8 +2614,12 @@ void TreeWidget::onToolTipTimer()
             info = QApplication::translate(Obj->getTypeId().getName(), Obj->getStatusString());
         else {
             info = item->object()->getToolTip(tag);
-            if (info.isEmpty() && !Obj->Label2.getStrValue().empty())
-                info = QString::fromUtf8(Obj->Label2.getValue());
+            if (info.isEmpty()) {
+                if (tag == treeUnselectableIconTag())
+                    info = QObject::tr("This object is unselectable. Click to re-enable selection");
+                else if (!Obj->Label2.getStrValue().empty())
+                    info = QString::fromUtf8(Obj->Label2.getValue());
+            }
         }
     }
 
@@ -2802,7 +2812,10 @@ void TreeWidget::mousePressEvent(QMouseEvent *event) {
     auto oitem = pimpl->itemHitTest(event->pos(), &tag);
     if (oitem) {
         setCurrentItem(oitem, 0, QItemSelectionModel::NoUpdate);
-        if ((event->modifiers() & Qt::AltModifier) || tag == treeVisibilityIconTag()) {
+        if ((event->modifiers() & Qt::AltModifier)
+                || tag == treeVisibilityIconTag()
+                || tag == treeUnselectableIconTag())
+        {
             ViewProviderDocumentObject* vp = oitem->object();
             auto editDoc = Application::Instance->editDocument();
             App::AutoTransaction committer("Item clicked", true);
@@ -2833,6 +2846,14 @@ void TreeWidget::mousePressEvent(QMouseEvent *event) {
                     pimpl->toggleItemShowOnTop(oitem);
                 else
                     pimpl->toggleItemVisibility(oitem);
+                pimpl->skipMouseRelease = true;
+                event->setAccepted(true);
+                return;
+            }
+        }
+        else if (tag == Gui::treeUnselectableIconTag()) {
+            if (event->button() == Qt::LeftButton) {
+                oitem->object()->Selectable.setValue(true);
                 pimpl->skipMouseRelease = true;
                 event->setAccepted(true);
                 return;
@@ -4008,6 +4029,10 @@ void TreeWidget::slotChangedViewObject(const Gui::ViewProvider& vp, const App::P
                 }
             }
         }
+        else if (&prop == &vpd.Selectable) {
+            // ChangedObjects.insert(std::make_pair(vpd.getObject(),0));
+            _updateStatus();
+        }
     }
 }
 
@@ -4967,6 +4992,7 @@ enum ItemStatus {
     ItemStatusHidden = 16,
     ItemStatusExternal = 32,
     ItemStatusShowOnTop = 64,
+    ItemStatusUnSelectable = 128,
 };
 
 static QIcon getItemIcon(int currentStatus,
@@ -7223,6 +7249,9 @@ void DocumentObjectItem::testItemStatus(bool resetStatus)
     if (showOnTop.getObjectName().size())
         currentStatus |= ItemStatusShowOnTop;
 
+    if (!object()->Selectable.getValue())
+        currentStatus |= ItemStatusUnSelectable;
+
     TimingStop(testStatus2);
 
     if (!resetStatus && previousStatus==currentStatus)
@@ -7242,8 +7271,8 @@ void DocumentObjectItem::testItemStatus(bool resetStatus)
         myData->iconStatus = iconStatus;
         myData->icon1 = QIcon();
         myData->icon2 = QIcon();
-        icon = getItemIcon(currentStatus, object(),
-                myData->iconInfo.empty() ? &myData->iconInfo : nullptr);
+        myData->iconInfo.clear();
+        icon = getItemIcon(currentStatus, object(), &myData->iconInfo);
     }
     _Timing(2,setIcon);
     this->setIcon(0, icon);
@@ -7370,6 +7399,14 @@ static QIcon getItemIcon(int currentStatus,
             pixmap = (currentStatus & ItemStatusVisible) ? &pxVisible : &pxInvisible;
         }
         icons.emplace_back(Gui::treeVisibilityIconTag(), *pixmap);
+
+        if (currentStatus & ItemStatusUnSelectable) {
+            static QPixmap pixmap;
+            if (pixmap.isNull())
+                pixmap = BitmapFactory().pixmap("TreeItemUnselectable.svg");
+            icons.emplace_back(Gui::treeUnselectableIconTag(), pixmap);
+        }
+
         icons.emplace_back(Gui::treeMainIconTag(), pxOn);
         vp->getExtraIcons(icons);
 
