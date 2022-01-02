@@ -56,7 +56,7 @@ public:
 protected:
     Gui::ViewProviderDocumentObject * getWrappedView() const;
     virtual void updateAddSubShapeIndicator() override;
-    virtual PartGui::ViewProviderPart * getAddSubView() override;
+    virtual PartGui::ViewProviderPartExt * getAddSubView() override;
     virtual void setAddSubColor(const App::Color &color, float t) override;
 
 private:

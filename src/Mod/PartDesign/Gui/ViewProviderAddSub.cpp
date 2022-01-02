@@ -83,7 +83,7 @@ void ViewProviderAddSub::attach(App::DocumentObject* obj) {
     addDisplayMaskMode(previewGroup, "Shape preview");
 }
 
-PartGui::ViewProviderPart * ViewProviderAddSub::getAddSubView()
+PartGui::ViewProviderPartExt * ViewProviderAddSub::getAddSubView()
 {
     if (pAddSubView)
         return pAddSubView.get();

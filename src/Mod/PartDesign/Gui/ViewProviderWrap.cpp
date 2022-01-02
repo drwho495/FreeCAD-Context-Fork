@@ -166,12 +166,12 @@ void ViewProviderWrap::updateAddSubShapeIndicator()
 {
 }
 
-PartGui::ViewProviderPart * ViewProviderWrap::getAddSubView()
+PartGui::ViewProviderPartExt * ViewProviderWrap::getAddSubView()
 {
     auto owner = Base::freecad_dynamic_cast<PartDesign::FeatureWrap>(getObject());
-    PartGui::ViewProviderPart * vp = nullptr;
+    PartGui::ViewProviderPartExt * vp = nullptr;
     if(owner && owner->WrapFeature.getValue())
-        vp = Base::freecad_dynamic_cast<PartGui::ViewProviderPart>(
+        vp = Base::freecad_dynamic_cast<PartGui::ViewProviderPartExt>(
                 Gui::Application::Instance->getViewProvider(
                     owner->WrapFeature.getValue()));
     if (!vp)
