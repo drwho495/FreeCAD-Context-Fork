@@ -164,9 +164,9 @@ void GeomFillSurface::onChanged(const App::Property* prop)
 
 App::DocumentObjectExecReturn *GeomFillSurface::execute(void)
 {
-    try {
-        TopoDS_Wire aWire;
+    TopoDS_Wire aWire;
 
+    try {
         //Gets the healed wire
         if (getWire(aWire)) {
             createBezierSurface(aWire);
@@ -178,6 +178,13 @@ App::DocumentObjectExecReturn *GeomFillSurface::execute(void)
         return App::DocumentObject::StdReturn;
     }
     catch (Standard_ConstructionError&) {
+        if (!aWire.IsNull() && aWire.Closed()) {
+            try {
+                Shape.setValue(BRepBuilderAPI_MakeFace(aWire).Shape());
+                return App::DocumentObject::StdReturn;
+            } catch (Standard_Failure &) {
+            }
+        }
         // message is in a Latin language, show a normal one
         return new App::DocumentObjectExecReturn("Curves are disjoint.");
     }
