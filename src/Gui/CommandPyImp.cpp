@@ -342,6 +342,51 @@ PyObject* CommandPy::getAction(PyObject *args)
     }
 }
 
+PyObject *CommandPy::registerCallback(PyObject *tuple)
+{
+    const char *cmd;
+    PyObject *pyCallback;
+    if (!PyArg_ParseTuple(tuple, "sO", &cmd, &pyCallback))
+        return nullptr;
+    if (!PyCallable_Check(pyCallback)) {
+        PyErr_Format(PyExc_TypeError, "Expect the second argument to be a callable with signature (cmd:string, idx:int) -> int");
+        return nullptr;
+    }
+
+    Py::Callable cb(pyCallback);
+    auto callback = [cb](const char *cmd, int idx) {
+        Base::PyGILStateLocker lock;
+        try {
+            Py::TupleN args(Py::String(cmd?cmd:""), Py::Int(idx));
+            auto ret = cb.apply(args);
+            if (!ret.isNone() && !ret.isTrue())
+                return false;
+        } catch (Py::Exception &) {
+            Base::PyException e;
+            e.ReportException();
+        } catch (Base::Exception &e) {
+            e.ReportException();
+        }
+        return true;
+    };
+
+    PY_TRY {
+        int id = Application::Instance->commandManager().registerCallback(callback, cmd);
+        return Py::new_reference_to(Py::Int(id));
+    } PY_CATCH;
+}
+
+PyObject *CommandPy::unregisterCallback(PyObject *tuple)
+{
+    int id;
+    if (!PyArg_ParseTuple(tuple, "i", &id))
+        return nullptr;
+    PY_TRY {
+        Application::Instance->commandManager().unregisterCallback(id);
+        Py_Return;
+    } PY_CATCH;
+}
+
 PyObject *CommandPy::getCustomAttributes(const char* /*attr*/) const
 {
     return 0;

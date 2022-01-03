@@ -99,5 +99,30 @@ Usage: menuText, tooltipText, whatsThisText, statustipText, pixmapText, shortcut
           <UserDocu>getAction() -> list of QAction</UserDocu>
       </Documentation>
     </Methode>
+    <Methode Name="registerCallback" Static='true'>
+      <Documentation>
+        <UserDocu>Register a callback function to be called before invoking a given command.
+registerCallback(cmd:string, cb:callable) -> int
+
+The function returns an integer that can be used to unregister the callback.
+
+The callback signature is expected to be
+
+        cb(cmd:string, idx:int) -> boolean
+
+where cmd is the given command name, and idx is only meanful for a group command,
+where it gives the index of invoked the sub command
+
+If the callable returns False, then the commnd invocation is aborted
+        </UserDocu>
+      </Documentation>
+    </Methode>
+    <Methode Name="unregisterCallback" Static='true'>
+      <Documentation>
+        <UserDocu>Unregister a command callback function
+unregisterCallback(id:int)
+        </UserDocu>
+      </Documentation>
+    </Methode>
   </PythonExport>
 </GenerateModel>
