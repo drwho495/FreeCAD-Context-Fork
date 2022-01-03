@@ -81,7 +81,12 @@ App::DocumentObjectExecReturn *FeatureCompound::execute(void)
         else
             ++it;
     }
-    Groups.setValues(std::move(groups));
+    if (groups != Groups.getValues())
+        Groups.setValues(std::move(groups));
+    else {
+        // This is to refresh view provider claimedChild used by tree view
+        Groups.touch();
+    }
     
     return App::DocumentObject::StdReturn;
 }
