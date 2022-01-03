@@ -46,6 +46,7 @@ public:
     virtual ~FeatureCompound();
 
     App::PropertyLinkList     Group;
+    App::PropertyLinkList     Groups;
     App::PropertyBool         UsePlacements;
 
     /// returns the type name of the ViewProvider

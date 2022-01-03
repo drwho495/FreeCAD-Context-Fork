@@ -26,6 +26,7 @@
 #ifndef _PreComp_
 #endif
 
+#include <App/DocumentObjectGroup.h>
 #include <Gui/Control.h>
 #include <Gui/BitmapFactory.h>
 
@@ -55,9 +56,32 @@ void ViewProviderPathCompound::unsetEdit(int ModNum)
     Gui::Control().closeDialog();
 }
 
+static void getObjectsInGroup(App::DocumentObject *obj, std::set<App::DocumentObject*> &objs)
+{
+    if (auto grp = Base::freecad_dynamic_cast<App::DocumentObjectGroup>(obj)) {
+        for (auto obj : grp->Group.getValues()) {
+            if (objs.insert(obj).second)
+                getObjectsInGroup(obj, objs);
+        }
+    }
+}
+
 std::vector<App::DocumentObject*> ViewProviderPathCompound::claimChildren(void)const
 {
-    return std::vector<App::DocumentObject*>(static_cast<Path::FeatureCompound *>(getObject())->Group.getValues());
+    auto feat = static_cast<Path::FeatureCompound *>(getObject());
+    auto res = feat->Group.getValues();
+    std::set<App::DocumentObject *> objs;
+    const auto &groups = feat->Groups.getValues();
+    for (auto obj : groups)
+        getObjectsInGroup(obj, objs);
+    for (auto it = res.begin(); it != res.end();) {
+        if (objs.count(*it))
+            it = res.erase(it);
+        else
+            ++it;
+    }
+    res.insert(res.end(), groups.begin(), groups.end());
+    return res;
 }
 
 bool ViewProviderPathCompound::canDragObjects() const
@@ -75,14 +99,42 @@ bool ViewProviderPathCompound::canDropObjects() const
     return true;
 }
 
+bool ViewProviderPathCompound::canDropObject(App::DocumentObject* obj) const
+{
+    return obj->isDerivedFrom(App::DocumentObjectGroup::getClassTypeId());
+}
+
 void ViewProviderPathCompound::dropObject(App::DocumentObject* obj)
 {
-    static_cast<Path::FeatureCompound *>(getObject())->addObject(obj);
+    auto feat = static_cast<Path::FeatureCompound *>(getObject());
+    if (obj->isDerivedFrom(App::DocumentObjectGroup::getClassTypeId())
+            && !feat->Groups.find(obj->getNameInDocument()))
+    {
+        auto groups = feat->Groups.getValues();
+        groups.push_back(obj);
+        feat->Groups.setValues(std::move(groups));
+    }
 }
 
 QIcon ViewProviderPathCompound::getIcon() const
 {
     return Gui::BitmapFactory().pixmap("Path_Compound");
+}
+
+bool ViewProviderPathCompound::canReorderObject(App::DocumentObject* obj,
+                                                App::DocumentObject* before)
+{
+    auto feat = static_cast<Path::FeatureCompound *>(getObject());
+    return canReorderObjectInProperty(&feat->Group, obj, before)
+        || canReorderObjectInProperty(&feat->Groups, obj, before);
+}
+
+bool ViewProviderPathCompound::reorderObjects(const std::vector<App::DocumentObject*> &objs,
+                                              App::DocumentObject* before)
+{
+    auto feat = static_cast<Path::FeatureCompound *>(getObject());
+    return reorderObjectsInProperty(&feat->Group, objs, before)
+        || reorderObjectsInProperty(&feat->Groups, objs, before);
 }
 
 // Python object -----------------------------------------------------------------------

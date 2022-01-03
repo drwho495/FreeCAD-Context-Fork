@@ -31,6 +31,7 @@
 #include "Path.h"
 #include "FeaturePathCompoundPy.h"
 #include <App/FeaturePythonPyImp.h>
+#include <App/GroupExtension.h>
 
 using namespace Path;
 using namespace App;
@@ -41,6 +42,7 @@ PROPERTY_SOURCE(Path::FeatureCompound, Path::Feature)
 FeatureCompound::FeatureCompound()
 {
     ADD_PROPERTY_TYPE( Group,         (0),   "Base",Prop_None,"Ordered list of paths to combine");
+    ADD_PROPERTY_TYPE( Groups,        (0),   "Base",Prop_None,"Groups of paths for better organization");
     ADD_PROPERTY_TYPE( UsePlacements, (false), "Base",Prop_None,"Specifies if the placements of children must be computed");
 }
 
@@ -71,6 +73,15 @@ App::DocumentObjectExecReturn *FeatureCompound::execute(void)
 
     result.setCenter(Path.getValue().getCenter());
     Path.setValue(result);
+
+    auto groups = Groups.getValues();
+    for (auto it = groups.begin(); it != groups.end();) {
+        if (App::GroupExtension::getGroupOfObject(*it))
+            it = groups.erase(it);
+        else
+            ++it;
+    }
+    Groups.setValues(std::move(groups));
     
     return App::DocumentObject::StdReturn;
 }

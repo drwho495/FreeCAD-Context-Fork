@@ -39,7 +39,10 @@ public:
     virtual bool canDragObjects() const;
     virtual void dragObject(App::DocumentObject*);
     virtual bool canDropObjects() const;
+    virtual bool canDropObject(App::DocumentObject* obj) const;
     virtual void dropObject(App::DocumentObject*);
+    virtual bool canReorderObject(App::DocumentObject* obj, App::DocumentObject* before);
+    virtual bool reorderObjects(const std::vector<App::DocumentObject*> &objs, App::DocumentObject* before);
     QIcon getIcon(void) const;
 
 protected:

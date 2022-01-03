@@ -213,6 +213,32 @@ class PathWorkbench (Workbench):
         if menuAppended:
             self.appendContextMenu("", "Separator")
 
+def create_group(_cmd, _idx):
+    job = None
+    sels = FreeCADGui.Selection.getSelection()
+    from PathScripts import PathUtils, PathOp
+    for sel in sels:
+        if not isinstance(getattr(sel, 'Proxy', None), PathOp.ObjectOp):
+            return
+        try:
+            parent = PathUtils.findParentJob(sel)
+        except Exception:
+            return
+        if not parent:
+            return
+        if not job:
+            job = parent
+        elif job != parent:
+            return
+    if not job:
+        return
+    group = job.Document.addObject('App::DocumentObjectGroup', 'Group')
+    group.addObjects(sels)
+    job.Operations.Groups += [group]
+    FreeCAD.ActiveDocument.recompute()
+    return False
+
+FreeCADGui.Command.registerCallback('Std_Group', create_group)
 
 Gui.addWorkbench(PathWorkbench())
 
