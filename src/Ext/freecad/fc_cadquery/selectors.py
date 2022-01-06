@@ -21,9 +21,15 @@ import re
 import math
 from . import Vector,Edge,Vertex,Face,Solid,Shell,Compound
 from collections import defaultdict
-from pyparsing import Literal,Word,nums,Optional,Combine,oneOf,upcaseTokens,\
+from pyparsing import Literal,Word,nums,Optional,Combine,oneOf,\
                       CaselessLiteral,Group,infixNotation,opAssoc,Forward,\
                       ZeroOrMore,Keyword
+try:
+    from pyparsing import upcaseTokens
+except ImportError:
+    import pyparsing
+    upcaseTokens = pyparsing.pyparsing_common.upcaseTokens
+
 from functools import reduce
 
 
