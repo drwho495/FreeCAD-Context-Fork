@@ -173,6 +173,7 @@ static bool _FlushingProps;
 // the same object is not kept, but there is some ordering of changes between
 // different objects
 static std::unordered_map<Property*, int> _PendingProps;
+static std::set<std::string> _TransactionDocs;
 static int _PendingPropIndex;
 
 TransactionGuard::TransactionGuard(bool undo)
@@ -203,16 +204,6 @@ TransactionGuard::~TransactionGuard()
             return a.second < b.second;
         });
 
-    std::vector<App::Document*> docs;
-    std::set<App::Document*> docSet;
-    for(auto &v : props) {
-        auto container = v.first->getContainer();
-        if (!container) continue;
-        auto doc = container->getOwnerDocument();
-        if (doc && docSet.insert(doc).second)
-            docs.push_back(doc);
-    }
-
     std::string errMsg;
     for(auto &v : props) {
         auto prop = v.first;
@@ -241,12 +232,16 @@ TransactionGuard::~TransactionGuard()
 
     try {
         if(undo) {
-            for (auto doc : docs)
-                doc->signalUndo(*doc);
+            for (auto &docName : _TransactionDocs) {
+                if (auto doc = GetApplication().getDocument(docName.c_str()))
+                    doc->signalUndo(*doc);
+            }
             GetApplication().signalUndo();
         } else {
-            for (auto doc : docs)
-                doc->signalRedo(*doc);
+            for (auto &docName : _TransactionDocs) {
+                if (auto doc = GetApplication().getDocument(docName.c_str()))
+                    doc->signalRedo(*doc);
+            }
             GetApplication().signalRedo();
         }
     } catch(Base::Exception &e) {
@@ -259,6 +254,7 @@ TransactionGuard::~TransactionGuard()
         FC_ERR("Exception on " << (undo?"undo: ":"redo: ") << errMsg);
         errMsg.clear();
     }
+    _TransactionDocs.clear();
 }
 
 
@@ -297,6 +293,8 @@ void Transaction::apply(Document &Doc, bool forward)
 {
     std::string errMsg;
     try {
+        if (_TransactionActive && !_FlushingProps)
+            _TransactionDocs.insert(Doc.getName());
         auto &index = _Objects.get<0>();
         for(auto &info : index) 
             info.second->applyDel(Doc, const_cast<TransactionalObject*>(info.first));
