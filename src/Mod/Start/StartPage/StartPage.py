@@ -329,7 +329,7 @@ def buildCard(filename,method,arg=None):
             cacheheader = '<!--%s-->' % getLocalTime(s.st_mtime)
             cachename = '{}/{}.html'.format(tempfolder,sha)
             if os.path.exists(cachename):
-                with open(cachename, 'r', encoding='utf-8') as f:
+                def readfile(f):
                     result = f.read()
                     if isinstance(result, bytes):
                         result = result.decode("utf8")
@@ -344,6 +344,18 @@ def buildCard(filename,method,arg=None):
                                 if os.path.exists(result[idx:eidx]):
                                     logger.log('cache hit ', cachename)
                                     return result.replace('$METHOD$', method).replace('$ARG$', arg)
+                try:
+                    with open(cachename, 'r', encoding='utf-8') as f:
+                        res = readfile(f)
+                        if res:
+                            return res
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
+                    with open(cachename, 'r') as f:
+                        res = readfile(f)
+                        if res:
+                            return res
             logger.log('cache miss ', cachename)
 
         result = ""
