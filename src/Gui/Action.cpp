@@ -864,7 +864,9 @@ public:
     int toolbarIconSize() {
         int pixel = hGeneral->GetInt("WorkbenchTabIconSize");
         if (pixel <= 0)
-            pixel = ToolBarManager::getInstance()->toolBarIconSize();
+            pixel = hGeneral->GetInt("ToolbarIconSize");
+        if (pixel <= 0)
+            pixel = 24;
         return pixel;
     }
 
@@ -959,7 +961,8 @@ WorkbenchTabWidget::WorkbenchTabWidget(WorkbenchGroup* wb, QWidget* parent)
                 if (boost::equals(Name, "TabBarShowText") || boost::equals(Name, "ShowTabBar"))
                     timer.start(100);
             } else if (Param == this->group->_pimpl->hGeneral) {
-                if (boost::equals(Name, "ToolbarIconSize"))
+                if (boost::equals(Name, "ToolbarIconSize")
+                        || boost::equals(Name, "WorkbenchTabIconSize"))
                     timer.start(100);
             }
         });

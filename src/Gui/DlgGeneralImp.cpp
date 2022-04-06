@@ -164,6 +164,7 @@ void DlgGeneralImp::saveSettings()
     ui->CmdHistorySize->onSave();
     ui->checkPopUpWindow->onSave();
     ui->toolbarIconSize->onSave();
+    ui->workbenchTabIconSize->onSave();
     ui->StyleSheets->onSave();
     ui->IconSets->onSave();
     ui->OverlayStyleSheets->onSave();
@@ -341,6 +342,8 @@ void DlgGeneralImp::loadSettings()
 
     ui->checkPopUpWindow->setChecked(ViewParams::defaultCheckWidgetPlacementOnRestore());
     ui->checkPopUpWindow->onRestore();
+
+    ui->workbenchTabIconSize->onRestore();
 }
 
 void DlgGeneralImp::changeEvent(QEvent *e)
