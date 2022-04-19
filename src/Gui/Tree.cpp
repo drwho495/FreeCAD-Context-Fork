@@ -2312,47 +2312,50 @@ void TreeWidgetItemDelegate::paint(QPainter *painter,
 
     TreeWidget * tree = static_cast<TreeWidget*>(parent());
     auto style = tree->style();
-    if (index.column() == 0
-            && tree->testAttribute(Qt::WA_NoSystemBackground)
-            && ((opt.state & QStyle::State_Selected)
-                || (opt.backgroundBrush.style() == Qt::NoBrush
-                    && _TreeItemBackground.style() != Qt::NoBrush)))
-    {
-        QRect rect = opt.rect;
-        int width = opt.fontMetrics.boundingRect(opt.text).width()
-            + opt.decorationSize.width() + TreeParams::getItemBackgroundPadding();
-        if (TreeParams::getCheckBoxesSelection()) {
-            width += style->pixelMetric(QStyle::PM_IndicatorWidth)
-                + style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-        }
-        if (width < rect.width())
-            rect.setWidth(width);
-        if (opt.state & QStyle::State_Selected) {
-            opt.rect = rect;
-            opt.rect.setWidth(rect.width() + 5);
-        } else
-            painter->fillRect(rect, _TreeItemBackground);
-    }
 
-    if (!opt.state.testFlag(QStyle::State_Selected)) {
-        bool selGroup = false;
-        auto titem = tree->itemFromIndex(index);
-        if (titem->type() == TreeWidget::ObjectType)
-            selGroup = static_cast<DocumentObjectItem*>(titem)->isSelGroup();
-        else if (titem->type() == TreeWidget::DocumentType)
-            selGroup = static_cast<DocumentItem*>(titem)->isSelGroup();
-        if (selGroup) {
-            QBrush brush;
-            auto color = App::Color((uint32_t)TreeParams::getSelectingGroupColor()).asValue<QColor>();
-            brush = QBrush(color);
-            auto rect = opt.rect;
-            if (opt.backgroundBrush.style() != Qt::NoBrush) {
-                painter->fillRect(rect, opt.backgroundBrush);
-                opt.backgroundBrush = QBrush();
-                auto vrect = tree->visualItemRect(titem);
-                rect.setRight(std::min(rect.right(), vrect.left() + vrect.width()/2));
+    bool trimBG = TreeParams::getHideColumn();
+    QRect rect = opt.rect;
+
+    if (index.column() == 0) {
+        if (tree->testAttribute(Qt::WA_NoSystemBackground)
+                && (trimBG || (opt.backgroundBrush.style() == Qt::NoBrush
+                                && _TreeItemBackground.style() != Qt::NoBrush)))
+        {
+            int width = opt.fontMetrics.boundingRect(opt.text).width()
+                + opt.decorationSize.width() + TreeParams::getItemBackgroundPadding();
+            if (TreeParams::getCheckBoxesSelection()) {
+                width += style->pixelMetric(QStyle::PM_IndicatorWidth)
+                    + style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
             }
-            painter->fillRect(rect, brush);
+            if (width < rect.width())
+                rect.setWidth(width);
+            if (trimBG) {
+                rect.setWidth(rect.width() + 5);
+                opt.rect = rect;
+                if (opt.backgroundBrush.style() == Qt::NoBrush)
+                    painter->fillRect(rect, _TreeItemBackground);
+            } else if (!opt.state.testFlag(QStyle::State_Selected))
+                painter->fillRect(rect, _TreeItemBackground);
+        }
+
+        if (!trimBG || !opt.state.testFlag(QStyle::State_Selected)) {
+            bool selGroup = false;
+            auto titem = tree->itemFromIndex(index);
+            if (titem->type() == TreeWidget::ObjectType)
+                selGroup = static_cast<DocumentObjectItem*>(titem)->isSelGroup();
+            else if (titem->type() == TreeWidget::DocumentType)
+                selGroup = static_cast<DocumentItem*>(titem)->isSelGroup();
+            if (selGroup) {
+                QBrush brush;
+                auto color = App::Color((uint32_t)TreeParams::getSelectingGroupColor()).asValue<QColor>();
+                brush = QBrush(color);
+                if (opt.backgroundBrush.style() != Qt::NoBrush) {
+                    painter->fillRect(rect, opt.backgroundBrush);
+                    opt.backgroundBrush = QBrush();
+                    rect.setRight(rect.left() + rect.width()/2);
+                }
+                painter->fillRect(rect, brush);
+            }
         }
     }
 
