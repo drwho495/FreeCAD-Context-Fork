@@ -122,9 +122,9 @@ void TaskPadParameters::setupUI(bool newObj)
     ui->innerTaperAngleEdit->bind(pcPad->InnerTaperAngle);
     ui->innerTaperAngleEdit2->bind(pcPad->InnerTaperAngleRev);
 
-    ui->XDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string("Direction.x")));
-    ui->YDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string("Direction.y")));
-    ui->ZDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string("Direction.z")));
+    ui->XDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string(".Direction.x")));
+    ui->YDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string(".Direction.y")));
+    ui->ZDirectionEdit->bind(App::ObjectIdentifier::parse(pcPad, std::string(".Direction.z")));
 
     ui->offsetEdit->bind(pcPad->Offset);
 

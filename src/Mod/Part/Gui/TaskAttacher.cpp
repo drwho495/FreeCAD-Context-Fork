@@ -246,13 +246,13 @@ TaskAttacher::TaskAttacher(Gui::ViewProviderDocumentObject *ViewProvider, QWidge
         autoNext = false;
     }
 
-    ui->attachmentOffsetX->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Base.x")));
-    ui->attachmentOffsetY->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Base.y")));
-    ui->attachmentOffsetZ->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Base.z")));
+    ui->attachmentOffsetX->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Base.x")));
+    ui->attachmentOffsetY->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Base.y")));
+    ui->attachmentOffsetZ->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Base.z")));
 
-    ui->attachmentOffsetYaw->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Yaw")));
-    ui->attachmentOffsetPitch->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Pitch")));
-    ui->attachmentOffsetRoll->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Roll")));
+    ui->attachmentOffsetYaw->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Yaw")));
+    ui->attachmentOffsetPitch->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Pitch")));
+    ui->attachmentOffsetRoll->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Roll")));
 
     visibilityAutomation(true);
     updateAttachmentOffsetUI();
@@ -895,13 +895,13 @@ void TaskAttacher::updateAttachmentOffsetUI()
     auto expressions = ViewProvider->getObject()->ExpressionEngine.getExpressions();
     bool bRotationBound = false;
     bRotationBound = bRotationBound ||
-            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Angle"))) != expressions.end();
+            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Angle"))) != expressions.end();
     bRotationBound = bRotationBound ||
-            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Axis.x"))) != expressions.end();
+            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Axis.x"))) != expressions.end();
     bRotationBound = bRotationBound ||
-            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Axis.y"))) != expressions.end();
+            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Axis.y"))) != expressions.end();
     bRotationBound = bRotationBound ||
-            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string("AttachmentOffset.Rotation.Axis.z"))) != expressions.end();
+            expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(),std::string(".AttachmentOffset.Rotation.Axis.z"))) != expressions.end();
 
     ui->attachmentOffsetYaw->setEnabled(!bRotationBound);
     ui->attachmentOffsetPitch->setEnabled(!bRotationBound);
