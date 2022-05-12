@@ -1157,7 +1157,7 @@ void ObjectIdentifier::resolve(ResolveResults &results) const
                 results.resolvedDocumentName = String(results.resolvedDocument->getName(), false, true);
                 results.resolvedDocumentObjectName = String(owner->getNameInDocument(), false, true);
                 results.resolvedDocumentObject = owner->getDocument()->getObject(owner->getNameInDocument());
-                if (results.resolvedDocumentObject && !results.resolvedDocumentObject->testStatus(ObjectStatus::Remove))
+                if (results.resolvedDocumentObject && results.resolvedDocumentObject->testStatus(ObjectStatus::Remove))
                     results.resolvedDocumentObject = nullptr;
                 results.propertyIndex = 0;
                 results.getProperty(*this);
