@@ -1,8 +1,8 @@
 import sys
 from os import sys, path
 
-# import Base/params_utils.py
-sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Base'))
+# import Tools/params_utils.py
+sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Tools'))
 import params_utils
 
 from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat

@@ -20,10 +20,12 @@ def declare_begin(module, header=True):
     header_file = getattr(module, 'HeaderFile', module.ClassName + '.h')
     source_file = getattr(module, 'SourceFile', module.ClassName + '.cpp')
     class_doc = module.ClassDoc
+    signal = getattr(module, 'Signal', False)
 
     if header:
         cog.out(f'''
 #include <Base/Parameter.h>
+{"#include <boost_signals2.hpp>" if signal else ""}
 ''')
 
     cog.out(f'''
@@ -60,6 +62,8 @@ namespace {namespace} {{
  */
 class {namespace}Export {class_name} {{
 public:
+    {"static boost::signals2::signal<void (const char*)> &signalParamChanged();" if signal else ""}
+
     static ParameterGrp::handle getHandle();
 ''')
 
@@ -106,6 +110,7 @@ def define(module, header=True):
     param_path = module.ParamPath
     class_doc = module.ClassDoc
     warning_comment = get_warning_comment(class_name)
+    signal = getattr(module, 'Signal', False)
 
     if header:
         cog.out(f'''
@@ -128,6 +133,8 @@ public:
 
     {warning_comment}
     std::unordered_map<const char *,void(*)({class_name}P*),App::CStringHasher,App::CStringHasher> funcs;
+
+    {"boost::signals2::signal<void (const char*)> signalParamChanged;" if signal else ""}
 ''')
 
     for param in params:
@@ -162,6 +169,7 @@ public:
         if(it == funcs.end())
             return;
         it->second(this);
+        {"signalParamChanged(sReason);" if signal else ""}
     }}
 
 ''')
@@ -198,6 +206,15 @@ public:
 {warning_comment}
 ParameterGrp::handle {class_name}::getHandle() {{
     return instance()->handle;
+}}
+''')
+
+    if signal:
+        cog.out(f'''
+{warning_comment}
+boost::signals2::signal<void (const char*)> &
+{class_name}::signalParamChanged() {{
+    return instance()->signalParamChanged;
 }}
 ''')
 
