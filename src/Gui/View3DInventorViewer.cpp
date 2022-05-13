@@ -3951,7 +3951,25 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
         }
     }
 
-    return box.IsValid();
+    if (!box.IsValid())
+        return false;
+
+    // Coin3D camera seems stuck if zoomed to close because the boundbox is too
+    // small. So, we limit the boundbox size
+    const double minLength = 1e-7;
+    if (std::fabs(box.MinX - box.MaxX) < minLength
+            && std::fabs(box.MinY - box.MaxY) < minLength
+            && std::fabs(box.MinZ - box.MaxZ) < minLength)
+    {
+        const double margin = 0.1;
+        box.MinX -= margin;
+        box.MinY -= margin;
+        box.MinZ -= margin;
+        box.MaxX += margin;
+        box.MaxY += margin;
+        box.MaxZ += margin;
+    }
+    return true;
 }
 
 SoGroup *View3DInventorViewer::getAuxSceneGraph() const
@@ -3966,10 +3984,6 @@ bool View3DInventorViewer::getSceneBoundBox(SbBox3f &box) const {
         return false;
     box.setBounds(fcbox.MinX,fcbox.MinY,fcbox.MinZ,
                   fcbox.MaxX,fcbox.MaxY,fcbox.MaxZ);
-    SbSphere sphere;
-    sphere.circumscribe(box); // why do we need this?
-    if (sphere.getRadius() == 0)
-        return false;
     return true;
 }
 
