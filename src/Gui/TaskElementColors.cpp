@@ -87,10 +87,10 @@ public:
     Private(ViewProviderDocumentObject* vp, const char *element="")
         : ui(new Ui_TaskElementColors()), vp(vp),editElement(element)
     {
-        restoreParam = !App::DocumentParams::ViewObjectTransaction();
+        restoreParam = !App::DocumentParams::getViewObjectTransaction();
         if (restoreParam) {
             App::DocumentParams::setViewObjectTransaction(true);
-            connParam = App::DocumentParams::instance()->signalParamChanged.connect(
+            connParam = App::DocumentParams::signalParamChanged().connect(
                 [this](const char *name) {
                     if (boost::equals(name, "ViewObjectTransaction"))
                         restoreParam = false;

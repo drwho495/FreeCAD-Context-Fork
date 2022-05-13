@@ -1592,7 +1592,7 @@ StdCmdRefresh::StdCmdRefresh()
     // Make it optional to create a transaction for a recompute.
     // The new default behaviour is quite cumbersome in some cases because when
     // undoing the last transaction the manual recompute will clear the redo stack.
-    if (!App::DocumentParams::TransactionOnRecompute())
+    if (!App::DocumentParams::getTransactionOnRecompute())
         eType = eType | NoTransaction;
 }
 
@@ -1600,7 +1600,7 @@ void StdCmdRefresh::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
     if (getActiveGuiDocument()) {
-        App::AutoTransaction trans(App::DocumentParams::TransactionOnRecompute() ? "Recompute" : nullptr);
+        App::AutoTransaction trans(App::DocumentParams::getTransactionOnRecompute() ? "Recompute" : nullptr);
         try {
             doCommand(Doc,"App.activeDocument().recompute(None,True,True)");
         }
@@ -1619,7 +1619,7 @@ void StdCmdRefresh::activated(int iMsg)
 
 bool StdCmdRefresh::isActive(void)
 {
-    if (App::DocumentParams::TransactionOnRecompute())
+    if (App::DocumentParams::getTransactionOnRecompute())
         eType &= ~NoTransaction;
     else
         eType |= NoTransaction;

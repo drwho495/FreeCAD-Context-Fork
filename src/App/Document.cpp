@@ -1210,7 +1210,7 @@ void Document::_checkTransaction(DocumentObject* pcDelObj, const Property *What,
                         if(What->testStatus(Property::NoModify))
                             ignore = true;
                         else if(!Base::freecad_dynamic_cast<Document>(What->getContainer())
-                                && !DocumentParams::ViewObjectTransaction()
+                                && !DocumentParams::getViewObjectTransaction()
                                 && !AutoTransaction::recordViewObjectChange()
                                 && !Base::freecad_dynamic_cast<DocumentObject>(What->getContainer()))
                             ignore = true;
@@ -1614,8 +1614,8 @@ Document::Document(const char *name)
 #endif
 
     std::string CreationDateString = Base::TimeInfo::currentDateTimeString();
-    std::string Author = DocumentParams::prefAuthor();
-    std::string AuthorComp = DocumentParams::prefCompany();
+    std::string Author = DocumentParams::getprefAuthor();
+    std::string AuthorComp = DocumentParams::getprefCompany();
     ADD_PROPERTY_TYPE(Label,("Unnamed"),0,Prop_None,"The name of the document");
     ADD_PROPERTY_TYPE(FileName,(""),0,PropertyType(Prop_Transient|Prop_ReadOnly),"The path to the file where the document is saved to");
     ADD_PROPERTY_TYPE(CreatedBy,(Author.c_str()),0,Prop_None,"The creator of the document");
@@ -1636,7 +1636,7 @@ Document::Document(const char *name)
     ADD_PROPERTY_TYPE(LicenseURL,("http://creativecommons.org/licenses/by/3.0/"),0,Prop_None,"URL to the license text/contract");
 
     // license stuff
-    int licenseId = DocumentParams::prefLicenseType();
+    int licenseId = DocumentParams::getprefLicenseType();
     std::string license;
     std::string licenseUrl;
     switch (licenseId) {
@@ -1681,8 +1681,8 @@ Document::Document(const char *name)
             break;
     }
 
-    if(DocumentParams::prefLicenseUrl().empty())
-        licenseUrl = DocumentParams::prefLicenseUrl();
+    if(DocumentParams::getprefLicenseUrl().empty())
+        licenseUrl = DocumentParams::getprefLicenseUrl();
 
     ADD_PROPERTY_TYPE(License,(license.c_str()),0,Prop_None,"License string of the Item");
     ADD_PROPERTY_TYPE(LicenseURL,(licenseUrl.c_str()),0,Prop_None,"URL to the license text/contract");
@@ -1690,7 +1690,7 @@ Document::Document(const char *name)
                         "Whether to show hidden object items in the tree view");
     ADD_PROPERTY_TYPE(UseHasher,(true), 0,PropertyType(Prop_None), 
                         "Whether to use hasher on topological naming");
-    if(!DocumentParams::UseHasher())
+    if(!DocumentParams::getUseHasher())
         UseHasher.setValue(false);
 
     // this creates and sets 'TransientDir' in onChanged()
@@ -1706,15 +1706,15 @@ Document::Document(const char *name)
             "Preference of storing data as XML.\n"
             "Higher number means stronger preference.\n"
             "Only effective when saving document in directory.");
-    ForceXML.setValue(DocumentParams::ForceXML());
+    ForceXML.setValue(DocumentParams::getForceXML());
     ADD_PROPERTY_TYPE(SplitXML,(true),"Format",Prop_None,
             "Save object data in separate XML file.\n"
             "Only effective when saving document in directory.");
-    SplitXML.setValue(DocumentParams::SplitXML());
+    SplitXML.setValue(DocumentParams::getSplitXML());
     ADD_PROPERTY_TYPE(PreferBinary,(false),"Format",Prop_None,
             "Prefer binary format when saving object data.\n"
             "This can result in smaller file but bad for version control.");
-    PreferBinary.setValue(DocumentParams::PreferBinary());
+    PreferBinary.setValue(DocumentParams::getPreferBinary());
 }
 
 Document::~Document()
@@ -2476,7 +2476,7 @@ static std::string checkFileName(const char *file) {
 
     // Append extension if missing. This option is added for security reason, so
     // that the user won't accidentally overwrite other file that may be critical.
-    if(DocumentParams::CheckExtension())
+    if(DocumentParams::getCheckExtension())
     {
         const char *ext = strrchr(file,'.');
         if(!ext || !boost::iequals(ext+1,"fcstd")) {
@@ -2532,9 +2532,9 @@ bool Document::save (void)
         std::string LastModifiedDateString = Base::TimeInfo::currentDateTimeString();
         LastModifiedDate.setValue(LastModifiedDateString.c_str());
         // set author if needed
-        bool saveAuthor = DocumentParams::prefSetAuthorOnSave();
+        bool saveAuthor = DocumentParams::getprefSetAuthorOnSave();
         if (saveAuthor) {
-            LastModifiedBy.setValue(DocumentParams::prefAuthor().c_str());
+            LastModifiedBy.setValue(DocumentParams::getprefAuthor().c_str());
         }
 
         return saveToFile(FileName.getValue());
@@ -2840,11 +2840,11 @@ bool Document::saveToFile(const char* filename) const
 
     signalStartSave(*this, filename);
 
-    int compression = DocumentParams::CompressionLevel();
+    int compression = DocumentParams::getCompressionLevel();
     compression = Base::clamp<int>(compression, Z_NO_COMPRESSION, Z_BEST_COMPRESSION);
 
     bool archive = !Base::FileInfo(filename).isDir();
-    bool policy = archive?DocumentParams::BackupPolicy():false;
+    bool policy = archive?DocumentParams::getBackupPolicy():false;
 
     std::string _realfile;
     const char *realfile = filename;
@@ -2890,13 +2890,13 @@ bool Document::saveToFile(const char* filename) const
 
     if (policy) {
         // if saving the project data succeeded rename to the actual file name
-        int count_bak = DocumentParams::CountBackupFiles();
-        bool backup = DocumentParams::CreateBackupFiles();
+        int count_bak = DocumentParams::getCountBackupFiles();
+        bool backup = DocumentParams::getCreateBackupFiles();
         if (!backup) {
             count_bak = -1;
         }
-        bool useFCBakExtension = DocumentParams::UseFCBakExtension();
-        std::string	saveBackupDateFormat = DocumentParams::SaveBackupDateFormat();
+        bool useFCBakExtension = DocumentParams::getUseFCBakExtension();
+        std::string	saveBackupDateFormat = DocumentParams::getSaveBackupDateFormat();
 
         BackupPolicy policy;
         if (useFCBakExtension) {
@@ -2933,7 +2933,7 @@ bool Document::saveToFile(const char* filename) const
 
         GetApplication().signalDocumentFilesSaved(*this, filename, files);
 
-        bool remove = DocumentParams::AutoRemoveFile();
+        bool remove = DocumentParams::getAutoRemoveFile();
         std::string path(filename);
         path += "/";
         for(auto &v : files) {
@@ -3853,7 +3853,7 @@ int Document::recompute(const std::vector<App::DocumentObject*> &objs, bool forc
     for(auto obj : topoSortedObjects)
         obj->setStatus(ObjectStatus::PendingRecompute,true);
 
-    bool canAbort = DocumentParams::CanAbortRecompute();
+    bool canAbort = DocumentParams::getCanAbortRecompute();
 
     std::set<App::DocumentObject *> filter;
     size_t idx = 0;
@@ -4175,7 +4175,7 @@ int Document::_recomputeFeature(DocumentObject* Feat)
         returnCode = Feat->ExpressionEngine.execute(PropertyExpressionEngine::ExecuteNonOutput);
         if (returnCode == DocumentObject::StdReturn) {
             bool doRecompute = Feat->isError() || Feat->_enforceRecompute
-                                               || !DocumentParams::OptimizeRecompute()
+                                               || !DocumentParams::getOptimizeRecompute()
                                                || testStatus(Status::Restoring);
             if(!doRecompute) {
                 static unsigned long long mask = (1<<Property::Output)

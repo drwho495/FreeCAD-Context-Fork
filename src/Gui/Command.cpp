@@ -446,12 +446,19 @@ void Command::invoke(int i, TriggerSource trigger)
 #ifdef FC_LOGUSERACTION
     Base::Console().Log("CmdG: %s\n",sName);
 #endif
-    // set the application module type for the macro
-    getGuiApplication()->macroManager()->setModule(sAppModule);
     try {
-        std::unique_ptr<LogDisabler> disabler;
-        if(bCanLog && !_busy)
-            disabler.reset(new LogDisabler);
+        App::AutoTransaction committer(
+                (App::DocumentParams::getViewObjectTransaction()
+                || (eType&NoTransaction)) ? "" : displayText.c_str(), true);
+
+
+        // set the application module type for the macro
+        getGuiApplication()->macroManager()->setModule(sAppModule);
+
+        std::unique_ptr<LogDisabler> logdisabler;
+        if (disablelog)
+            logdisabler.reset(new LogDisabler);
+
         // check if it really works NOW (could be a delay between click deactivation of the button)
         if (isActive()) {
             auto manager = getGuiApplication()->macroManager();

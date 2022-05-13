@@ -285,7 +285,7 @@ void Property::aboutToSetValue(void)
     PropertyCleaner guard(this);
     if (father) {
         if (auto doc = father->getOwnerDocument()) {
-            if(!_old && DocumentParams::OptimizeRecompute()
+            if(!_old && DocumentParams::getOptimizeRecompute()
                      && !doc->testStatus(Document::Restoring))
             {
                 _old.reset(copyBeforeChange());

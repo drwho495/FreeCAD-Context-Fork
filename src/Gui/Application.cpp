@@ -389,7 +389,7 @@ Application::Application(bool GUIenabled)
                     doc->setStatus(App::Document::RecomputeOnRestore, false);
                 }
             }
-            if(docs.empty() || !App::DocumentParams::WarnRecomputeOnRestore())
+            if(docs.empty() || !App::DocumentParams::getWarnRecomputeOnRestore())
                 return;
             WaitCursor wc;
             wc.restoreCursor();

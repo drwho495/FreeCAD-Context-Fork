@@ -709,7 +709,7 @@ std::vector<Document*> Application::openDocuments(const std::vector<std::string>
 
     signalStartOpenDocument();
 
-    _allowPartial = !DocumentParams::NoPartialLoading();
+    _allowPartial = !DocumentParams::getNoPartialLoading();
 
     for (auto &name : filenames)
         _pendingDocs.push_back(name.c_str());
