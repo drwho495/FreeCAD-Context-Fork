@@ -216,11 +216,11 @@ bool Origin::OriginExtension::extensionGetSubObject(DocumentObject *&ret, const 
 
     // mapping of object name to role name
     for (int i=0; i<3; i++) {
-        if (boost::equals(name, Origin::AxisRoles[i])) {
+        if (boost::starts_with(name, Origin::AxisRoles[i])) {
             found = Origin::AxisRoles[i];
             break;
         }
-        if (boost::equals(name, Origin::PlaneRoles[i])) {
+        if (boost::starts_with(name, Origin::PlaneRoles[i])) {
             found = Origin::PlaneRoles[i];
             break;
         }
