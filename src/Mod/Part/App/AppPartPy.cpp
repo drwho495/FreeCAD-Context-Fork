@@ -755,7 +755,7 @@ private:
         pcFeature->Shape.setValue(shape);
         pcFeature->signalMapShapeColors(pcSrcDoc);
         pcFeature->purgeTouched();
-        return Py::None();
+        return Py::asObject(pcFeature->getPyObject());
     }
     Py::Object getFacets(const Py::Tuple& args)
     {
