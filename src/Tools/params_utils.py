@@ -62,9 +62,12 @@ namespace {namespace} {{
  */
 class {namespace}Export {class_name} {{
 public:
-    {"static boost::signals2::signal<void (const char*)> &signalParamChanged();" if signal else ""}
-
     static ParameterGrp::handle getHandle();
+''')
+    if signal:
+        cog.out(f'''
+    static boost::signals2::signal<void (const char*)> &signalParamChanged();
+    static void signalAll();
 ''')
 
     for param in params:
@@ -133,9 +136,21 @@ public:
 
     {warning_comment}
     std::unordered_map<const char *,void(*)({class_name}P*),App::CStringHasher,App::CStringHasher> funcs;
-
-    {"boost::signals2::signal<void (const char*)> signalParamChanged;" if signal else ""}
 ''')
+
+    if signal:
+        cog.out(f'''
+    {warning_comment}
+    boost::signals2::signal<void (const char*)> signalParamChanged;
+
+    {warning_comment}
+    void signalAll()
+    {{''')
+        for param in params:
+            cog.out(f'''
+        signalParamChanged("{param.name}");''')
+        cog.out(f'''
+    }}''')
 
     for param in params:
         cog.out(f'''
@@ -151,7 +166,7 @@ public:
 
     for param in params:
         cog.out(f'''
-        {param.name} = handle->Get{param.Type}("{param.name}", {param.default});
+        {param.name} = {param.getter('handle')};
         funcs["{param.name}"] = &{class_name}P::update{param.name};''')
 
     cog.out(f'''
@@ -179,13 +194,13 @@ public:
             cog.out(f'''
     {warning_comment}
     static void update{param.name}({class_name}P *self) {{
-        self->{param.name} = self->handle->Get{param.Type}("{param.name}", {param.default});
+        self->{param.name} = {param.getter('self->handle')};
     }}''')
         else:
             cog.out(f'''
     {warning_comment}
     static void update{param.name}({class_name}P *self) {{
-        auto v = self->handle->Get{param.Type}("{param.name}", {param.default});
+        auto v = {param.getter('self->handle')};
         if (self->{param.name} != v) {{
             self->{param.name} = v;
             {class_name}::on{param.name}Changed();
@@ -216,6 +231,11 @@ boost::signals2::signal<void (const char*)> &
 {class_name}::signalParamChanged() {{
     return instance()->signalParamChanged;
 }}
+
+{warning_comment}
+void signalAll() {{
+    instance()->signalAll();
+}}
 ''')
 
     for param in params:
@@ -238,7 +258,7 @@ const {param.C_Type} & {class_name}::default{param.name}() {{
 
 {warning_comment}
 void {class_name}::set{param.name}(const {param.C_Type} &v) {{
-    instance()->handle->Set{param.Type}("{param.name}",v);
+    {param.setter()};
     instance()->{param.name} = v;
 }}
 
@@ -521,6 +541,12 @@ class Param:
     def widget_name(self):
         return f'{self.WidgetPrefix}{self.name}'
 
+    def getter(self, handle):
+        return f'{handle}->Get{self.Type}("{self.name}", {self.default})'
+
+    def setter(self):
+        return f'instance()->handle->Set{self.Type}("{self.name}",v)'
+
 class ParamBool(Param):
     Type = 'Bool'
     C_Type = 'bool'
@@ -551,6 +577,23 @@ class ParamString(Param):
     @property
     def default(self):
         return f'"{self._default}"'
+
+class ParamQString(Param):
+    Type = 'ASCII'
+    C_Type = 'QString'
+    WidgetType = 'Gui::PrefLineEdit'
+    WidgetPrefix = 'edit'
+    WidgetSetter = 'setText'
+
+    @property
+    def default(self):
+        return f'QStringLiteral("{self._default}")'
+
+    def getter(self, handle):
+        return f'QString::fromUtf8({handle}->Get{self.Type}("{self.name}", "{self._default}").c_str())'
+
+    def setter(self):
+        return f'instance()->handle->Set{self.Type}("{self.name}",v.toUtf8().constData())'
 
 class ParamInt(Param):
     Type = 'Int'
