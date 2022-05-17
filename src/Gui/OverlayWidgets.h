@@ -100,6 +100,8 @@ public:
 
     void floatDockWidget(QDockWidget *);
 
+    QWidget *getLastMouseInterceptWidget() const;
+
     static OverlayManager * instance();
     static void destruct();
 
