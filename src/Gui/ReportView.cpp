@@ -43,6 +43,8 @@
 #include "MainWindow.h"
 #include "Application.h"
 #include "Tools.h"
+#include "ReportViewParams.h"
+#include "Command.h"
 
 using namespace Gui;
 using namespace Gui::DockWnd;
@@ -217,7 +219,7 @@ class CustomReportEvent : public QEvent
 {
 public:
     CustomReportEvent(ReportHighlighter::Paragraph p, const QString& s)
-    : QEvent(QEvent::Type(QEvent::User))
+    : QEvent(eventType())
     { par = p; msg = s;}
     ~CustomReportEvent()
     { }
@@ -225,6 +227,10 @@ public:
     { return msg; }
     ReportHighlighter::Paragraph messageType() const
     { return par; }
+    static QEvent::Type eventType() {
+        static int _type = QEvent::registerEventType();
+        return static_cast<QEvent::Type>(_type);
+    }
 private:
     ReportHighlighter::Paragraph par;
     QString msg;
@@ -261,79 +267,40 @@ void ReportOutputObserver::showReportView(){
     }
 }
 
-class ReportViewParams: public ParameterGrp::ObserverType {
-public:
-#define REPORT_VIEW_PARAMS \
-    REPORT_VIEW_PARAM(checkShowReportViewOnWarning, true) \
-    REPORT_VIEW_PARAM(checkShowReportViewOnError, true) \
-    REPORT_VIEW_PARAM(checkShowReportViewOnNormalMessage, false) \
-    REPORT_VIEW_PARAM(checkShowReportViewOnLogMessage, false) \
-
-    ReportViewParams() {
-        handle = App::GetApplication().GetParameterGroupByPath(
-                "User parameter:BaseApp/Preferences/OutputWindow");
-#undef REPORT_VIEW_PARAM
-#define REPORT_VIEW_PARAM(_name, _def) _##_name = handle->GetBool(#_name, _def);
-
-        REPORT_VIEW_PARAMS
-        handle->Attach(this);
-    }
-
-    static ReportViewParams *instance() {
-        static ReportViewParams *inst;
-        if(!inst)
-            inst = new ReportViewParams;
-        return inst;
-    }
-
-    void OnChange(Base::Subject<const char*> &, const char* sReason) {
-        if(!sReason)
-            return;
-#undef REPORT_VIEW_PARAM
-#define REPORT_VIEW_PARAM(_name, _def) \
-        if(strcmp(sReason, #_name)==0) {_##_name = handle->GetBool(#_name, _def); return;}
-
-        REPORT_VIEW_PARAMS
-    }
-
-#undef REPORT_VIEW_PARAM
-#define REPORT_VIEW_PARAM(_name, _def) \
-    static  bool _name() {return instance()->_##_name;}
-
-    REPORT_VIEW_PARAMS
-
-private:
-#undef REPORT_VIEW_PARAM
-#define REPORT_VIEW_PARAM(_name, _def) bool _##_name;
-
-    REPORT_VIEW_PARAMS
-
-#undef REPORT_VIEW_PARAM
-#undef REPORT_VIEW_PARAMS
-
-    ParameterGrp::handle handle;
-};
-
 bool ReportOutputObserver::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::User && obj == reportView.data()) {
-        CustomReportEvent* cr = dynamic_cast<CustomReportEvent*>(event);
+    if (event->type() == CustomReportEvent::eventType() && obj == reportView.data()) {
+        CustomReportEvent* cr = static_cast<CustomReportEvent*>(event);
         if (cr) {
+            if (ReportViewParams::getCommandRedirect().size()
+                    && cr->message().startsWith(ReportViewParams::getCommandRedirect()))
+            {
+                auto cmd = cr->message().rightRef(cr->message().size() - ReportViewParams::getCommandRedirect().size()).trimmed();
+                if (cmd.size() && cmd.back() == QLatin1Char('\n'))
+                    cmd = cmd.left(cmd.size()-1);
+                try {
+                    Command::_runCommand(nullptr, 0, Command::Doc, cmd.toUtf8().constData());
+                } catch (Base::Exception &e) {
+                    e.ReportException();
+                }
+                return true;
+            }
+
             switch(cr->messageType()) {
             case ReportHighlighter::Warning:
-                if(ReportViewParams::checkShowReportViewOnWarning())
+                if(ReportViewParams::getcheckShowReportViewOnWarning())
                     showReportView();
                 break;
             case ReportHighlighter::Error:
-                if(ReportViewParams::checkShowReportViewOnError())
+                if(ReportViewParams::getcheckShowReportViewOnError())
                     showReportView();
                 break;
             case ReportHighlighter::Message:
-                if(ReportViewParams::checkShowReportViewOnNormalMessage())
+                if(ReportViewParams::getcheckShowReportViewOnNormalMessage())
                     showReportView();
                 break;
             case ReportHighlighter::LogText:
-                if(ReportViewParams::checkShowReportViewOnLogMessage())
+                if(ReportViewParams::getcheckShowReportViewOnLogMessage())
                     showReportView();
                 break;
             default:
@@ -428,12 +395,6 @@ ReportOutput::ReportOutput(QWidget* parent)
     _prefs->Attach(this);
     _prefs->Notify("FontSize");
 
-#ifdef FC_DEBUG
-    messageSize = _prefs->GetInt("LogMessageSize",16*1024);
-#else
-    messageSize = _prefs->GetInt("LogMessageSize",2048);
-#endif
-
     // scroll to bottom at startup to make sure that last appended text is visible
     ensureCursorVisible();
 }
@@ -478,7 +439,15 @@ void ReportOutput::SendLog(const std::string& msg, Base::LogStyle level)
 
     // This truncates log messages that are too long
     if (style == ReportHighlighter::LogText) {
-        if (messageSize > 0 && qMsg.size()>messageSize) {
+        int messageSize = ReportViewParams::getLogMessageSize();
+        if (messageSize <= 0) {
+#ifdef FC_DEBUG
+            messageSize = 16*1024;
+#else
+            messageSize = 2048;
+#endif
+        }
+        if (qMsg.size()>messageSize) {
             qMsg.truncate(messageSize);
             qMsg += QString::fromLatin1("...\n");
         }
@@ -492,11 +461,11 @@ void ReportOutput::SendLog(const std::string& msg, Base::LogStyle level)
 void ReportOutput::customEvent ( QEvent* ev )
 {
     // Appends the text stored in the event to the text view
-    if ( ev->type() ==  QEvent::User ) {
-        CustomReportEvent* ce = (CustomReportEvent*)ev;
+    if ( ev->type() ==  CustomReportEvent::eventType() ) {
+        CustomReportEvent* ce = static_cast<CustomReportEvent*>(ev);
         reportHl->setParagraphType(ce->messageType());
 
-        bool showTimecode = getWindowParameter()->GetBool("checkShowReportTimecode", true);
+        bool showTimecode = ReportViewParams::getcheckShowReportTimecode();
         QString text = ce->message();
 
         // The time code can only be set when the cursor is at the block start
@@ -522,24 +491,17 @@ void ReportOutput::customEvent ( QEvent* ev )
 void ReportOutput::changeEvent(QEvent *ev)
 {
     if (ev->type() == QEvent::StyleChange) {
-        QPalette pal = palette();
-        QColor color = pal.windowText().color();
-        unsigned int text = (color.red() << 24) | (color.green() << 16) | (color.blue() << 8);
-        unsigned long value = static_cast<unsigned long>(text);
-        // if this parameter is not already set use the style's window text color
-        value = getWindowParameter()->GetUnsigned("colorText", value);
-        getWindowParameter()->SetUnsigned("colorText", value);
+        OnChange(*getWindowParameter(), "colorText");
     }
     QTextEdit::changeEvent(ev);
 }
 
 void ReportOutput::contextMenuEvent ( QContextMenuEvent * e )
 {
-    ParameterGrp::handle hGrp = WindowParameter::getDefaultParameter()->GetGroup("OutputWindow");
-    bool bShowOnLog = hGrp->GetBool("checkShowReportViewOnLogMessage",false);
-    bool bShowOnNormal = hGrp->GetBool("checkShowReportViewOnNormalMessage",false);
-    bool bShowOnWarn = hGrp->GetBool("checkShowReportViewOnWarning",true);
-    bool bShowOnError = hGrp->GetBool("checkShowReportViewOnError",true);
+    bool bShowOnLog = ReportViewParams::getcheckShowReportViewOnLogMessage();
+    bool bShowOnNormal = ReportViewParams::getcheckShowReportViewOnNormalMessage();
+    bool bShowOnWarn = ReportViewParams::getcheckShowReportViewOnWarning();
+    bool bShowOnError = ReportViewParams::getcheckShowReportViewOnError();
 
     QMenu* menu = createStandardContextMenu();
     QAction* first = menu->actions().front();
@@ -674,26 +636,22 @@ void ReportOutput::onToggleNormalMessage()
 
 void ReportOutput::onToggleShowReportViewOnWarning()
 {
-    bool show = getWindowParameter()->GetBool("checkShowReportViewOnWarning", true);
-    getWindowParameter()->SetBool("checkShowReportViewOnWarning", !show);
+    ReportViewParams::setcheckShowReportViewOnWarning(!ReportViewParams::getcheckShowReportViewOnWarning());
 }
 
 void ReportOutput::onToggleShowReportViewOnError()
 {
-    bool show = getWindowParameter()->GetBool("checkShowReportViewOnError", true);
-    getWindowParameter()->SetBool("checkShowReportViewOnError", !show);
+    ReportViewParams::setcheckShowReportViewOnError(!ReportViewParams::getcheckShowReportViewOnError());
 }
 
 void ReportOutput::onToggleShowReportViewOnNormalMessage()
 {
-    bool show = getWindowParameter()->GetBool("checkShowReportViewOnNormalMessage", false);
-    getWindowParameter()->SetBool("checkShowReportViewOnNormalMessage", !show);
+    ReportViewParams::setcheckShowReportViewOnNormalMessage(!ReportViewParams::getcheckShowReportViewOnNormalMessage());
 }
 
 void ReportOutput::onToggleShowReportViewOnLogMessage()
 {
-    bool show = getWindowParameter()->GetBool("checkShowReportViewOnLogMessage", false);
-    getWindowParameter()->SetBool("checkShowReportViewOnLogMessage", !show);
+    ReportViewParams::setcheckShowReportViewOnLogMessage(!ReportViewParams::getcheckShowReportViewOnLogMessage());
 }
 
 void ReportOutput::onToggleRedirectPythonStdout()
@@ -748,6 +706,12 @@ void ReportOutput::OnChange(Base::Subject<const char*> &rCaller, const char * sR
     }
     else if (strcmp(sReason, "colorText") == 0) {
         unsigned long col = rclGrp.GetUnsigned( sReason );
+        if (col == 0) {
+            QPalette pal = palette();
+            QColor color = pal.windowText().color();
+            unsigned int text = (color.red() << 24) | (color.green() << 16) | (color.blue() << 8);
+            col = static_cast<unsigned long>(text);
+        }
         reportHl->setTextColor( QColor( (col >> 24) & 0xff,(col >> 16) & 0xff,(col >> 8) & 0xff) );
     }
     else if (strcmp(sReason, "colorLogging") == 0) {
@@ -788,12 +752,6 @@ void ReportOutput::OnChange(Base::Subject<const char*> &rCaller, const char * sR
         bool checked = rclGrp.GetBool(sReason, true);
         if (checked != d->redirected_stderr)
             onToggleRedirectPythonStderr();
-    }else if(strcmp(sReason, "LogMessageSize") == 0) {
-#ifdef FC_DEBUG
-        messageSize = rclGrp.GetInt(sReason,0);
-#else
-        messageSize = rclGrp.GetInt(sReason,2048);
-#endif
     }
 }
 

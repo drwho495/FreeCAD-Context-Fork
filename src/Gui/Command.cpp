@@ -718,16 +718,12 @@ void Command::printPyCaller() {
     if(!frame)
         return;
     int line = PyFrame_GetLineNumber(frame);
-#if PY_MAJOR_VERSION >= 3
     const char *file = PyUnicode_AsUTF8(frame->f_code->co_filename);
-#else
-    const char *file = PyString_AsString(frame->f_code->co_filename);
-#endif
-    printCaller(file?file:"<no file>",line);
+    printCaller(file, line);
 }
 
 void Command::printCaller(const char *file, int line) {
-    if(!FC_LOG_INSTANCE.isEnabled(FC_LOGLEVEL_LOG))
+    if(!file || !FC_LOG_INSTANCE.isEnabled(FC_LOGLEVEL_LOG))
         return;
     std::ostringstream str;
 #ifdef FC_OS_WIN32
