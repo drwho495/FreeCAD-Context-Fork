@@ -276,7 +276,7 @@ bool ReportOutputObserver::eventFilter(QObject *obj, QEvent *event)
                     && cr->message().startsWith(ReportViewParams::getCommandRedirect()))
             {
                 auto cmd = cr->message().rightRef(cr->message().size() - ReportViewParams::getCommandRedirect().size()).trimmed();
-                if (cmd.size() && cmd.back() == QLatin1Char('\n'))
+                if (cmd.size() && cmd[cmd.size()-1] == QLatin1Char('\n'))
                     cmd = cmd.left(cmd.size()-1);
                 try {
                     Command::_runCommand(nullptr, 0, Command::Doc, cmd.toUtf8().constData());
