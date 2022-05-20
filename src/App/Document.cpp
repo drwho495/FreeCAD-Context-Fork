@@ -4679,9 +4679,7 @@ void Document::_removeObject(DocumentObject* pcObject)
     // remove from map
     pcObject->setStatus(ObjectStatus::Remove, false); // Unset the bit to be on the safe side
     d->objectIdMap.erase(pcObject->_Id);
-    d->objectMap.erase(pos);
     ++d->revision;
-
     for (std::vector<DocumentObject*>::iterator it = d->objectArray.begin(); it != d->objectArray.end(); ++it) {
         if (*it == pcObject) {
             d->objectArray.erase(it);
@@ -4695,6 +4693,12 @@ void Document::_removeObject(DocumentObject* pcObject)
         if (!TransactionGuard::addPendingRemove(pcObject))
             delete pcObject;
     }
+
+    // TransactionGuard::addPendingRemove() will call
+    // DocumentObject::detachDocument() which will access its name in document.
+    // So we have to delay removing object from objectMap, because the name is
+    // stored in the map.
+    d->objectMap.erase(pos);
 }
 
 void Document::breakDependency(DocumentObject* pcObject, bool clear)
