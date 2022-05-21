@@ -25,6 +25,7 @@
 #ifndef APP_DOCUMENTOBJECT_H
 #define APP_DOCUMENTOBJECT_H
 
+#include <QFlags>
 #include <App/TransactionalObject.h>
 #include <App/PropertyStandard.h>
 #include <App/PropertyLinks.h>
@@ -506,6 +507,21 @@ public:
         std::string *childName=0, const char **subElement=0,
         PyObject **pyObj=0, Base::Matrix4D *mat=0, bool transform=true, int depth=0) const;
 
+    /// Option for resolveRelativeLink()
+    enum RelativeLinkOption {
+        /* Whether to flatten the object hierarchies that belong to the same geo
+         * feature group before resolving.  e.g. (Part.Fusion.Box -> Part.Box)
+         */
+        Flatten = 1,
+
+        /* If the link and the object shares no comment parent, return the top
+         * parent of the object. If this option is not set, then return the
+         * immediate parent of the object.
+         */
+        TopParent = 2,
+    };
+    Q_DECLARE_FLAGS(RelativeLinkOptions, RelativeLinkOption);
+
     /** Resolve a link reference that is relative to this object reference
      *
      * @param subname: on input, this is the subname reference to the object
@@ -516,12 +532,13 @@ public:
      * parent.
      * @param linkSub: on input, this the subname of the link reference. On
      * output, it may be offset to be rid off any common parent.
-     * @param flatten: whether to flatten the object hierarchies that belong to
-     *                 the same geo feature group before resolving.
-     *                 e.g. (Part.Fusion.Box -> Part.Box)
+     * @param options: commbined options from RelativeLinkOption
      *
      * @return The corrected top parent of the object that is to be assigned the
      * link. If the output 'subname' is empty, then return the object itself.
+     * In case the object has no shared parent with the link, then return the
+     * immediate parent of the object, or if RelativeLinkOption::TopParent is
+     * set in \c options, then return the top parent of the object
      *
      * To avoid any cyclic reference, an object must not be assign a link to any
      * of the object in its parent. This function can be used to resolve any
@@ -554,7 +571,8 @@ public:
      * The common parent 'Group' is removed.
      */
     App::DocumentObject *resolveRelativeLink(std::string &subname,
-            App::DocumentObject *&link, std::string &linkSub, bool flatten = false) const;
+            App::DocumentObject *&link, std::string &linkSub,
+            RelativeLinkOptions options = RelativeLinkOptions()) const;
 
     /** Called to adjust link properties to avoid cyclic links
      *

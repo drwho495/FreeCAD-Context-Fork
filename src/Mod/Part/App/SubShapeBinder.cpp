@@ -285,9 +285,9 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
         auto res = mats.emplace(obj,Base::Matrix4D());
         if(parent && res.second) {
             std::string resolvedSub = parentSub;
-            std::string linkSub;
+            std::string linkSub = l.getSubName();
             auto link = obj;
-            auto resolved = parent->resolveRelativeLink(resolvedSub,link,linkSub);
+            auto resolved = parent->resolveRelativeLink(resolvedSub,link,linkSub, RelativeLinkOption::TopParent);
             if(!resolved) {
                 if(!link) {
                     FC_WARN(getFullName() << " cannot resolve relative link of "
@@ -1175,7 +1175,7 @@ SubShapeBinder::import(const App::SubObjectT &_feature,
         resolved = feature;
     else {
         std::string linkSub = feature.getSubName();
-        topParent->resolveRelativeLink(subname, link, linkSub, true);
+        topParent->resolveRelativeLink(subname, link, linkSub, RelativeLinkOption::Flatten);
         if (!link)
             FC_THROWM(Base::RuntimeError,
                     "Failed to resolve relative link: "

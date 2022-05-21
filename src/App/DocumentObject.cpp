@@ -1339,10 +1339,13 @@ DocumentObject *
 DocumentObject::resolveRelativeLink(std::string &subname,
                                     DocumentObject *&link,
                                     std::string &linkSub,
-                                    bool flatten) const
+                                    RelativeLinkOptions options) const
 {
     if(!link || !link->getNameInDocument() || !getNameInDocument())
         return nullptr;
+
+    bool flatten = options & RelativeLinkOption::Flatten;
+    bool top = options & RelativeLinkOption::TopParent;
 
     std::vector<int> mysubs;
     std::vector<int> linksubs;
@@ -1378,10 +1381,7 @@ DocumentObject::resolveRelativeLink(std::string &subname,
         ++itlink;
     }
 
-    if (itself == myobjs.begin() && itlink == linkobjs.begin()) {
-        // This function is meant to return the first non-common parent of this
-        // object.  If no common parents found, return the immediate parent of
-        // this object, or the object itself if no parents.
+    if (!top && itself == myobjs.begin() && itlink == linkobjs.begin()) {
         itself = myobjs.end() - 1;
         if (myobjs.size() > 1)
             --itself;
