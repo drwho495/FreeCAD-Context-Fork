@@ -187,6 +187,17 @@ bool PropertyItem::hasAnyExpression() const
     return false;
 }
 
+bool PropertyItem::hasAnyChildExpression() const
+{
+    if(ExpressionBinding::hasExpression(false))
+        return true;
+    for (auto item : childItems) {
+        if (item->hasAnyChildExpression())
+            return true;
+    }
+    return false;
+}
+
 void PropertyItem::setPropertyData(const std::vector<App::Property*>& items)
 {
     //if we have a single property we can bind it for expression handling
@@ -705,8 +716,8 @@ QVariant PropertyItem::data(int column, int role) const
                 QVariant val = parent->property(qPrintable(objectName()));
                 return toString(val);
             } 
-            else if (role == Qt::TextColorRole) {
-                if (hasExpression(false))
+            else if (role == Qt::ForegroundRole) {
+                if (hasAnyChildExpression())
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Link));
                 return QVariant();
             }
@@ -725,8 +736,8 @@ QVariant PropertyItem::data(int column, int role) const
         else if (role == Qt::ToolTipRole) {
             return toolTip(propertyItems[0]);
         }
-        else if( role == Qt::TextColorRole) {
-            if (hasExpression(false))
+        else if( role == Qt::ForegroundRole) {
+            if (hasAnyChildExpression())
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Link));
             return QVariant();
         }
