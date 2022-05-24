@@ -5265,7 +5265,7 @@ void TreeWidget::dropEvent(QDropEvent *event)
                     //make sure it is not part of a geofeaturegroup anymore.
                     //When this has happen we need to handle all removed
                     //objects
-                    auto grp = App::GeoFeatureGroupExtension::getGroupOfObject(obj);
+                    auto grp = App::GeoFeatureGroupExtension::getGroupOfObject(obj, false);
                     if(grp) {
                         FCMD_OBJ_CMD(grp,"removeObject(" << Command::getObjectCmd(obj) << ")");
                     }
@@ -8137,7 +8137,7 @@ App::DocumentObject *DocumentItem::getTopParent(
                 found = true;
         }
         if (!found) {
-            while(auto group = App::GeoFeatureGroupExtension::getGroupOfObject(obj)) {
+            while(auto group = App::GeoFeatureGroupExtension::getGroupOfObject(obj, false)) {
                 if (group->getDocument() != document()->getDocument())
                     break;
                 ss.str("");
@@ -8958,7 +8958,7 @@ int DocumentObjectItem::getSubName(std::ostringstream &str, App::DocumentObject 
     int res = _getSubName(str, topParent);
     if (topParent)
         return res;
-    auto group = App::GeoFeatureGroupExtension::getGroupOfObject(object()->getObject());
+    auto group = App::GeoFeatureGroupExtension::getGroupOfObject(object()->getObject(), false);
     if (!group)
         return res;
     auto it = myOwner->ObjectMap.find(group);
