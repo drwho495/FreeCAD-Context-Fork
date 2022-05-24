@@ -3565,35 +3565,144 @@ TopoShape &TopoShape::makESlice(const TopoShape &shape,
     return makECompound(wires,op,false);
 }
 
-TopoShape &TopoShape::makEFilledFace(const std::vector<TopoShape> &_shapes,
-        const TopoShape &surface, const char *op)
+TopoShape::BRepFillingParams::BRepFillingParams()
+    :degree(3)
+    ,ptsoncurve(15)
+    ,numiter(2)
+    ,anisotropy(Standard_False)
+    ,tol2d(1e-5)
+    ,tol3d(1e-4)
+    ,tolG1(1e-2)
+    ,tolG2(1e-1)
+    ,maxdeg(8)
+    ,maxseg(9)
 {
-    if(!op) op = TOPOP_FILLED_FACE;
-    BRepOffsetAPI_MakeFilling maker;
-    if (!surface.isNull() && surface.getShape().ShapeType() == TopAbs_FACE)
-        maker.LoadInitSurface(TopoDS::Face(surface.getShape()));
+}
+
+TopoShape &TopoShape::makEFilledFace(const std::vector<TopoShape> &_shapes,
+                                     const BRepFillingParams &params,
+                                     const char *op)
+{
+    _Shape.Nullify();
+    if(!op)
+        op = TOPOP_FILLED_FACE;
+    BRepOffsetAPI_MakeFilling maker(params.degree,
+                                    params.ptsoncurve,
+                                    params.numiter,
+                                    params.anisotropy,
+                                    params.tol2d,
+                                    params.tol3d,
+                                    params.tolG1,
+                                    params.tolG2,
+                                    params.maxdeg,
+                                    params.maxseg);
+
+    if (!params.surface.isNull() && params.surface.getShape().ShapeType() == TopAbs_FACE)
+        maker.LoadInitSurface(TopoDS::Face(params.surface.getShape()));
+
     std::vector<TopoShape> shapes;
     for(auto &s : _shapes)
         expandCompound(s,shapes);
-    int count = 0;
-    for(auto &s : shapes) {
-        if(s.isNull()) continue;
-        const auto &sh = s.getShape();
-        if (sh.ShapeType() == TopAbs_EDGE) {
-            maker.Add(TopoDS::Edge(sh), GeomAbs_C0);
-            ++count;
+
+    auto getOrder = [&](const TopoDS_Shape &s) {
+        auto it = params.orders.find(s);
+        if (it != params.orders.end())
+            return (GeomAbs_Shape)it->second;
+        return GeomAbs_C0;
+    };
+
+    auto getSupport = [&](const TopoDS_Shape &s) {
+        TopoDS_Face support;
+        auto it = params.supports.find(s);
+        if (it != params.supports.end()) {
+            if (!it->second.IsNull() && it->second.ShapeType() == TopAbs_FACE)
+                support = TopoDS::Face(it->second);
         }
-        else if (sh.ShapeType() == TopAbs_FACE) {
-            maker.Add(TopoDS::Face(sh), GeomAbs_C0);
-            ++count;
+        return support;
+    };
+    
+    auto findBoundary = [](std::vector<TopoShape> &shapes) -> TopoShape {
+        // Find a wire (preferably a closed one) to be used as the boundary.
+        int i = -1;
+        int boundIdx = -1;
+        for (auto &s : shapes) {
+            ++i;
+            if(s.isNull() || !s.hasSubShape(TopAbs_EDGE) || s.shapeType()!=TopAbs_WIRE)
+                continue;
+            if (BRep_Tool::IsClosed(TopoDS::Wire(s.getShape()))) {
+                boundIdx = i;
+                break;
+            } else if (boundIdx < 0)
+                boundIdx = i;
         }
-        else if (sh.ShapeType() == TopAbs_VERTEX) {
-            maker.Add(BRep_Tool::Pnt(TopoDS::Vertex(sh)));
-            ++count;
+        if (boundIdx >= 0) {
+            auto res = shapes[boundIdx];
+            shapes.erase(shapes.begin() + boundIdx);
+            return res;
         }
+        return TopoShape();
+    };
+
+    TopoShape bound = findBoundary(shapes);
+    if (bound.isNull()) {
+        // If no boundry is found, then try build one.
+        std::vector<TopoShape> edges;
+        for(auto it=shapes.begin(); it!=shapes.end();) {
+            if (it->shapeType(true) == TopAbs_EDGE) {
+                edges.push_back(*it);
+                it = shapes.erase(it);
+            } else
+                ++it;
+        }
+        std::vector<TopoShape> wires;
+        if(edges.size()) {
+            wires = TopoShape(0, Hasher).makEWires(edges).getSubTopoShapes(TopAbs_WIRE);
+            bound = findBoundary(wires);
+        }
+        if (bound.isNull())
+            FC_THROWM(Base::CADKernelError,"No boundary wire");
+
+        // Since we've only selected one wire for boundary, return all the
+        // other edges to shapes to be added as non boundary constraints
+        shapes.insert(shapes.end(), wires.begin(), wires.end());
     }
-    if (!count)
-        FC_THROWM(Base::CADKernelError,"Failed to created face with no constraints");
+
+    // Must fix wire connection to avoid OCC crash in BRepFill_Filling.cxx WireFromList()
+    // https://github.com/Open-Cascade-SAS/OCCT/blob/1c96596ae7ba120a678021db882857e289c73947/src/BRepFill/BRepFill_Filling.cxx#L133
+    // The reason of crash is because the wire connection tolerance is too big.
+    // The crash can be fixed by simply checking itl.More() before calling Remove().
+    bound.fix(Precision::Confusion(),
+              Precision::Confusion(),
+              Precision::Confusion());
+
+    for (BRepTools_WireExplorer xp(TopoDS::Wire(bound.getShape())); xp.More(); xp.Next())
+        maker.Add(TopoDS::Edge(xp.Current()),
+                  getSupport(xp.Current()),
+                  getOrder(xp.Current()),
+                  /*IsBound*/Standard_True);
+
+    for(const auto &s : shapes) {
+        if(s.isNull())
+            continue;
+        const auto &sh = s.getShape();
+        if (sh.ShapeType() == TopAbs_WIRE) {
+            for (const auto &e : s.getSubShapes(TopAbs_EDGE))
+                maker.Add(TopoDS::Edge(e), 
+                          getSupport(e),
+                          getOrder(e),
+                          /*IsBound*/Standard_False);
+        }
+        else if (sh.ShapeType() == TopAbs_EDGE)
+            maker.Add(TopoDS::Edge(sh),
+                      getSupport(sh),
+                      getOrder(sh),
+                      /*IsBound*/Standard_False);
+        else if (sh.ShapeType() == TopAbs_FACE)
+            maker.Add(TopoDS::Face(sh), getOrder(sh));
+        else if (sh.ShapeType() == TopAbs_VERTEX)
+            maker.Add(BRep_Tool::Pnt(TopoDS::Vertex(sh)));
+    }
+    
     maker.Build();
     if (!maker.IsDone())
         FC_THROWM(Base::CADKernelError,"Failed to created face by filling edges");
@@ -4323,7 +4432,7 @@ TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input, Fill
 
     auto newEdges = aFace.getSubTopoShapes(TopAbs_EDGE);
     if (newEdges.size() != edges.size())
-        FC_ERR("Face edge count mismatch");
+        FC_WARN("Face edge count mismatch");
     else {
         int i = 0;
         for (auto &edge : newEdges)

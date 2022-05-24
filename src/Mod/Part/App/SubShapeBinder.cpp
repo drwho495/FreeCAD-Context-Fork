@@ -533,22 +533,37 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
                 bool done = false;
                 gp_Pln pln;
                 if (_Version.getValue() > 4 && !result.findPlane(pln)) {
-                    try {
-                        result = result.makEBSplineFace(
-                                static_cast<Part::TopoShape::FillingStyle>(FillStyle.getValue()));
-                        done = true;
-                    } catch(Base::Exception & e) {
-                        FC_LOG(getFullName() << " Failed to make bspline face: " << e.what());
-                    } catch(Standard_Failure & e) {
-                        FC_LOG(getFullName() << " Failed to make bspline face: " << e.GetMessageString());
-                    } catch(...) {
-                        FC_LOG(getFullName() << " Failed to make bspline face");
+                    bool closedWire = false;
+                    for (const auto &wire :result.getSubShapes(TopAbs_WIRE)) {
+                        if (BRep_Tool::IsClosed(TopoDS::Wire(wire))) {
+                            closedWire = true;
+                            break;
+                        }
                     }
-
-                    if (!done) {
+                    if (closedWire && result.countSubShapes(TopAbs_WIRE) == 1) {
+                        auto wire = result.getSubTopoShape(TopAbs_WIRE, 1);
+                        unsigned edgeCount = result.countSubShapes(TopAbs_EDGE);
+                        if (edgeCount >= 1 && edgeCount <= 4
+                                           && edgeCount == wire.countSubShapes(TopAbs_EDGE)
+                                           && result.countSubShapes(TopAbs_VERTEX) == wire.countSubShapes(TopAbs_VERTEX))
+                        {
+                            try {
+                                result = result.makEBSplineFace(
+                                        static_cast<Part::TopoShape::FillingStyle>(FillStyle.getValue()));
+                                done = true;
+                            } catch(Base::Exception & e) {
+                                FC_LOG(getFullName() << " Failed to make bspline face: " << e.what());
+                            } catch(Standard_Failure & e) {
+                                FC_LOG(getFullName() << " Failed to make bspline face: " << e.GetMessageString());
+                            } catch(...) {
+                                FC_LOG(getFullName() << " Failed to make bspline face");
+                            }
+                        }
+                    }
+                    if (closedWire && !done) {
                         try {
                             Part::TopoShape filledFace(-getID(), getDocument()->getStringHasher());
-                            filledFace.makEFilledFace({result}, Part::TopoShape());
+                            filledFace.makEFilledFace({result}, TopoShape::BRepFillingParams());
                             if (filledFace.hasSubShape(TopAbs_FACE)) {
                                 done = true;
                                 result = filledFace;

@@ -411,7 +411,10 @@ public:
         return TopoShape(0,Hasher).makEBSplineFace(*this, style, op);
     }
     
-    TopoShape &makEFilledFace(const std::vector<TopoShape> &shapes, const TopoShape &surface, const char *op=0);
+    struct BRepFillingParams;
+    TopoShape &makEFilledFace(const std::vector<TopoShape> &shapes,
+                              const BRepFillingParams &params,
+                              const char *op=0);
 
     TopoShape &makESolid(const std::vector<TopoShape> &shapes, const char *op=0);
     TopoShape &makESolid(const TopoShape &shape, const char *op=0);
@@ -877,6 +880,24 @@ struct PartExport ShapeMapper: TopoShape::Mapper {
     std::unordered_set<TopoDS_Shape,ShapeHasher,ShapeHasher> _generatedShapes;
     ShapeMap _modified;
     std::unordered_set<TopoDS_Shape,ShapeHasher,ShapeHasher> _modifiedShapes;
+};
+
+struct PartExport TopoShape::BRepFillingParams {
+    TopoShape surface;
+    std::unordered_map<TopoDS_Shape, int, ShapeHasher, ShapeHasher> orders;
+    std::unordered_map<TopoDS_Shape, TopoDS_Shape, ShapeHasher, ShapeHasher> supports;
+    unsigned int degree;
+    unsigned int ptsoncurve;
+    unsigned int numiter;
+    bool anisotropy;
+    double tol2d;
+    double tol3d;
+    double tolG1;
+    double tolG2;
+    unsigned int maxdeg;
+    unsigned int maxseg;
+
+    BRepFillingParams();
 };
 
 struct PartExport GenericShapeMapper: ShapeMapper {

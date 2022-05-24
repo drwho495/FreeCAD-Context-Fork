@@ -281,8 +281,58 @@ public:
             "makeFace(list_of_shapes_or_compound, maker_class_name) -- Create a face (faces) using facemaker class.\n"
             "maker_class_name is a string like 'Part::FaceMakerSimple'."
         );
-        add_varargs_method("makeFilledFace",&Module::makeFilledFace,
-            "makeFilledFace(list) -- Create a face out of a list of edges."
+        add_keyword_method("makeFilledFace",&Module::makeFilledFace,
+            "makeFilledFace(shapes : Part.Shape | Sequence[Part.Shape],\n"
+            "               surface = None : Part.Face,\n"
+            "               supports = None : Sequence[Sequence[Part.Shape, Part.Face],\n"
+            "               orders = None : Sequence[Sequence[Part.Shape, Int|String],\n"
+            "               degree = 3 : UnsignedInt,\n"
+            "               ptsOnCurve = 15 : UnsignedInt,\n"
+            "               numIter = 2 : UnsignedInt,\n"
+            "               anisotropy = False : Boolean,\n"
+            "               tol2d = 1e-5 : Float,\n"
+            "               tol3d = 1e-4 : Float,\n"
+            "               tolG1 = 1e-2 : Float,\n"
+            "               tolG2 = 1e-1 : Float,\n"
+            "               maxDegree = 8 : UnsignedInt,\n"
+            "               maxSegments = 9 : UnsignedInt\n"
+            "               op = "" : String) -> Part.Shape\n"
+            "\n"
+            "Create a face out of a list of edges and optional constrains.\n"
+            "\n"
+            "Args:\n"
+            "   shapes: input shape or list of shapes\n"
+            "   surface: optional initial surface to begin the construction of the surface for the filled face.\n"
+            "   supports: optional list of tuple mapping an input edge to a support face.\n"
+            "   orders: optional list of tuple mapping an input edge to a integer order. The order can also be\n"
+            "           give in string with the following values and mean:\n"
+            "           C0: only geometric continuity.\n"
+            "           G1: for each point on the curve, the tangent vectors 'on the right' and 'on the left'\n"
+            "               are collinear with the same orientation.\n"
+            "           C1: continuity of the first derivative. The 'C1' curve is also 'G1' but, in addition,\n"
+            "               the tangent vectors 'on the right' and 'on the left' are equal.\n"
+            "           G2: for each point on the curve, the normalized normal vectors 'on the right' and 'on \n"
+            "               the left' are equal.\n"
+            "           C2: continuity of the second derivative.\n"
+            "           C3: continuity of the third derivative.\n"
+            "           CN: continuity of the N-th derivative, whatever is the value given for N (infinite order\n"
+            "                of continuity). Also provides information about the continuity of a surface.\n"
+            "   degree: the energy minimizing criterion degree.\n"
+            "   ptsOnCurve: the number of points on the curve.\n"
+            "   numIter: the number of iterations.\n"
+            "   anisotropie: If True, the algorithm's performance is better in cases where the ratio of the length\n"
+            "                U and the length V indicate a great difference between the two. In other words, when\n"
+            "                the surface is, for example, extremely long.\n"
+            "   tol2d: the 2D tolerance.\n"
+            "   tol3d: the 3D tolerance.\n"
+            "   tolG1: the angular tolerance.\n"
+            "   tolG2: the tolerance for curvature.\n"
+            "   maxDegree: the highest polynomial degree.\n"
+            "   maxSegments: the greatest number of segments.\n"
+            "   op: optional string for creating topological naming of the new shape.\n"
+            "\n"
+            "Returns:\n"
+            "   Return a face"
         );
         add_varargs_method("makeBSplineFace",&Module::makeBSplineFace,
             "makeSplineFace(list, style='stretch') -- Create a face with BSpline surface out of a list of edges.\n\n"
@@ -957,18 +1007,87 @@ private:
         }
         return shape2pyshape(TopoShape().makEBSplineFace(getPyShapes(obj),s,op));
     }
-    Py::Object makeFilledFace(const Py::Tuple& args)
+
+    template<class F>
+    void parseSequence(PyObject *pyObj, const char *err, F f)
+    {
+        if (pyObj != Py_None) {
+            if (!PySequence_Check(pyObj))
+                throw Py::TypeError(err);
+            Py::Sequence seq(pyObj);
+            for (Py::Sequence::iterator it = seq.begin(); it != seq.end(); ++it) {
+                if (!PySequence_Check((*it).ptr()))
+                    throw Py::TypeError(err);
+                Py::Sequence tuple((*it).ptr());
+                if (tuple.size() != 2)
+                    throw Py::TypeError(err);
+                auto iter = tuple.begin();
+                if (!PyObject_TypeCheck((*iter).ptr(), &(Part::TopoShapePy::Type)))
+                    throw Py::TypeError(err);
+                const TopoDS_Shape& sh = static_cast<TopoShapePy*>((*iter).ptr())->getTopoShapePtr()->getShape();
+                f(sh, (*iter).ptr(), err);
+            }
+        }
+    }
+
+    Py::Object makeFilledFace(const Py::Tuple& args, const Py::Dict &kwds)
     {
 #ifndef FC_NO_ELEMENT_MAP
-        PyObject *obj;
-        PyObject *surf=0;
-        const char *op=0;
-        if (!PyArg_ParseTuple(args.ptr(), "O|O!s", &obj, &TopoShapeFacePy::Type, &surf, &op))
+        TopoShape::BRepFillingParams params;
+        PyObject *obj = nullptr;
+        PyObject *pySurface = Py_None;
+        PyObject *supports = Py_None;
+        PyObject *orders = Py_None;
+        PyObject *anisotropy = params.anisotropy ? Py_True : Py_False;
+        const char *op = nullptr;
+        static char* kwd_list[] = {"shapes", "surface", "supports", 
+            "orders","degree","ptsOnCurve","numIter","anisotropy",
+            "tol2d", "tol3d", "tolG1", "tolG2", "maxDegree", "maxSegments", "op", 0};
+        if(!PyArg_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "O|O!OOIIIOddddIIs", kwd_list,
+                                        &obj, &pySurface, &orders, &params.degree, &params.ptsoncurve,
+                                        &params.numiter, &anisotropy, &params.tol2d, &params.tol3d,
+                                        &params.tolG1, &params.tolG2, &params.maxdeg, &params.maxseg, &op))
             throw Py::Exception();
+        params.anisotropy = PyObject_IsTrue(anisotropy);
         TopoShape surface;
-        if(surf)
-            surface = *static_cast<TopoShapePy*>(surf)->getTopoShapePtr();
-        return shape2pyshape(TopoShape().makEFilledFace(getPyShapes(obj),surface,op));
+        if(pySurface != Py_None)
+            surface = *static_cast<TopoShapePy*>(pySurface)->getTopoShapePtr();
+        parseSequence(supports, "Expects 'supports' to be a sequence of tuple(shape, shape)",
+            [&](const TopoDS_Shape &s, PyObject *value, const char *err) {
+                if (!PyObject_TypeCheck(value, &(Part::TopoShapePy::Type)))
+                    throw Py::TypeError(err);
+                params.supports[s] = static_cast<TopoShapePy*>(value)->getTopoShapePtr()->getShape();
+            });
+        parseSequence(orders, "Expects 'orders' to be a sequence of tuple(shape, int|string)",
+            [&](const TopoDS_Shape &s, PyObject *value, const char *err) {
+                if (PyLong_Check(value)) {
+                    params.orders[s] = Py::Int(value);
+                    return;
+                }
+                if (!PyUnicode_Check(value))
+                    throw Py::TypeError(err);
+                static std::vector<std::pair<std::string, int>> table = {
+                    {"C0", GeomAbs_C0},
+                    {"G1", GeomAbs_G1},
+                    {"C1", GeomAbs_C1},
+                    {"G2", GeomAbs_G2},
+                    {"C2", GeomAbs_C2},
+                    {"C3", GeomAbs_C3},
+                    {"CN", GeomAbs_CN}
+                };
+                std::string v = (std::string)Py::String(value);
+                for (const auto &entry : table) {
+                    if (boost::iequals(v,entry.first)) {
+                        params.orders[s] = entry.second;
+                        return;
+                    }
+                }
+                throw Py::ValueError("Invalid order");
+            });
+        auto shapes = getPyShapes(obj);
+        if (shapes.empty())
+            throw Py::ValueError("No input shape");
+        return shape2pyshape(TopoShape(0, shapes.front().Hasher).makEFilledFace(shapes,params,op));
 #else
         // TODO: BRepFeat_SplitShape
         PyObject *obj;
