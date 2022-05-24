@@ -174,6 +174,7 @@
 # include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
 # include <GeomFill_FillingStyle.hxx>
 # include <GeomFill_BSplineCurves.hxx>
+# include <GeomFill_BezierCurves.hxx>
 # include <BRepFill_Generator.hxx>
 
 #include <array>
@@ -4274,13 +4275,19 @@ bool TopoShape::isSame(const Data::ComplexGeoData &_other) const
         && _Shape.IsEqual(other._Shape);
 }
 
-TopoShape & TopoShape::makEBSplineFace(const TopoShape & shape, FillingStyle style, const char *op)
+TopoShape & TopoShape::makEBSplineFace(const TopoShape & shape,
+                                       FillingStyle style,
+                                       bool keepBezier,
+                                       const char *op)
 {
     std::vector<TopoShape> input(1, shape);
     return makEBSplineFace(input, style, op);
 }
 
-TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input, FillingStyle style, const char *op)
+TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input,
+                                       FillingStyle style,
+                                       bool keepBezier,
+                                       const char *op)
 {
     std::vector<TopoShape> edges;
     for (auto &s : input) {
@@ -4347,48 +4354,6 @@ TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input, Fill
     if (edges.size() < 2 || edges.size() > 4)
         FC_THROWM(Base::CADKernelError, "Require minimum one, maximum four edges");
 
-    std::vector<Handle(Geom_BSplineCurve)> curves;
-    curves.reserve(4);
-    Standard_Real u1, u2; // contains output
-    for (auto & e : edges) {
-        const TopoDS_Edge& edge = TopoDS::Edge (e.getShape());
-        TopLoc_Location heloc; // this will be output
-        Handle(Geom_Curve) c_geom = BRep_Tool::Curve(edge, heloc, u1, u2); //The geometric curve
-        Handle(Geom_BSplineCurve) bspline = Handle(Geom_BSplineCurve)::DownCast(c_geom); //Try to get BSpline curve
-        if (!bspline.IsNull()) {
-            gp_Trsf transf = heloc.Transformation();
-            bspline->Transform(transf); // apply original transformation to control points
-            //Store Underlying Geometry
-            curves.push_back(bspline);
-        }
-        else {
-            // try to convert it into a B-spline
-            BRepBuilderAPI_NurbsConvert mkNurbs(edge);
-            TopoDS_Edge nurbs = TopoDS::Edge(mkNurbs.Shape());
-            // avoid copying
-            TopLoc_Location heloc2; // this will be output
-            Handle(Geom_Curve) c_geom2 = BRep_Tool::Curve(nurbs, heloc2, u1, u2); //The geometric curve
-            Handle(Geom_BSplineCurve) bspline2 = Handle(Geom_BSplineCurve)::DownCast(c_geom2); //Try to get BSpline curve
-
-            if (!bspline2.IsNull()) {
-                gp_Trsf transf = heloc2.Transformation();
-                bspline2->Transform(transf); // apply original transformation to control points
-                //Store Underlying Geometry
-                curves.push_back(bspline2);
-            }
-            else {
-                // BRepBuilderAPI_NurbsConvert failed, try ShapeConstruct_Curve now
-                ShapeConstruct_Curve scc;
-                Handle(Geom_BSplineCurve) spline = scc.ConvertToBSpline(c_geom, u1, u2, Precision::Confusion());
-                if (spline.IsNull())
-                    Standard_Failure::Raise("A curve was not a B-spline and could not be converted into one.");
-                gp_Trsf transf = heloc2.Transformation();
-                spline->Transform(transf); // apply original transformation to control points
-                curves.push_back(spline);
-            }
-        }
-    }
-
     GeomFill_FillingStyle fstyle;
     switch (style) {
     case FillingStyle_Coons:
@@ -4400,19 +4365,95 @@ TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input, Fill
     default:
         fstyle = GeomFill_StretchStyle;
     }
-    GeomFill_BSplineCurves aSurfBuilder; //Create Surface Builder
 
-    if (edges.size() == 2) {
-        aSurfBuilder.Init(curves[0], curves[1], fstyle);
-    }
-    else if (edges.size() == 3) {
-        aSurfBuilder.Init(curves[0], curves[1], curves[2], fstyle);
-    }
-    else if (edges.size() == 4) {
-        aSurfBuilder.Init(curves[0], curves[1], curves[2], curves[3], fstyle);
+    Handle(Geom_Surface) aSurface;
+
+    Standard_Real u1, u2;
+    if (keepBezier) {
+        std::vector<Handle(Geom_BezierCurve)> curves;
+        curves.reserve(4);
+        for (const auto &e : edges) {
+            const TopoDS_Edge& edge = TopoDS::Edge (e.getShape());
+            TopLoc_Location heloc; // this will be output
+            Handle(Geom_Curve) c_geom = BRep_Tool::Curve(edge, heloc, u1, u2);
+            Handle(Geom_BezierCurve) curve = Handle(Geom_BezierCurve)::DownCast(c_geom);
+            if (!curve)
+                break;
+            curve->Transform(heloc.Transformation()); // apply original transformation to control points
+            curves.push_back(curve);
+        }
+        if (curves.size() == edges.size()) {
+            GeomFill_BezierCurves aSurfBuilder; //Create Surface Builder
+
+            if (edges.size() == 2) {
+                aSurfBuilder.Init(curves[0], curves[1], fstyle);
+            }
+            else if (edges.size() == 3) {
+                aSurfBuilder.Init(curves[0], curves[1], curves[2], fstyle);
+            }
+            else if (edges.size() == 4) {
+                aSurfBuilder.Init(curves[0], curves[1], curves[2], curves[3], fstyle);
+            }
+            aSurface = aSurfBuilder.Surface();
+        }
     }
 
-    Handle(Geom_BSplineSurface) aSurface = aSurfBuilder.Surface();
+    if (aSurface.IsNull()) {
+        std::vector<Handle(Geom_BSplineCurve)> curves;
+        curves.reserve(4);
+        for (const auto & e : edges) {
+            const TopoDS_Edge& edge = TopoDS::Edge (e.getShape());
+            TopLoc_Location heloc; // this will be output
+            Handle(Geom_Curve) c_geom = BRep_Tool::Curve(edge, heloc, u1, u2); //The geometric curve
+            Handle(Geom_BSplineCurve) bspline = Handle(Geom_BSplineCurve)::DownCast(c_geom); //Try to get BSpline curve
+            if (!bspline.IsNull()) {
+                gp_Trsf transf = heloc.Transformation();
+                bspline->Transform(transf); // apply original transformation to control points
+                //Store Underlying Geometry
+                curves.push_back(bspline);
+            }
+            else {
+                // try to convert it into a B-spline
+                BRepBuilderAPI_NurbsConvert mkNurbs(edge);
+                TopoDS_Edge nurbs = TopoDS::Edge(mkNurbs.Shape());
+                // avoid copying
+                TopLoc_Location heloc2; // this will be output
+                Handle(Geom_Curve) c_geom2 = BRep_Tool::Curve(nurbs, heloc2, u1, u2); //The geometric curve
+                Handle(Geom_BSplineCurve) bspline2 = Handle(Geom_BSplineCurve)::DownCast(c_geom2); //Try to get BSpline curve
+
+                if (!bspline2.IsNull()) {
+                    gp_Trsf transf = heloc2.Transformation();
+                    bspline2->Transform(transf); // apply original transformation to control points
+                    //Store Underlying Geometry
+                    curves.push_back(bspline2);
+                }
+                else {
+                    // BRepBuilderAPI_NurbsConvert failed, try ShapeConstruct_Curve now
+                    ShapeConstruct_Curve scc;
+                    Handle(Geom_BSplineCurve) spline = scc.ConvertToBSpline(c_geom, u1, u2, Precision::Confusion());
+                    if (spline.IsNull())
+                        Standard_Failure::Raise("A curve was not a B-spline and could not be converted into one.");
+                    gp_Trsf transf = heloc2.Transformation();
+                    spline->Transform(transf); // apply original transformation to control points
+                    curves.push_back(spline);
+                }
+            }
+        }
+
+        GeomFill_BSplineCurves aSurfBuilder; //Create Surface Builder
+
+        if (edges.size() == 2) {
+            aSurfBuilder.Init(curves[0], curves[1], fstyle);
+        }
+        else if (edges.size() == 3) {
+            aSurfBuilder.Init(curves[0], curves[1], curves[2], fstyle);
+        }
+        else if (edges.size() == 4) {
+            aSurfBuilder.Init(curves[0], curves[1], curves[2], curves[3], fstyle);
+        }
+
+        aSurface = aSurfBuilder.Surface();
+    }
 
     BRepBuilderAPI_MakeFace aFaceBuilder;
     Standard_Real v1, v2;

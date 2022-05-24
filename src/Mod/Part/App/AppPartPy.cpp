@@ -334,12 +334,25 @@ public:
             "Returns:\n"
             "   Return a face"
         );
-        add_varargs_method("makeBSplineFace",&Module::makeBSplineFace,
-            "makeSplineFace(list, style='stretch') -- Create a face with BSpline surface out of a list of edges.\n\n"
-            "'style' controls the flattness of the generated surface. Possible values are,\n"
-             "- 'stretch': with the flattest patches,\n"
-             "- 'coons': a rounded style with less depth than 'curved',\n"
-             "- 'curved': the style with the most rounded patches."
+        add_keyword_method("makeBSplineFace",&Module::makeBSplineFace,
+            "makeBSplineFace(shapes : Part.Shape | Sequence[Part.Shape],\n"
+            "                style='stretch' : String,\n"
+            "                keepBezier=False : Boolean,\n"
+            "                op='' : String)\n"
+            "\n"
+            "Create a face with BSpline surface out of a list of edges.\n"
+            "\n"
+            "Args:\n"
+            "   shapes: input shape or list of shapes\n"
+            "   style: controls the flattness of the generated surface. Possible values are,\n"
+            "        'stretch': with the flattest patches,\n"
+            "        'coons': a rounded style with less depth than 'curved',\n"
+            "        'curved': the style with the most rounded patches.\n"
+            "   keepBezier: If True, then create face with BezierSurface if all input edges are Bezier curves.\n"
+            "   op: optional string for creating topological naming of the new shape.\n"
+            "\n"
+            "Returns:\n"
+            "   Return a face"
         );
         add_varargs_method("makeSolid",&Module::makeSolid,
             "makeSolid(shape): Create a solid out of shells of shape. If shape is a compsolid, the overall volume solid is created."
@@ -988,12 +1001,15 @@ private:
         }
 #endif
     }
-    Py::Object makeBSplineFace(const Py::Tuple& args)
+    Py::Object makeBSplineFace(const Py::Tuple& args, const Py::Dict &kwds)
     {
         PyObject *obj;
         const char *style=0;
+        PyObject *keepBezier = Py_False;
         const char *op=0;
-        if (!PyArg_ParseTuple(args.ptr(), "O|ss", &obj, &style, &op))
+        static char* kwd_list[] = {"shapes", "style", "keepBezier",  "op", nullptr};
+        if(!PyArg_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "O|sOs", kwd_list,
+                                                   &obj, &style, &keepBezier, &op))
             throw Py::Exception();
         
         auto s = TopoShape::FillingStyle_Strech;
@@ -1005,7 +1021,7 @@ private:
             else if (!boost::iequals(style, "stretch"))
                 throw Base::ValueError("invalid style");
         }
-        return shape2pyshape(TopoShape().makEBSplineFace(getPyShapes(obj),s,op));
+        return shape2pyshape(TopoShape().makEBSplineFace(getPyShapes(obj),s,PyObject_IsTrue(keepBezier),op));
     }
 
     template<class F>

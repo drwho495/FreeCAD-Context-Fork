@@ -401,14 +401,17 @@ public:
     };
     TopoShape &makEBSplineFace(const std::vector<TopoShape> &input,
                                FillingStyle style = FillingStyle_Strech,
+                               bool keepBezier = false,
                                const char *op=0);
     TopoShape &makEBSplineFace(const TopoShape &input,
                                FillingStyle style = FillingStyle_Strech,
+                               bool keepBezier = false,
                                const char *op=0);
     TopoShape makEBSplineFace(FillingStyle style = FillingStyle_Strech,
+                              bool keepBezier = false,
                               const char *op=0)
     {
-        return TopoShape(0,Hasher).makEBSplineFace(*this, style, op);
+        return TopoShape(0,Hasher).makEBSplineFace(*this, style, keepBezier, op);
     }
     
     struct BRepFillingParams;
