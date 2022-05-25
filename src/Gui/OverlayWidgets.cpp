@@ -4285,11 +4285,15 @@ bool OverlayManager::eventFilter(QObject *o, QEvent *ev)
         if (!ViewParams::getDockOverlayWheelPassThrough())
             return false;
         // fall through
+    case QEvent::ContextMenu: {
+        auto cev = static_cast<QContextMenuEvent*>(ev);
+        if (cev->reason() != QContextMenuEvent::Mouse)
+            return false;
+    }   // fall through
     case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
-    case QEvent::ContextMenu: {
+    case QEvent::MouseMove: {
         QWidget *grabber = QWidget::mouseGrabber();
         d->lastIntercept = nullptr;
         if (d->mouseTransparent || (grabber && grabber != d->_trackingOverlay))
@@ -4402,7 +4406,7 @@ bool OverlayManager::eventFilter(QObject *o, QEvent *ev)
 
         if (!activeTabWidget)
             activeTabWidget = findTabWidget(qApp->widgetAt(QCursor::pos()));
-        if(!activeTabWidget || activeTabWidget->isOverlayed() || !activeTabWidget->isTransparent())
+        if(!activeTabWidget || !activeTabWidget->isTransparent())
             return false;
 
         ev->accept();
@@ -4428,8 +4432,11 @@ void OverlayManager::Private::interceptEvent(QWidget *widget, QEvent *ev)
     lastIntercept = nullptr;
     auto getChildAt = [](QWidget *w, const QPoint &pos) {
         QWidget *res = w;
-        for (; w; w = w->childAt(w->mapFromGlobal(pos)))
+        for (; w; w = w->childAt(w->mapFromGlobal(pos))) {
+            if (qobject_cast<QGraphicsView*>(w))
+                return w;
             res = w;
+        }
         return res;
     };
 
@@ -4485,6 +4492,7 @@ void OverlayManager::Private::interceptEvent(QWidget *widget, QEvent *ev)
                                            lastIntercept->mapFromGlobal(ce->globalPos()),
                                            ce->globalPos());
         QApplication::sendEvent(lastIntercept, &contextMenuEvent);
+        break;
     }
     default:
         break;
