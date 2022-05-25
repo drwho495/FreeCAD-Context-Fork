@@ -223,14 +223,12 @@ private:
 
 // --------------------------------------------------------------------
 
-class GuiExport WorkbenchTabBar : public QTabWidget
+class GuiExport WorkbenchTabWidget : public QTabWidget
 {
     Q_OBJECT
 public:
-
-public:
-    WorkbenchTabBar(WorkbenchGroup* wb, QWidget* parent=0);
-    virtual ~WorkbenchTabBar();
+    WorkbenchTabWidget(WorkbenchGroup* wb, QWidget* parent=0);
+    virtual ~WorkbenchTabWidget();
     void setAction(QAction *act) {action = act;}
     QAction *getAction() {return action;}
     void setupVisibility();
@@ -257,6 +255,26 @@ private:
     QAction *action = nullptr;
 };
 
+class WorkbenchTabBar: public QTabBar
+{
+    Q_PROPERTY(int tabSize READ tabSize WRITE setTabSize)
+    Q_OBJECT
+public:
+    WorkbenchTabBar(QWidget *parent)
+        :QTabBar(parent)
+    {}
+
+    int tabSize() const {return _tabSize;}
+    void setTabSize(int size);
+
+protected:
+    QSize tabSizeHint(int index) const;
+    void changeEvent(QEvent*);
+
+private:
+    int _tabSize = 0;
+    bool hasTabSize = false;
+};
 /**
  * The WorkbenchGroup class represents a list of workbenches. When it is added
  * to a menu a submenu gets created, if added to a toolbar a combo box gets created.
@@ -293,7 +311,7 @@ Q_SIGNALS:
 private:
     void setWorkbenchData(int i, const QString& wb);
 
-    friend class WorkbenchTabBar;
+    friend class WorkbenchTabWidget;
     friend class WorkbenchComboBox;
 
 private:

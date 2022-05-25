@@ -896,9 +896,48 @@ public:
 
 // --------------------------------------------------------------------
 
-WorkbenchTabBar::WorkbenchTabBar(WorkbenchGroup* wb, QWidget* parent)
+void WorkbenchTabBar::setTabSize(int s)
+{
+    hasTabSize = true;
+    _tabSize = s;
+}
+
+QSize WorkbenchTabBar::tabSizeHint(int index) const
+{
+    QSize size = QTabBar::tabSizeHint(index);
+    if (!tabText(index).isEmpty())
+        return size;
+    switch (shape()) {
+    case QTabBar::RoundedWest:
+    case QTabBar::RoundedEast:
+    case QTabBar::TriangularWest:
+    case QTabBar::TriangularEast:
+        if (_tabSize <= 0)
+            return QSize(size.width(), std::max(iconSize().width(), size.width()+2));
+        return QSize(size.width(), _tabSize);
+    default:
+        if (_tabSize <= 0)
+            return QSize(std::max(iconSize().width(), size.height()+2), size.height());
+        return QSize(_tabSize, size.height());
+    }
+}
+
+void WorkbenchTabBar::changeEvent(QEvent *ev)
+{
+    QTabBar::changeEvent(ev);
+    if (ev->type() == QEvent::StyleChange) {
+        if (!hasTabSize)
+            _tabSize = 0;
+        hasTabSize = false;
+    }
+}
+
+// --------------------------------------------------------------------
+
+WorkbenchTabWidget::WorkbenchTabWidget(WorkbenchGroup* wb, QWidget* parent)
     : QTabWidget(parent), group(wb)
 {
+    this->setTabBar(new WorkbenchTabBar(this));
     connect(this, SIGNAL(currentChanged(int)), this, SLOT(onCurrentChanged()));
     connect(this->tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(onTabMoved(int, int)));
     connect(getMainWindow(), SIGNAL(workbenchActivated(const QString&)),
@@ -937,11 +976,11 @@ WorkbenchTabBar::WorkbenchTabBar(WorkbenchGroup* wb, QWidget* parent)
     onChangeOrientation();
 }
 
-WorkbenchTabBar::~WorkbenchTabBar()
+WorkbenchTabWidget::~WorkbenchTabWidget()
 {
 }
 
-QToolBar *WorkbenchTabBar::getToolBar()
+QToolBar *WorkbenchTabWidget::getToolBar()
 {
     for (auto parent = parentWidget(); parent; parent = parent->parentWidget()) {
         if (auto tb = qobject_cast<QToolBar*>(parent))
@@ -950,7 +989,7 @@ QToolBar *WorkbenchTabBar::getToolBar()
     return nullptr;
 }
 
-void WorkbenchTabBar::setupVisibility()
+void WorkbenchTabWidget::setupVisibility()
 {
     if (!action)
         return;
@@ -979,7 +1018,7 @@ void WorkbenchTabBar::setupVisibility()
     }
 }
 
-void WorkbenchTabBar::onChangeOrientation()
+void WorkbenchTabWidget::onChangeOrientation()
 {
     auto parent = qobject_cast<QToolBar*>(parentWidget());
     if (!parent)
@@ -1005,7 +1044,7 @@ void WorkbenchTabBar::onChangeOrientation()
     setupVisibility();
 }
 
-void WorkbenchTabBar::updateWorkbenches()
+void WorkbenchTabWidget::updateWorkbenches()
 {
     auto tab = this->tabBar();
 
@@ -1067,7 +1106,7 @@ void WorkbenchTabBar::updateWorkbenches()
         this->removeTab(this->count()-1);
 }
 
-void WorkbenchTabBar::onCurrentChanged()
+void WorkbenchTabWidget::onCurrentChanged()
 {
     if (QApplication::mouseButtons() & Qt::LeftButton) {
         timerCurrentChange.start(10);
@@ -1088,12 +1127,12 @@ void WorkbenchTabBar::onCurrentChanged()
     Application::Instance->activateWorkbench(name.toUtf8());
 }
 
-void WorkbenchTabBar::onTabMoved(int, int)
+void WorkbenchTabWidget::onTabMoved(int, int)
 {
     moved = true;
 }
 
-bool WorkbenchTabBar::eventFilter(QObject *o, QEvent *ev)
+bool WorkbenchTabWidget::eventFilter(QObject *o, QEvent *ev)
 {
     if (moved && o == this->tabBar()
               && ev->type() == QEvent::MouseButtonRelease
@@ -1111,7 +1150,7 @@ bool WorkbenchTabBar::eventFilter(QObject *o, QEvent *ev)
     return QTabWidget::eventFilter(o, ev);
 }
 
-void WorkbenchTabBar::onWorkbenchActivated(const QString& name)
+void WorkbenchTabWidget::onWorkbenchActivated(const QString& name)
 {
     QSignalBlocker block(this);
     auto tab = this->tabBar();
@@ -1226,7 +1265,7 @@ void WorkbenchGroup::addTo(QWidget *w)
         connect(box, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(onContextMenuRequested(QPoint)));
 
-        auto tabbar = new WorkbenchTabBar(this, w);
+        auto tabbar = new WorkbenchTabWidget(this, w);
         auto actTab = bar->addWidget(tabbar);
         tabbar->setAction(actTab);
         tabbar->setContextMenuPolicy(Qt::CustomContextMenu);
