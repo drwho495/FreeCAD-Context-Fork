@@ -2648,21 +2648,8 @@ void Application::setStyleSheet(const QString& qssFile, bool tiledBackground)
 
     auto hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/MainWindow");
     QString iconSet = QString::fromUtf8(hGrp->GetASCII("IconSet").c_str());
-    if (!iconSet.isEmpty()) {
-        QString prefix(QLatin1String("iconset:"));
-        QFile f;
-        if (QFile::exists(iconSet)) {
-            f.setFileName(iconSet);
-        }
-        else if (QFile::exists(prefix + iconSet)) {
-            f.setFileName(prefix + iconSet);
-        }
-
-        if (!f.fileName().isEmpty() && f.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream str(&f);
-            getMainWindow()->setOverrideExtraIcons(str.readAll());
-        }
-    }
+    if (!iconSet.isEmpty())
+        getMainWindow()->setOverrideExtraIcons(iconSet);
 
     // Icon set change is also triggered by style change, so we'll set
     // stylesheet regardless of changes

@@ -213,7 +213,7 @@ struct MainWindowP
     bool hasOverrideExtraIcons = false;
 
     void restoreWindowState(const QByteArray &);
-    void applyOverrideIcons(const QString &icons);
+    void applyOverrideIcons(const QStringList &icons);
 };
 
 class MDITabbar : public QTabBar
@@ -2278,10 +2278,10 @@ void MainWindow::setOverrideExtraIcons(const QString &icons)
     d->hasOverrideExtraIcons = true;
 }
 
-void MainWindowP::applyOverrideIcons(const QString &icons)
+void MainWindowP::applyOverrideIcons(const QStringList &icons)
 {
-    for (auto &s : icons.split(QRegExp(QStringLiteral("[\r\n]")),QString::SkipEmptyParts)) {
-        s = s.trimmed();
+    for (const auto &line : icons) {
+        auto s = line.left(line.size()).trimmed();
         if (s.startsWith(QStringLiteral("#")) || s.startsWith(QStringLiteral("//")))
             continue;
         auto pair = s.split(QLatin1Char(','));
@@ -2319,6 +2319,58 @@ void MainWindowP::applyOverrideIcons(const QString &icons)
     }
 }
 
+namespace {
+QStringList loadIconSet(std::set<QString> &files,
+                        QString content,
+                        bool asFileName)
+{
+    QStringList lines;
+    if (asFileName) {
+        static QString prefix(QStringLiteral("iconset:"));
+
+        QFileInfo finfo;
+        if (QFile::exists(content)) {
+            finfo.setFile(content);
+        }
+        else if (QFile::exists(prefix + content)) {
+            finfo.setFile(prefix + content);
+        }
+        else {
+            FC_WARN("Cannot file icon set file " << content.toUtf8().constData());
+            return lines;
+        }
+        if (!files.insert(finfo.canonicalFilePath()).second) {
+            FC_WARN("Cyclic icon set import " << content.toUtf8().constData());
+            return lines;
+        }
+        QFile file(finfo.filePath());
+        if (!file.open(QFile::ReadOnly | QFile::Text))
+            return lines;
+
+        QTextStream str(&file);
+        content = str.readAll();
+    }
+
+    static QString keyword(QStringLiteral("#import "));
+    lines = content.split(QRegExp(QStringLiteral("[\r\n]")),QString::SkipEmptyParts);
+    for (auto it = lines.begin(); it != lines.end(); ++it) {
+        auto line = it->left(it->size()).trimmed();
+        if (!line.startsWith(keyword))
+            continue;
+        auto importFile = line.right(line.size() - keyword.size()).trimmed();
+        for (const auto &s : loadIconSet(files, importFile, /*asFileName*/true))
+            it = lines.insert(++it, s);
+    }
+    return lines;
+}
+
+QStringList loadIconSet(QString content, bool asFileName)
+{
+    std::set<QString> files;
+    return loadIconSet(files, content, asFileName);
+}
+} // anonymous namespace
+
 void MainWindow::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange) {
@@ -2336,13 +2388,13 @@ void MainWindow::changeEvent(QEvent *e)
     else if (e->type() == QEvent::StyleChange) {
         if (d->hasOverrideExtraIcons) {
             d->hasOverrideExtraIcons = false;
-            d->applyOverrideIcons(d->overrideExtraIcons);
+            d->applyOverrideIcons(loadIconSet(d->overrideExtraIcons, /*asFileName*/true));
         } else
             d->overrideExtraIcons.clear();
 
         if (d->hasOverrideIcons) {
             d->hasOverrideIcons = false;
-            d->applyOverrideIcons(d->overrideIcons);
+            d->applyOverrideIcons(loadIconSet(d->overrideIcons, /*asFileName*/false));
         } else
             d->overrideIcons.clear();
 
