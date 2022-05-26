@@ -159,6 +159,16 @@ in your application user directory.</string>
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btnBrowse">
+       <property name="toolTip">
+        <string>Browser the icon directory</string>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btnSave">
        <property name="toolTip">
         <string>To override application icons, you can save the above configurations into your
