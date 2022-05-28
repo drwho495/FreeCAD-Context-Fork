@@ -1081,6 +1081,7 @@ SET(Viewprovider_CPP_SRCS
     ViewProviderLinkPyImp.cpp
     AxisOriginPyImp.cpp
     AxisOrigin.cpp
+    ViewProviderDatum.cpp
 )
 SET(Viewprovider_SRCS
     ${Viewprovider_CPP_SRCS}
@@ -1112,6 +1113,7 @@ SET(Viewprovider_SRCS
     ViewProviderMaterialObject.h
     ViewProviderTextDocument.h
     ViewProviderLink.h
+    ViewProviderDatum.h
     AxisOrigin.h
 )
 SOURCE_GROUP("View3D\\Viewprovider" FILES ${Viewprovider_SRCS})

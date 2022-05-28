@@ -132,6 +132,7 @@
 #include "ViewProviderGroupExtension.h"
 #include "ViewProviderLink.h"
 #include "LinkViewPy.h"
+#include "ViewProviderDatum.h"
 #include "AxisOriginPy.h"
 #include "CommandPy.h"
 #include "FileDialogPy.h"
@@ -2050,6 +2051,7 @@ void Application::initTypes(void)
     Gui::ViewProviderLink                       ::init();
     Gui::ViewProviderLinkPython                 ::init();
     Gui::AxisOrigin                             ::init();
+    Gui::ViewProviderDatum                      ::init();
 
     // Workbench
     Gui::Workbench                              ::init();

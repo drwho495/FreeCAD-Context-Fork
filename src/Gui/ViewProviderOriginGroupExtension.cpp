@@ -31,6 +31,7 @@
 #endif
 
 #include "ViewProviderOriginGroupExtension.h"
+#include "ViewProviderDatum.h"
 #include "Application.h"
 #include "Document.h"
 #include "ViewProviderOriginFeature.h"
@@ -99,52 +100,67 @@ void ViewProviderOriginGroupExtension::extensionUpdateData( const App::Property*
 
 void ViewProviderOriginGroupExtension::updateOriginSize () {
     auto owner = getExtendedViewProvider()->getObject();
-
-    if(!owner->getNameInDocument() ||
-       owner->isRemoving() ||
-       owner->getDocument()->testStatus(App::Document::Restoring))
+    if(App::GetApplication().isRestoring()
+            || !owner->getDocument()
+            || owner->testStatus(App::ObjectStatus::Remove)
+            || owner->getDocument()->isPerformingTransaction())
         return;
 
     auto* group = owner->getExtensionByType<App::OriginGroupExtension>();
     if(!group)
         return;
 
+    const auto & model = group->getFullModel ();
+
+    // BBox for Datums is calculated from all visible objects but treating datums as their basepoints only
+    SbBox3f bboxDatums = ViewProviderDatum::getRelevantBoundBox ( model );
+    // BBox for origin should take into account datums size also
+    SbBox3f bboxOrigins(0,0,0,0,0,0);
+    bool isDatumEmpty = bboxDatums.isEmpty();
+    if(!isDatumEmpty)
+        bboxOrigins.extendBy(bboxDatums);
+
+    for(App::DocumentObject* obj : model) {
+        if (auto vp = Base::freecad_dynamic_cast<ViewProviderDatum>(
+                                        Gui::Application::Instance->getViewProvider(obj)))
+        {
+            if (!vp || !vp->isVisible()) { continue; }
+
+            if(!isDatumEmpty)
+                vp->setExtents ( bboxDatums );
+
+            // Why is the following necessary?
+            //
+            // if(App::GroupExtension::getGroupOfObject(obj))
+            //     continue;
+
+            auto bbox = vp->getBoundingBox();
+            if(bbox.IsValid())
+                bboxOrigins.extendBy ( SbBox3f(bbox.MinX,bbox.MinY,bbox.MinZ,bbox.MaxX,bbox.MaxY,bbox.MaxZ) );
+        }
+    }
+
+    // get the bounding box values
+    SbVec3f max = bboxOrigins.getMax();
+    SbVec3f min = bboxOrigins.getMin();
+
     // obtain an Origin and it's ViewProvider
-    App::Origin* origin = 0;
     Gui::ViewProviderOrigin* vpOrigin = 0;
     try {
-        origin = group->getOrigin ();
-        assert (origin);
-
-        Gui::ViewProvider *vp = Gui::Application::Instance->getViewProvider(origin);
-        if (!vp) {
-            Base::Console().Error ("No view provider linked to the Origin\n");
-            return;
-        }
-        assert ( vp->isDerivedFrom ( Gui::ViewProviderOrigin::getClassTypeId () ) );
-        vpOrigin = static_cast <Gui::ViewProviderOrigin *> ( vp );
-    } catch (const Base::Exception &ex) {
-        Base::Console().Error ("%s\n", ex.what() );
+        vpOrigin = Base::freecad_dynamic_cast<ViewProviderOrigin>(
+                Application::Instance->getViewProvider(group->getOrigin()));
+    } catch (const Base::Exception &e) {
+        e.ReportException();
         return;
     }
 
-    // calculate the bounding box for out content
-    Base::BoundBox3d bbox(0,0,0,0,0,0);
-    for(App::DocumentObject* obj : group->Group.getValues()) {
-        ViewProvider *vp = Gui::Application::Instance->getViewProvider(obj);
-        if (!vp || !vp->isVisible()) {
-            continue;
-        }
-        bbox.Add ( vp->getBoundingBox() );
-    };
-
-    Base::Vector3d size(std::max(std::abs(bbox.MinX),std::abs(bbox.MaxX)),
-                        std::max(std::abs(bbox.MinY),std::abs(bbox.MaxY)),
-                        std::max(std::abs(bbox.MinZ),std::abs(bbox.MaxZ)));
+    // calculate the desired origin size
+    Base::Vector3d size;
 
     for (uint_fast8_t i=0; i<3; i++) {
-        if (size[i] < 1e-7) { // TODO replace the magic values (2015-08-31, Fat-Zer)
-            size[i] = ViewProviderOrigin::defaultSize();
+        size[i] = std::max ( fabs ( max[i] ), fabs ( min[i] ) );
+        if (min[i]>max[i] || size[i] < 1e-7 ) {
+            size[i] = Gui::ViewProviderOrigin::defaultSize();
         }
     }
 
