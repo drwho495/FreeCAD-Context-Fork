@@ -44,6 +44,7 @@
 #include <Base/Parameter.h>
 #include <App/Application.h>
 
+#include "WaitCursor.h"
 #include "FileDialog.h"
 #include "MainWindow.h"
 #include "BitmapFactory.h"
@@ -211,9 +212,8 @@ void FileDialog::accept()
 QString FileDialog::getSaveFileName (QWidget * parent, const QString & caption, const QString & dir,
                                      QString filter, QString * selectedFilter, Options options, FileMode fileMode)
 {
-#if QT_VERSION < 0x040800 && defined(FC_OS_MACOSX)
-    options |= QFileDialog::DontUseNativeDialog;
-#endif
+    WaitCursorRestorer waitCursorRestore;
+
     bool noNativeDialog = (options&QFileDialog::DontUseNativeDialog)
                           || dontUseNativeDialog();
 
@@ -331,6 +331,7 @@ QString FileDialog::getSaveFileName (QWidget * parent, const QString & caption, 
  */
 QString FileDialog::getExistingDirectory( QWidget * parent, const QString & caption, const QString & dir, Options options )
 {
+    WaitCursorRestorer waitCursorRestore;
     if (dontUseNativeDialog())
         options |= QFileDialog::DontUseNativeDialog;
     QString path = QFileDialog::getExistingDirectory(parent, caption, dir, options);
@@ -350,6 +351,7 @@ QString FileDialog::getExistingDirectory( QWidget * parent, const QString & capt
 QString FileDialog::getOpenFileName(QWidget * parent, const QString & caption, const QString & dir,
                                     QString filter, QString * selectedFilter, Options options, FileMode fileMode)
 {
+    WaitCursorRestorer waitCursorRestore;
     checkFilter(filter);
 
     QString dirName = dir;
@@ -432,6 +434,7 @@ QString FileDialog::getOpenFileName(QWidget * parent, const QString & caption, c
 QStringList FileDialog::getOpenFileNames (QWidget * parent, const QString & caption, const QString & dir,
                                           QString filter, QString * selectedFilter, Options options, FileMode fileMode)
 {
+    WaitCursorRestorer waitCursorRestore;
     checkFilter(filter);
 
     QString dirName = dir;
