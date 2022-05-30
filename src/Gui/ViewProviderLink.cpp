@@ -1306,11 +1306,106 @@ void LinkView::setChildren(const std::vector<App::DocumentObject*> &children,
     if(type<0 || type>SnapshotMax)
         LINK_THROW(Base::ValueError,"invalid children type");
 
-    resetRoot();
-
     if(childType<0 || childType!=type) {
         nodeArray.clear();
+    } else {
+        // checking for shortcut of adding or removing exactly one element This
+        // has potential of huge slow down in operations batch calling of
+        // add/removeObject()
+
+        int idx = -1;
+        if (children.size() + 1 == nodeArray.size()) {
+            // removing an object
+            int i = -1;
+            for (const auto obj : children) {
+                auto &info = *nodeArray[++i];
+                if(!info.isLinked()) {
+                    idx = -1; // not linked, so no pcRoot and thus must reset
+                    break;
+                }
+                else if (info.linkInfo->pcLinked->getObject() != obj) {
+                    if (idx >= 0) {
+                        idx = -1;
+                        break;
+                    }
+                    if (!nodeArray[i+1]->isLinked()
+                            || nodeArray[i+1]->linkInfo->pcLinked->getObject() != obj)
+                        break;
+                    idx = i++;
+                }
+            }
+            if (idx >= 0) {
+                auto &info = *nodeArray[idx];
+                auto node = info.getTopNode();
+                if (info.isLinked())
+                    nameMap.erase(info.linkInfo->getLinkedName());
+                else
+                    nameMap.clear();
+                nodeMap.erase(node);
+                int nidx = pcLinkRoot->findChild(node);
+                if (nidx >= 0)
+                    pcLinkRoot->removeChild(nidx);
+                nodeArray.erase(nodeArray.begin() + nidx);
+                nameMap.erase(info.linkInfo->getLinkedName());
+            }
+        }
+        else if (children.size() == nodeArray.size() + 1) {
+            // Adding an object
+            int i = -1;
+            int idx = -1;
+            for (const auto &pinfo : nodeArray) {
+                auto &info = *pinfo;
+                if (!info.isLinked()) {
+                    idx = -1;
+                    break;
+                }
+                auto obj = children[++i];
+                if (info.linkInfo->pcLinked->getObject() != obj) {
+                    if (idx >= 0) {
+                        idx = -1;
+                        break;
+                    }
+                    idx = i++;
+                    if (info.linkInfo->pcLinked->getObject() != children[i]) {
+                        idx = -1;
+                        break;
+                    }
+                }
+            }
+            if (idx >= 0) {
+                auto obj = children[idx];
+                if (!App::GeoFeatureGroupExtension::isNonGeoGroup(obj)) {
+                    nodeArray.emplace(nodeArray.begin()+idx, new Element(*this));
+                    auto &info = *nodeArray[idx];
+                    info.groupIndex = -1;
+                    info.link(obj);
+                    auto node = info.getTopNode();
+                    for (auto it = nodeArray.begin()+idx; it != nodeArray.end(); ++it) {
+                        nodeMap[(*it)->getTopNode()] = it - nodeArray.begin();
+                    }
+                    pcLinkRoot->insertChild(node, idx);
+                }
+            }
+        }
+        if (idx >= 0) {
+            int i = -1;
+            for (const auto &pinfo : nodeArray) {
+                ++i;
+                auto &info = *pinfo;
+                if(info.pcSwitch && childType!=SnapshotChild) {
+                    int which = ((int)vis.size()<=i||vis[i])?0:-1;
+                    if (info.pcSwitch->whichChild.getValue() != which)
+                        info.pcSwitch->whichChild = which;
+                }
+                if (i >= idx)
+                    nodeMap[info.getTopNode()] = i;
+            }
+            return;
+        }
     }
+
+    resetRoot();
+
     nameMap.clear();
     nodeMap.clear();
     childType = type;
@@ -1328,8 +1423,11 @@ void LinkView::setChildren(const std::vector<App::DocumentObject*> &children,
         auto &info = *nodeArray[i];
         info.groupIndex = -1;
         info.link(obj);
-        if(info.pcSwitch && childType!=SnapshotChild)
-            info.pcSwitch->whichChild = (vis.size()<=i||vis[i])?0:-1;
+        if(info.pcSwitch && childType!=SnapshotChild) {
+            int which = (vis.size()<=i||vis[i])?0:-1;
+            if (info.pcSwitch->whichChild.getValue() != which)
+                info.pcSwitch->whichChild = which;
+        }
         if(info.isGroup>0) {
             auto node = info.initGroup();
             if(node)
