@@ -4701,6 +4701,69 @@ void Document::_removeObject(DocumentObject* pcObject)
     d->objectMap.erase(pos);
 }
 
+static bool _RemovingObjects;
+static int _RemovingObject;
+static std::unordered_map<Property*, int> _PendingProps;
+static int _PendingPropIndex;
+
+bool Document::isRemoving(Property *prop)
+{
+    if (!prop || _RemovingObject == 0)
+        return false;
+    if (auto obj = Base::freecad_dynamic_cast<DocumentObject>(prop->getContainer())) {
+        if (!obj->testStatus(App::Remove))
+            _PendingProps.insert(std::make_pair(prop, _PendingPropIndex++));
+    }
+    return true;
+}
+
+void Document::removePendingProperty(Property *prop)
+{
+    _PendingProps.erase(prop);
+}
+
+void Document::removeObjects(const std::vector<std::string> &objs)
+{
+    if (_RemovingObjects) {
+        FC_ERR("recursive calling of Document.removeObjects()");
+        return;
+    }
+
+    Base::StateLocker guard(_RemovingObjects);
+
+    ++_RemovingObject;
+
+    for (const auto &name : objs)
+        removeObject(name.c_str());
+
+    if (--_RemovingObject == 0) {
+        std::vector<std::pair<Property*,int> > props;
+        props.reserve(_PendingProps.size());
+        props.insert(props.end(),_PendingProps.begin(),_PendingProps.end());
+        std::sort(props.begin(), props.end(),
+            [](const std::pair<Property*,int> &a, const std::pair<Property*,int> &b) {
+                return a.second < b.second;
+            });
+
+        std::string errMsg;
+        for(auto &v : props) {
+            auto prop = v.first;
+            // double check if the property exists, because it may be removed
+            // while we are looping.
+            if(_PendingProps.count(prop)) {
+                exceptionSafeCall(errMsg, [](Property *prop){prop->touch();}, prop);
+                if(errMsg.size()) {
+                    FC_ERR("Exception on post object removal "
+                            << prop->getFullName() << ": " << errMsg);
+                    errMsg.clear();
+                }
+            }
+        }
+        _PendingProps.clear();
+        _PendingPropIndex = 0;
+    }
+}
+
 void Document::breakDependency(DocumentObject* pcObject, bool clear)
 {
     // Nullify all dependent objects
