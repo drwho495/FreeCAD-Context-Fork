@@ -22,6 +22,7 @@
 
 
 #include "PreCompiled.h"
+#include <algorithm>
 
 #ifndef _PreComp_
 # include <sstream>
@@ -1098,7 +1099,7 @@ void StdCmdSelectVisibleObjects::activated(int iMsg)
     }
 
     SelectionSingleton& rSel = Selection();
-    rSel.setSelection(app->getName(), visible);
+    rSel.setSelection(visible);
 }
 
 bool StdCmdSelectVisibleObjects::isActive(void)
@@ -1241,21 +1242,23 @@ StdCmdSelectDependents::StdCmdSelectDependents()
 void StdCmdSelectDependents::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
-    std::map<App::Document*, std::vector<App::DocumentObject*>> objmap;
-    std::set<App::DocumentObject*> objset;
+    std::vector<App::DocumentObject*> objs;
     auto sels = Gui::Selection().getCompleteSelection();
-    for (const auto &sel : sels)
-        objset.insert(sel.pObject);
     for (const auto &sel : sels) {
         for (auto obj : sel.pObject->getOutList()) {
-            if (objset.insert(obj).second)
-                objmap[obj->getDocument()].push_back(obj);
+            if (objs.empty()) {
+                objs.push_back(obj);
+                continue;
+            }
+            auto it = std::upper_bound(objs.begin(), objs.end(), obj);
+            if (*(it - 1) == obj)
+                continue;
+            objs.insert(it, obj);
         }
     }
     if (QApplication::queryKeyboardModifiers() != Qt::ControlModifier)
         Selection().clearCompleteSelection();
-    for (const auto &v : objmap)
-        Selection().setSelection(v.first->getName(), v.second);
+    Selection().setSelection(objs);
 }
 
 bool StdCmdSelectDependents::isActive(void)
@@ -1283,20 +1286,25 @@ StdCmdSelectDependentsRecursive::StdCmdSelectDependentsRecursive()
 void StdCmdSelectDependentsRecursive::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
-    std::map<App::Document*, std::vector<App::DocumentObject*>> objmap;
-    std::vector<App::DocumentObject*> objs;
+    std::vector<App::DocumentObject*> input;
     auto sels = Gui::Selection().getCompleteSelection();
     for (const auto &sel : sels)
-        objs.push_back(sel.pObject);
-    std::set<App::DocumentObject*> objset(objs.begin(), objs.end());
-    for (auto obj : App::Document::getDependencyList(objs)) {
-        if (objset.insert(obj).second)
-            objmap[obj->getDocument()].push_back(obj);
+        input.push_back(sel.pObject);
+
+    std::vector<App::DocumentObject*> objs;
+    for (auto obj : App::Document::getDependencyList(input)) {
+        if (objs.empty()) {
+            objs.push_back(obj);
+            continue;
+        }
+        auto it = std::upper_bound(objs.begin(), objs.end(), obj);
+        if (*(it - 1) == obj)
+            continue;
+        objs.insert(it, obj);
     }
     if (QApplication::queryKeyboardModifiers() != Qt::ControlModifier)
         Selection().clearCompleteSelection();
-    for (const auto &v : objmap)
-        Selection().setSelection(v.first->getName(), v.second);
+    Selection().setSelection(objs);
 }
 
 bool StdCmdSelectDependentsRecursive::isActive(void)

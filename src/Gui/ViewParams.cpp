@@ -111,6 +111,8 @@ public:
     bool SelectionFaceWire; // Auto generated code. See class document of ViewParams.
     double NewDocumentCameraScale; // Auto generated code. See class document of ViewParams.
     long MaxOnTopSelections; // Auto generated code. See class document of ViewParams.
+    long MaxViewSelections; // Auto generated code. See class document of ViewParams.
+    long MaxSelectionNotification; // Auto generated code. See class document of ViewParams.
     bool MapChildrenPlacement; // Auto generated code. See class document of ViewParams.
     long CornerNaviCube; // Auto generated code. See class document of ViewParams.
     bool DockOverlayAutoView; // Auto generated code. See class document of ViewParams.
@@ -339,6 +341,10 @@ public:
         funcs["NewDocumentCameraScale"] = &ViewParamsP::updateNewDocumentCameraScale;
         MaxOnTopSelections = handle->GetInt("MaxOnTopSelections", 20);
         funcs["MaxOnTopSelections"] = &ViewParamsP::updateMaxOnTopSelections;
+        MaxViewSelections = handle->GetInt("MaxViewSelections", 100);
+        funcs["MaxViewSelections"] = &ViewParamsP::updateMaxViewSelections;
+        MaxSelectionNotification = handle->GetInt("MaxSelectionNotification", 100);
+        funcs["MaxSelectionNotification"] = &ViewParamsP::updateMaxSelectionNotification;
         MapChildrenPlacement = handle->GetBool("MapChildrenPlacement", false);
         funcs["MapChildrenPlacement"] = &ViewParamsP::updateMapChildrenPlacement;
         CornerNaviCube = handle->GetInt("CornerNaviCube", 1);
@@ -589,6 +595,7 @@ public:
         if(it == funcs.end())
             return;
         it->second(this);
+        
     }
 
 
@@ -807,6 +814,14 @@ public:
     // Auto generated code. See class document of ViewParams.
     static void updateMaxOnTopSelections(ViewParamsP *self) {
         self->MaxOnTopSelections = self->handle->GetInt("MaxOnTopSelections", 20);
+    }
+    // Auto generated code. See class document of ViewParams.
+    static void updateMaxViewSelections(ViewParamsP *self) {
+        self->MaxViewSelections = self->handle->GetInt("MaxViewSelections", 100);
+    }
+    // Auto generated code. See class document of ViewParams.
+    static void updateMaxSelectionNotification(ViewParamsP *self) {
+        self->MaxSelectionNotification = self->handle->GetInt("MaxSelectionNotification", 100);
     }
     // Auto generated code. See class document of ViewParams.
     static void updateMapChildrenPlacement(ViewParamsP *self) {
@@ -2754,6 +2769,60 @@ void ViewParams::setMaxOnTopSelections(const long &v) {
 // Auto generated code. See class document of ViewParams.
 void ViewParams::removeMaxOnTopSelections() {
     instance()->handle->RemoveInt("MaxOnTopSelections");
+}
+
+// Auto generated code. See class document of ViewParams.
+const char *ViewParams::docMaxViewSelections() {
+    return "";
+}
+
+// Auto generated code. See class document of ViewParams.
+const long & ViewParams::getMaxViewSelections() {
+    return instance()->MaxViewSelections;
+}
+
+// Auto generated code. See class document of ViewParams.
+const long & ViewParams::defaultMaxViewSelections() {
+    const static long def = 100;
+    return def;
+}
+
+// Auto generated code. See class document of ViewParams.
+void ViewParams::setMaxViewSelections(const long &v) {
+    instance()->handle->SetInt("MaxViewSelections",v);
+    instance()->MaxViewSelections = v;
+}
+
+// Auto generated code. See class document of ViewParams.
+void ViewParams::removeMaxViewSelections() {
+    instance()->handle->RemoveInt("MaxViewSelections");
+}
+
+// Auto generated code. See class document of ViewParams.
+const char *ViewParams::docMaxSelectionNotification() {
+    return "";
+}
+
+// Auto generated code. See class document of ViewParams.
+const long & ViewParams::getMaxSelectionNotification() {
+    return instance()->MaxSelectionNotification;
+}
+
+// Auto generated code. See class document of ViewParams.
+const long & ViewParams::defaultMaxSelectionNotification() {
+    const static long def = 100;
+    return def;
+}
+
+// Auto generated code. See class document of ViewParams.
+void ViewParams::setMaxSelectionNotification(const long &v) {
+    instance()->handle->SetInt("MaxSelectionNotification",v);
+    instance()->MaxSelectionNotification = v;
+}
+
+// Auto generated code. See class document of ViewParams.
+void ViewParams::removeMaxSelectionNotification() {
+    instance()->handle->RemoveInt("MaxSelectionNotification");
 }
 
 // Auto generated code. See class document of ViewParams.

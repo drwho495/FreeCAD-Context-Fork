@@ -588,6 +588,9 @@ public:
 
     void syncView(DocumentObjectItem *item)
     {
+        if (!firstSyncItem)
+            firstSyncItem = item;
+
         if (disableSyncView || !item || !item->getOwnerDocument())
             return;
         auto docitem = item->getOwnerDocument();
@@ -670,6 +673,7 @@ public:
     bool reorderBefore = true;
     QModelIndex reorderingIndex;
     QTreeWidgetItem *tooltipItem = nullptr;
+    DocumentObjectItem *firstSyncItem = nullptr;
 };
 
 //--------------------------------------------------------------------------
@@ -2751,7 +2755,7 @@ void TreeWidget::selectAll() {
     if(TreeParams::getRecordSelection())
         Gui::Selection().selStackPush();
     Gui::Selection().clearSelection();
-    Gui::Selection().setSelection(gdoc->getDocument()->getName(),gdoc->getDocument()->getObjects());
+    Gui::Selection().setSelection(gdoc->getDocument()->getObjects());
 }
 
 void TreeWidget::checkTopParent(App::DocumentObject *&obj, std::string &subname) {
@@ -5297,7 +5301,7 @@ void TreeWidget::dropEvent(QDropEvent *event)
             }
             touched = true;
             SelectionNoTopParentCheck guard;
-            Selection().setSelection(thisDoc->getName(),droppedObjs);
+            Selection().setSelection(droppedObjs);
 
             if(touched && TreeParams::getRecomputeOnDrop())
                 thisDoc->recompute();
@@ -6071,6 +6075,8 @@ void TreeWidget::onItemSelectionChanged ()
 
     Base::StateLocker guard(pimpl->multiSelecting, 
             (QApplication::queryKeyboardModifiers() & Qt::ControlModifier) ? true : false);
+    Base::StateLocker guard2(pimpl->disableSyncView);
+    pimpl->firstSyncItem = nullptr;
 
     preselectTimer->stop();
 
@@ -6162,6 +6168,12 @@ void TreeWidget::onItemSelectionChanged ()
             pos->second->updateSelection(pos->second);
         if(TreeParams::getRecordSelection())
             Gui::Selection().selStackPush(true,true);
+    }
+
+    if (pimpl->firstSyncItem) {
+        pimpl->disableSyncView = false;
+        pimpl->syncView(pimpl->firstSyncItem);
+        pimpl->firstSyncItem = nullptr;
     }
 
     this->blockConnection(lock);
@@ -7974,20 +7986,24 @@ void DocumentItem::clearSelection(DocumentObjectItem *exclude)
     // Block signals here otherwise we get a recursion and quadratic runtime
     QSignalBlocker blocker(treeWidget());
     bool lock = getTree()->blockConnection(true);
-    FOREACH_ITEM_ALL(item);
-        if(item == exclude) {
-            if(exclude->selected>0)
-                exclude->selected = -1;
-            else
-                exclude->selected = 0;
-            updateItemSelection(exclude);
-        } else if (item->selected)
-            item->unselect();
-    END_FOREACH_ITEM;
+    {
+        SelectionPauseNotification guard;
+        FOREACH_ITEM_ALL(item);
+            if(item == exclude) {
+                if(exclude->selected>0)
+                    exclude->selected = -1;
+                else
+                    exclude->selected = 0;
+                updateItemSelection(exclude);
+            } else if (item->selected)
+                item->unselect();
+        END_FOREACH_ITEM;
+    }
     getTree()->blockConnection(lock);
 }
 
 void DocumentItem::updateSelection(QTreeWidgetItem *ti, bool unselect) {
+    SelectionPauseNotification guard;
     for(int i=0,count=ti->childCount();i<count;++i) {
         auto child = ti->child(i);
         if(child && child->type()==TreeWidget::ObjectType) {

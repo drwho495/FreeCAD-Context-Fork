@@ -1388,7 +1388,7 @@ void StdCmdSelectAll::activated(int iMsg)
     SelectionSingleton& rSel = Selection();
     App::Document* doc = App::GetApplication().getActiveDocument();
     std::vector<App::DocumentObject*> objs = doc->getObjectsOfType(App::DocumentObject::getClassTypeId());
-    rSel.setSelection(doc->getName(), objs);
+    rSel.setSelection(objs);
 }
 
 bool StdCmdSelectAll::isActive(void)
@@ -1420,7 +1420,7 @@ void StdCmdDelete::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
 
-    std::set<App::Document*> docs;
+    std::map<App::Document*, std::vector<std::string>> docs;
     try {
         openCommand(QT_TRANSLATE_NOOP("Command", "Delete"));
         if (getGuiApplication()->sendHasMsgToFocusView(getName())) {
@@ -1428,6 +1428,7 @@ void StdCmdDelete::activated(int iMsg)
             return;
         }
 
+        SelectionPauseNotification slock;
         App::TransactionLocker tlock;
 
         Gui::getMainWindow()->setUpdatesEnabled(false);
@@ -1440,7 +1441,7 @@ void StdCmdDelete::activated(int iMsg)
                 if(sel.getObject() == vpedit->getObject()) {
                     if (!sel.getSubNames().empty()) {
                         vpedit->onDelete(sel.getSubNames());
-                        docs.insert(editDoc->getDocument());
+                        docs[editDoc->getDocument()];
                     }
                     break;
                 }
@@ -1530,28 +1531,28 @@ void StdCmdDelete::activated(int iMsg)
                     Gui::ViewProvider* vp = Application::Instance->getViewProvider(obj);
                     if (vp) {
                         // ask the ViewProvider if it wants to do some clean up
-                        if (vp->onDelete(sel.getSubNames())) {
-                            FCMD_OBJ_DOC_CMD(obj,"removeObject('" << obj->getNameInDocument() << "')");
-                            docs.insert(obj->getDocument());
-                        }
+                        if (vp->onDelete(sel.getSubNames()))
+                            docs[obj->getDocument()].push_back(obj->getNameInDocument());
                     }
                 }
             }
         }
         if(docs.size()) {
+            for (auto &v : docs)
+                v.first->removeObjects(v.second);
+
             const auto &outList = App::PropertyXLink::getDocumentOutList();
             for(auto it=docs.begin();it!=docs.end();++it) {
-                auto itd = outList.find(*it);
+                auto itd = outList.find(it->first);
                 if(itd!=outList.end()) {
                     for(auto doc : itd->second) {
-                        if(doc != *it)
+                        if(doc != it->first)
                             docs.erase(doc);
                     }
                 }
             }
-            for(auto doc : docs) {
-                FCMD_DOC_CMD(doc,"recompute()");
-            }
+            for(auto &v : docs)
+                v.first->recompute();
         }
     } catch (const Base::Exception& e) {
         QMessageBox::critical(getMainWindow(), QObject::tr("Delete failed"),

@@ -81,6 +81,8 @@ Params = [
         "Show hidden tirangulation wires for selected face"),
     ParamFloat('NewDocumentCameraScale', 100.0),
     ParamInt('MaxOnTopSelections', 20),
+    ParamInt('MaxViewSelections', 100),
+    ParamInt('MaxSelectionNotification', 100),
     ParamBool('MapChildrenPlacement', False, on_change=True, doc=
         "Map child object into parent's coordinate space when showing on top.\n"
         "Note that once activated, this option will also activate option ShowOnTop.\n"

@@ -3499,7 +3499,7 @@ void View3DInventorViewer::selectAll()
     }
 
     if (!objs.empty())
-        Gui::Selection().setSelection(objs.front()->getDocument()->getName(), objs);
+        Gui::Selection().setSelection(objs);
 }
 
 bool View3DInventorViewer::processSoEvent(const SoEvent* ev)
@@ -4402,7 +4402,17 @@ void View3DInventorViewer::viewSelection(bool extend)
     if (extend && editViewProvider)
         return;
 
-    viewObjects(Gui::Selection().getSelectionT(guiDocument->getDocument()->getName(),0), extend);
+    if (!guiDocument)
+        return;
+
+    auto sels = Gui::Selection().getSelectionT(guiDocument->getDocument()->getName(),0);
+    if (sels.empty()) {
+        sels.push_back(Gui::Selection().getContext());
+        if (sels.back().getDocument() != guiDocument->getDocument())
+            return;
+    } else if (ViewParams::getMaxViewSelections() < (int)sels.size())
+        sels.resize(ViewParams::getMaxViewSelections());
+    viewObjects(sels, extend);
 }
 
 void View3DInventorViewer::viewObjects(const std::vector<App::SubObjectT> &objs, bool extend)
