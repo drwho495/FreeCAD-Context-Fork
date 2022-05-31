@@ -34,7 +34,10 @@
 # include <QPointer>
 #endif
 
+#include <atomic>
 #include <Base/Interpreter.h>
+#include "PrefWidgets.h"
+#include "Action.h"
 #include "ReportView.h"
 #include "FileDialog.h"
 #include "PythonConsole.h"
@@ -205,6 +208,8 @@ void ReportHighlighter::setErrorColor( const QColor& col )
     errCol = col;
 }
 
+
+namespace {
 // ----------------------------------------------------------
 
 /**
@@ -220,9 +225,15 @@ class CustomReportEvent : public QEvent
 public:
     CustomReportEvent(ReportHighlighter::Paragraph p, const QString& s)
     : QEvent(eventType())
-    { par = p; msg = s;}
+    {
+        par = p;
+        msg = s;
+        ++counter;
+    }
     ~CustomReportEvent()
-    { }
+    { 
+        --counter;
+    }
     const QString& message() const
     { return msg; }
     ReportHighlighter::Paragraph messageType() const
@@ -231,10 +242,18 @@ public:
         static int _type = QEvent::registerEventType();
         return static_cast<QEvent::Type>(_type);
     }
+
+public:
+    static std::atomic<int> counter;
+
 private:
     ReportHighlighter::Paragraph par;
     QString msg;
 };
+
+std::atomic<int> CustomReportEvent::counter;
+
+} // anonymous namespace
 
 // ----------------------------------------------------------
 
@@ -356,6 +375,9 @@ public:
     static bool redirected_stderr;
     static PyObject* default_stderr;
     static PyObject* replace_stderr;
+
+    ReportHighlighter::Paragraph pendingType;
+    QStringList pendingMessage;
 };
 
 bool ReportOutput::Data::redirected_stdout = false;
@@ -394,6 +416,7 @@ ReportOutput::ReportOutput(QWidget* parent)
     _prefs = WindowParameter::getDefaultParameter()->GetGroup("Editor");
     _prefs->Attach(this);
     _prefs->Notify("FontSize");
+    _prefs->Notify("MaxLines");
 
     // scroll to bottom at startup to make sure that last appended text is visible
     ensureCursorVisible();
@@ -463,7 +486,6 @@ void ReportOutput::customEvent ( QEvent* ev )
     // Appends the text stored in the event to the text view
     if ( ev->type() ==  CustomReportEvent::eventType() ) {
         CustomReportEvent* ce = static_cast<CustomReportEvent*>(ev);
-        reportHl->setParagraphType(ce->messageType());
 
         bool showTimecode = ReportViewParams::getcheckShowReportTimecode();
         QString text = ce->message();
@@ -473,18 +495,67 @@ void ReportOutput::customEvent ( QEvent* ev )
             QTime time = QTime::currentTime();
             text.prepend(time.toString(QLatin1String("hh:mm:ss  ")));
         }
+        blockStart = text.endsWith(QLatin1Char('\n'));
 
-        QTextCursor cursor(this->document());
-        cursor.beginEditBlock();
-        cursor.movePosition(QTextCursor::End);
-        cursor.insertText(text);
-        cursor.endEditBlock();
+        bool flushed = false;
+        QTextDocument *document = this->document();
 
-        blockStart = cursor.atBlockStart();
-        if (gotoEnd) {
-            setTextCursor(cursor);
+        // Try to batch process text input because text layout is an expensive
+        // operation
+        if (CustomReportEvent::counter > 1
+                && (d->pendingMessage.isEmpty()
+                    || d->pendingType == ce->messageType()))
+        {
+            d->pendingType = ce->messageType();
+            d->pendingMessage.append(text);
+            int maxCount = document->maximumBlockCount();
+            if (maxCount > 0
+                    && d->pendingMessage.size() + document->blockCount() > maxCount)
+            {
+                document->clear();
+                if (d->pendingMessage.size() > maxCount)
+                    d->pendingMessage.erase(d->pendingMessage.begin(),
+                            d->pendingMessage.begin() + d->pendingMessage.size() - maxCount);
+            }
         }
-        ensureCursorVisible();
+        else {
+            if (d->pendingMessage.size()) {
+                if (d->pendingType == ce->messageType()) {
+                    d->pendingMessage.append(text);
+                    text.clear();
+                }
+                reportHl->setParagraphType(d->pendingType);
+                QTextCursor cursor(document);
+                cursor.beginEditBlock();
+                cursor.movePosition(QTextCursor::End);
+                cursor.insertText(d->pendingMessage.join(QString()));
+                cursor.endEditBlock();
+                d->pendingMessage.clear();
+                flushed = true;
+            }
+            if (text.size()) {
+                if (CustomReportEvent::counter > 1) {
+                    d->pendingType = ce->messageType();
+                    d->pendingMessage.append(text);
+                }
+                else {
+                    reportHl->setParagraphType(ce->messageType());
+                    QTextCursor cursor(document);
+                    cursor.beginEditBlock();
+                    cursor.movePosition(QTextCursor::End);
+                    cursor.insertText(text);
+                    cursor.endEditBlock();
+                    flushed = true;
+                }
+            }
+        }
+
+        if (flushed && gotoEnd) {
+            QTextCursor cursor(document);
+            cursor.movePosition(QTextCursor::End);
+            setTextCursor(cursor);
+            ensureCursorVisible();
+        }
     }
 }
 
@@ -566,6 +637,17 @@ void ReportOutput::contextMenuEvent ( QContextMenuEvent * e )
     botAct->setChecked(gotoEnd);
 
     menu->addAction(tr("Clear"), this, SLOT(clear()));
+
+    auto spinBox = new PrefSpinBox(menu);
+    spinBox->setMinimum(0);
+    spinBox->setMaximum(99999999);
+    spinBox->setSingleStep(1000);
+    spinBox->setValue(this->document()->maximumBlockCount());
+    spinBox->setParamGrpPath("OutputWindow");
+    spinBox->setEntryName("MaxLines");
+    spinBox->initAutoSave();
+    Action::addWidget(menu, QObject::tr("Maximum lines"), QString(), spinBox);
+
     menu->addSeparator();
     menu->addAction(tr("Save As..."), this, SLOT(onSaveAs()));
 
@@ -752,6 +834,9 @@ void ReportOutput::OnChange(Base::Subject<const char*> &rCaller, const char * sR
         bool checked = rclGrp.GetBool(sReason, true);
         if (checked != d->redirected_stderr)
             onToggleRedirectPythonStderr();
+    }
+    else if (strcmp(sReason, "MaxLines") == 0) {
+        this->document()->setMaximumBlockCount(rclGrp.GetInt("MaxLines", 10000));
     }
 }
 
