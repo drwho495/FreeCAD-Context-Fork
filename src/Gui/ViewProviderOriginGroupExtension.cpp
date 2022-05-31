@@ -23,11 +23,13 @@
 
 
 #include "PreCompiled.h"
+#include <memory>
 
 #ifndef _PreComp_
 #include <boost_bind_bind.hpp>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/nodes/SoSeparator.h>
+#include <QTimer>
 #endif
 
 #include "ViewProviderOriginGroupExtension.h"
@@ -41,17 +43,62 @@
 #include "Command.h"
 #include <App/OriginGroupExtension.h>
 #include <App/Document.h>
+#include <App/DocumentObserver.h>
 #include <App/Origin.h>
 #include <Base/Console.h>
 
 using namespace Gui;
 namespace bp = boost::placeholders;
 
-
 EXTENSION_PROPERTY_SOURCE(Gui::ViewProviderOriginGroupExtension, Gui::ViewProviderGeoFeatureGroupExtension)
+
+class ViewProviderOriginGroupExtension::Private
+    : public std::enable_shared_from_this<ViewProviderOriginGroupExtension::Private>
+{
+public:
+    Private()
+    {
+        timer.setSingleShot(true);
+
+        QObject::connect(&timer, &QTimer::timeout, [this](){
+            if (App::Document::isAnyRestoring()
+                    || App::Document::isAnyRecomputing()) {
+                timer.start(300);
+                return;
+            }
+            for (auto obj : objs) {
+                if (auto vp = Application::Instance->getViewProvider(obj)) {
+                    if (auto ext = vp->getExtensionByType<ViewProviderOriginGroupExtension>(true))
+                        ext->updateOriginSize();
+                }
+            }
+        });
+    }
+
+    void schedule(ViewProviderDocumentObject *vp)
+    {
+        objs.insert(vp->getObject());
+        timer.start(300);
+    }
+
+    static std::shared_ptr<ViewProviderOriginGroupExtension::Private> instance()
+    {
+        static std::weak_ptr<ViewProviderOriginGroupExtension::Private> self;
+        auto res = self.lock();
+        if (!res) {
+            res = std::make_shared<ViewProviderOriginGroupExtension::Private>();
+            self = res;
+        }
+        return res;
+    };
+
+    std::set<App::DocumentObject*> objs;
+    QTimer timer;
+};
 
 ViewProviderOriginGroupExtension::ViewProviderOriginGroupExtension()
 {
+    pimpl = Private::instance();
     initExtensionType(ViewProviderOriginGroupExtension::getExtensionClassTypeId());
 }
 
@@ -93,17 +140,26 @@ void ViewProviderOriginGroupExtension::extensionUpdateData( const App::Property*
     if(propName && (strcmp(propName,"_GroupTouched")==0
                 || strcmp(propName,"Group")==0
                 || strcmp(propName,"Shape")==0))
-        updateOriginSize();
+    {
+        auto owner = getExtendedViewProvider()->getObject();
+        if(!App::GetApplication().isRestoring()
+                && owner
+                && owner->getDocument()
+                && !owner->testStatus(App::ObjectStatus::Remove)
+                && !owner->getDocument()->isPerformingTransaction())
+        {
+            pimpl->schedule(getExtendedViewProvider());
+        }
+    }
 
     ViewProviderGeoFeatureGroupExtension::extensionUpdateData ( prop );
 }
 
 void ViewProviderOriginGroupExtension::updateOriginSize () {
     auto owner = getExtendedViewProvider()->getObject();
-    if(App::GetApplication().isRestoring()
-            || !owner->getDocument()
-            || owner->testStatus(App::ObjectStatus::Remove)
-            || owner->getDocument()->isPerformingTransaction())
+    if(!owner || !owner->getDocument()
+              || owner->testStatus(App::ObjectStatus::Remove)
+              || owner->getDocument()->isPerformingTransaction())
         return;
 
     auto* group = owner->getExtensionByType<App::OriginGroupExtension>();
