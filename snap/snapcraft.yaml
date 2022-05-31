@@ -49,6 +49,8 @@ layout:
     symlink: $SNAP/usr/share/matplotlib
   /usr/share/qt5:
     symlink: $SNAP/kf5/usr/share/qt5
+  /usr/bin/dot:
+    symlink: $SNAP/usr/bin/dot
 
 environment:
   LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/blas:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/lapack # numpy
@@ -226,7 +228,6 @@ parts:
       - python3-pyside2.qtsvg
       - python3-pyside2.qtwidgets
       - python3-pyside2.qtnetwork
-      - graphviz
       - calculix-ccx # FEM
       - libfreeimage3
       - libocct-data-exchange-7.5
@@ -288,8 +289,20 @@ parts:
     stage:
       - -pyvenv.cfg
 
+  graphviz:
+    plugin: nil
+    build-packages:
+      - graphviz
+    stage-packages:
+      - graphviz
+    override-build: |
+      dot -c
+      cp \
+        /usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/config* \
+        ${SNAPCRAFT_PART_INSTALL}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/
+
   cleanup:
-    after: [stub-chown, freecad, pip, gmsh, assembly3, snap-setup-mod, coin3d, pivy, branding]
+    after: [stub-chown, freecad, pip, assembly3, snap-setup-mod, graphviz coin3d, pivy, branding]
     plugin: nil
     build-snaps: [kde-frameworks-5-91-qt-5-15-3-core20]
     override-prime: |
