@@ -581,6 +581,9 @@ public:
     /// Indicate if there is any document restoring/importing
     static bool isAnyRestoring();
 
+    /// Indicate if there is any document recomputing
+    static bool isAnyRecomputing();
+
     long getLastObjectId() const;
     void setLastObjectId(long id); 
 

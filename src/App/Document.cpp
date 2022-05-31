@@ -3791,8 +3791,30 @@ int Document::recompute(const std::vector<App::DocumentObject*> &objs, bool forc
 
 #else //ifdef USE_OLD_DAG
 
+namespace {
+int _Recomputing;
+class RecomputeCounter {
+public:
+    RecomputeCounter()
+    {
+        ++_Recomputing;
+    }
+    ~RecomputeCounter()
+    {
+        --_Recomputing;
+    }
+};
+} // anonymous namespace
+
+bool Document::isAnyRecomputing()
+{
+    return _Recomputing == 0;
+}
+
 int Document::recompute(const std::vector<App::DocumentObject*> &objs, bool force, bool *hasError, int options)
 {
+    RecomputeCounter counter;
+
     if (d->undoing || d->rollback) {
         if (FC_LOG_INSTANCE.isEnabled(FC_LOGLEVEL_LOG))
             FC_WARN("Ignore document recompute on undo/redo");
