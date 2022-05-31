@@ -137,6 +137,12 @@ void Origin::setupObject () {
 }
 
 void Origin::initObjects() const {
+    if (testStatus(App::ObjectStatus::Remove)
+            || !getDocument()
+            || getDocument()->testStatus(App::Document::Restoring)
+            || getDocument()->isPerformingTransaction())
+        return;
+
     const static struct {
         const Base::Type type;
         const char *role;
