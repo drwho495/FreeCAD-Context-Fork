@@ -302,7 +302,7 @@ parts:
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/
 
   cleanup:
-    after: [stub-chown, freecad, pip, assembly3, snap-setup-mod, graphviz coin3d, pivy, branding]
+    after: [stub-chown, freecad, pip, assembly3, snap-setup-mod, graphviz, coin3d, pivy, branding]
     plugin: nil
     build-snaps: [kde-frameworks-5-91-qt-5-15-3-core20]
     override-prime: |
