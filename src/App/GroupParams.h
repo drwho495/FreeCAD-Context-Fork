@@ -28,11 +28,11 @@ import GroupParams
 GroupParams.declare()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:45)
+// Auto generated code (Tools/params_utils.py:68)
 #include <Base/Parameter.h>
 
 
-// Auto generated code (Tools/params_utils.py:51)
+// Auto generated code (Tools/params_utils.py:74)
 namespace App {
 /** Convenient class to obtain group object (App::GroupExtension and GeoFeatureGroupExtension) related parameters
 
@@ -68,7 +68,7 @@ class AppExport GroupParams {
 public:
     static ParameterGrp::handle getHandle();
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter ClaimAllChildren
     ///
@@ -81,7 +81,7 @@ public:
     static const char *docClaimAllChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter KeepHiddenChildren
     ///
@@ -94,7 +94,7 @@ public:
     static const char *docKeepHiddenChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter ExportChildren
     ///
@@ -107,7 +107,7 @@ public:
     static const char *docExportChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter CreateOrigin
     ///
@@ -121,7 +121,7 @@ public:
     static const char *docCreateOrigin();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter GeoGroupAllowCrossLink
     ///
@@ -135,7 +135,7 @@ public:
     static const char *docGeoGroupAllowCrossLink();
     //@}
 
-// Auto generated code (Tools/params_utils.py:123)
+// Auto generated code (Tools/params_utils.py:146)
 }; // class GroupParams
 } // namespace App
 //[[[end]]]

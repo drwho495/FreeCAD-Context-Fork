@@ -28,10 +28,10 @@ import DlgSettingsDrawStyles
 DlgSettingsDrawStyles.declare()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:374)
+// Auto generated code (Tools/params_utils.py:397)
 #include <Gui/PropertyPage.h>
 #include <Gui/PrefWidgets.h>
-// Auto generated code (Tools/params_utils.py:379)
+// Auto generated code (Tools/params_utils.py:402)
 class QLabel;
 class QGroupBox;
 
@@ -68,12 +68,12 @@ protected:
 
 private:
 
-    // Auto generated code (Tools/params_utils.py:299)
+    // Auto generated code (Tools/params_utils.py:322)
     QGroupBox * groupDocument = nullptr;
     QLabel *labelDefaultDrawStyle = nullptr;
     Gui::PrefComboBox *comboBoxDefaultDrawStyle = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:299)
+    // Auto generated code (Tools/params_utils.py:322)
     QGroupBox * groupSelection = nullptr;
     QLabel *labelTransparencyOnTop = nullptr;
     Gui::PrefDoubleSpinBox *spinBoxTransparencyOnTop = nullptr;
@@ -92,7 +92,7 @@ private:
     QLabel *labelSelectionHiddenLineWidth = nullptr;
     Gui::PrefDoubleSpinBox *spinBoxSelectionHiddenLineWidth = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:299)
+    // Auto generated code (Tools/params_utils.py:322)
     QGroupBox * groupHiddenLines = nullptr;
     Gui::PrefCheckBox *checkBoxHiddenLineOverrideFaceColor = nullptr;
     Gui::PrefColorButton *colorButtonHiddenLineFaceColor = nullptr;
@@ -113,7 +113,7 @@ private:
     QLabel *labelHiddenLinePointSize = nullptr;
     Gui::PrefDoubleSpinBox *spinBoxHiddenLinePointSize = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:299)
+    // Auto generated code (Tools/params_utils.py:322)
     QGroupBox * groupShadow = nullptr;
     Gui::PrefCheckBox *checkBoxShadowSpotLight = nullptr;
     QLabel *labelShadowLightColor = nullptr;
@@ -155,7 +155,7 @@ private:
     QLabel *labelShadowMaxDistance = nullptr;
     Gui::PrefDoubleSpinBox *spinBoxShadowMaxDistance = nullptr;
     Gui::PrefCheckBox *checkBoxShadowTransparentShadow = nullptr;
-// Auto generated code (Tools/params_utils.py:424)
+// Auto generated code (Tools/params_utils.py:447)
 };
 } // namespace {dialog_namespace}
 } // namespace {namespace}

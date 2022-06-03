@@ -29,7 +29,7 @@ import DlgSettingsDrawStyles
 DlgSettingsDrawStyles.define()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:446)
+// Auto generated code (Tools/params_utils.py:469)
 #ifndef _PreComp_
 #   include <QApplication>
 #   include <QLabel>
@@ -40,12 +40,12 @@ DlgSettingsDrawStyles.define()
 #endif
 #include <Gui/PrefWidgets.h>
 #include <Gui/ViewParams.h>
-// Auto generated code (Tools/params_utils.py:464)
+// Auto generated code (Tools/params_utils.py:487)
 #include "DlgSettingsDrawStyles.h"
 using namespace Gui::Dialog;
 /* TRANSLATOR Gui::Dialog::DlgSettingsDrawStyles */
 
-// Auto generated code (Tools/params_utils.py:471)
+// Auto generated code (Tools/params_utils.py:494)
 DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     : PreferencePage( parent )
 {
@@ -53,7 +53,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     auto layout = new QVBoxLayout(this);
 
 
-    // Auto generated code (Tools/params_utils.py:313)
+    // Auto generated code (Tools/params_utils.py:336)
     groupDocument = new QGroupBox(this);
     layout->addWidget(groupDocument);
     auto layoutHorizDocument = new QHBoxLayout(groupDocument);
@@ -61,7 +61,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizDocument->addLayout(layoutDocument);
     layoutHorizDocument->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelDefaultDrawStyle = new QLabel(this);
     layoutDocument->addWidget(labelDefaultDrawStyle, 0, 0);
     comboBoxDefaultDrawStyle = new Gui::PrefComboBox(this);
@@ -73,7 +73,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     comboBoxDefaultDrawStyle->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:313)
+    // Auto generated code (Tools/params_utils.py:336)
     groupSelection = new QGroupBox(this);
     layout->addWidget(groupSelection);
     auto layoutHorizSelection = new QHBoxLayout(groupSelection);
@@ -81,7 +81,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizSelection->addLayout(layoutSelection);
     layoutHorizSelection->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelTransparencyOnTop = new QLabel(this);
     layoutSelection->addWidget(labelTransparencyOnTop, 0, 0);
     spinBoxTransparencyOnTop = new Gui::PrefDoubleSpinBox(this);
@@ -90,7 +90,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxTransparencyOnTop->setEntryName("TransparencyOnTop");
     spinBoxTransparencyOnTop->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionLineThicken = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLineThicken, 1, 0);
     spinBoxSelectionLineThicken = new Gui::PrefDoubleSpinBox(this);
@@ -99,7 +99,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionLineThicken->setEntryName("SelectionLineThicken");
     spinBoxSelectionLineThicken->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionLineMaxWidth = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLineMaxWidth, 2, 0);
     spinBoxSelectionLineMaxWidth = new Gui::PrefDoubleSpinBox(this);
@@ -108,7 +108,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionLineMaxWidth->setEntryName("SelectionLineMaxWidth");
     spinBoxSelectionLineMaxWidth->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionPointScale = new QLabel(this);
     layoutSelection->addWidget(labelSelectionPointScale, 3, 0);
     spinBoxSelectionPointScale = new Gui::PrefDoubleSpinBox(this);
@@ -117,7 +117,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionPointScale->setEntryName("SelectionPointScale");
     spinBoxSelectionPointScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionPointMaxSize = new QLabel(this);
     layoutSelection->addWidget(labelSelectionPointMaxSize, 4, 0);
     spinBoxSelectionPointMaxSize = new Gui::PrefDoubleSpinBox(this);
@@ -126,7 +126,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionPointMaxSize->setEntryName("SelectionPointMaxSize");
     spinBoxSelectionPointMaxSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionLinePattern = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLinePattern, 5, 0);
     linePatternSelectionLinePattern = new Gui::PrefLinePattern(this);
@@ -138,7 +138,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     linePatternSelectionLinePattern->setEntryName("SelectionLinePattern");
     linePatternSelectionLinePattern->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionLinePatternScale = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLinePatternScale, 6, 0);
     spinBoxSelectionLinePatternScale = new Gui::PrefSpinBox(this);
@@ -147,7 +147,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionLinePatternScale->setEntryName("SelectionLinePatternScale");
     spinBoxSelectionLinePatternScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelSelectionHiddenLineWidth = new QLabel(this);
     layoutSelection->addWidget(labelSelectionHiddenLineWidth, 7, 0);
     spinBoxSelectionHiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
@@ -157,7 +157,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxSelectionHiddenLineWidth->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:313)
+    // Auto generated code (Tools/params_utils.py:336)
     groupHiddenLines = new QGroupBox(this);
     layout->addWidget(groupHiddenLines);
     auto layoutHorizHiddenLines = new QHBoxLayout(groupHiddenLines);
@@ -165,7 +165,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizHiddenLines->addLayout(layoutHiddenLines);
     layoutHorizHiddenLines->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     colorButtonHiddenLineFaceColor = new Gui::PrefColorButton(this);
     layoutHiddenLines->addWidget(colorButtonHiddenLineFaceColor, 0, 1);
     colorButtonHiddenLineFaceColor->setPackedColor(Gui::ViewParams::defaultHiddenLineFaceColor());
@@ -177,7 +177,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     colorButtonHiddenLineFaceColor->setEntryName("HiddenLineFaceColor");
     colorButtonHiddenLineFaceColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     colorButtonHiddenLineColor = new Gui::PrefColorButton(this);
     layoutHiddenLines->addWidget(colorButtonHiddenLineColor, 1, 1);
     colorButtonHiddenLineColor->setPackedColor(Gui::ViewParams::defaultHiddenLineColor());
@@ -189,7 +189,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     colorButtonHiddenLineColor->setEntryName("HiddenLineColor");
     colorButtonHiddenLineColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     colorButtonHiddenLineBackground = new Gui::PrefColorButton(this);
     layoutHiddenLines->addWidget(colorButtonHiddenLineBackground, 2, 1);
     colorButtonHiddenLineBackground->setPackedColor(Gui::ViewParams::defaultHiddenLineBackground());
@@ -201,49 +201,49 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     colorButtonHiddenLineBackground->setEntryName("HiddenLineBackground");
     colorButtonHiddenLineBackground->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLineShaded = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLineShaded, 3, 0);
     checkBoxHiddenLineShaded->setChecked(Gui::ViewParams::defaultHiddenLineShaded());
     checkBoxHiddenLineShaded->setEntryName("HiddenLineShaded");
     checkBoxHiddenLineShaded->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLineShowOutline = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLineShowOutline, 4, 0);
     checkBoxHiddenLineShowOutline->setChecked(Gui::ViewParams::defaultHiddenLineShowOutline());
     checkBoxHiddenLineShowOutline->setEntryName("HiddenLineShowOutline");
     checkBoxHiddenLineShowOutline->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLinePerFaceOutline = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLinePerFaceOutline, 5, 0);
     checkBoxHiddenLinePerFaceOutline->setChecked(Gui::ViewParams::defaultHiddenLinePerFaceOutline());
     checkBoxHiddenLinePerFaceOutline->setEntryName("HiddenLinePerFaceOutline");
     checkBoxHiddenLinePerFaceOutline->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLineHideFace = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLineHideFace, 6, 0);
     checkBoxHiddenLineHideFace->setChecked(Gui::ViewParams::defaultHiddenLineHideFace());
     checkBoxHiddenLineHideFace->setEntryName("HiddenLineHideFace");
     checkBoxHiddenLineHideFace->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLineHideSeam = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLineHideSeam, 7, 0);
     checkBoxHiddenLineHideSeam->setChecked(Gui::ViewParams::defaultHiddenLineHideSeam());
     checkBoxHiddenLineHideSeam->setEntryName("HiddenLineHideSeam");
     checkBoxHiddenLineHideSeam->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxHiddenLineHideVertex = new Gui::PrefCheckBox(this);
     layoutHiddenLines->addWidget(checkBoxHiddenLineHideVertex, 8, 0);
     checkBoxHiddenLineHideVertex->setChecked(Gui::ViewParams::defaultHiddenLineHideVertex());
     checkBoxHiddenLineHideVertex->setEntryName("HiddenLineHideVertex");
     checkBoxHiddenLineHideVertex->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     spinBoxHiddenLineTransparency = new Gui::PrefDoubleSpinBox(this);
     layoutHiddenLines->addWidget(spinBoxHiddenLineTransparency, 9, 1);
     spinBoxHiddenLineTransparency->setValue(Gui::ViewParams::defaultHiddenLineTransparency());
@@ -255,7 +255,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxHiddenLineTransparency->setEntryName("HiddenLineTransparency");
     spinBoxHiddenLineTransparency->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelHiddenLineWidth = new QLabel(this);
     layoutHiddenLines->addWidget(labelHiddenLineWidth, 10, 0);
     spinBoxHiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
@@ -264,7 +264,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxHiddenLineWidth->setEntryName("HiddenLineWidth");
     spinBoxHiddenLineWidth->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelHiddenLinePointSize = new QLabel(this);
     layoutHiddenLines->addWidget(labelHiddenLinePointSize, 11, 0);
     spinBoxHiddenLinePointSize = new Gui::PrefDoubleSpinBox(this);
@@ -274,7 +274,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxHiddenLinePointSize->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:313)
+    // Auto generated code (Tools/params_utils.py:336)
     groupShadow = new QGroupBox(this);
     layout->addWidget(groupShadow);
     auto layoutHorizShadow = new QHBoxLayout(groupShadow);
@@ -282,14 +282,14 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizShadow->addLayout(layoutShadow);
     layoutHorizShadow->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowSpotLight = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowSpotLight, 0, 0);
     checkBoxShadowSpotLight->setChecked(Gui::ViewParams::defaultShadowSpotLight());
     checkBoxShadowSpotLight->setEntryName("ShadowSpotLight");
     checkBoxShadowSpotLight->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowLightColor = new QLabel(this);
     layoutShadow->addWidget(labelShadowLightColor, 1, 0);
     colorButtonShadowLightColor = new Gui::PrefColorButton(this);
@@ -298,7 +298,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     colorButtonShadowLightColor->setEntryName("ShadowLightColor");
     colorButtonShadowLightColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowLightIntensity = new QLabel(this);
     layoutShadow->addWidget(labelShadowLightIntensity, 2, 0);
     spinBoxShadowLightIntensity = new Gui::PrefDoubleSpinBox(this);
@@ -307,21 +307,21 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowLightIntensity->setEntryName("ShadowLightIntensity");
     spinBoxShadowLightIntensity->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowShowGround = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowShowGround, 3, 0);
     checkBoxShadowShowGround->setChecked(Gui::ViewParams::defaultShadowShowGround());
     checkBoxShadowShowGround->setEntryName("ShadowShowGround");
     checkBoxShadowShowGround->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowGroundBackFaceCull = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowGroundBackFaceCull, 4, 0);
     checkBoxShadowGroundBackFaceCull->setChecked(Gui::ViewParams::defaultShadowGroundBackFaceCull());
     checkBoxShadowGroundBackFaceCull->setEntryName("ShadowGroundBackFaceCull");
     checkBoxShadowGroundBackFaceCull->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundColor = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundColor, 5, 0);
     colorButtonShadowGroundColor = new Gui::PrefColorButton(this);
@@ -330,7 +330,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     colorButtonShadowGroundColor->setEntryName("ShadowGroundColor");
     colorButtonShadowGroundColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundScale = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundScale, 6, 0);
     spinBoxShadowGroundScale = new Gui::PrefDoubleSpinBox(this);
@@ -339,7 +339,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowGroundScale->setEntryName("ShadowGroundScale");
     spinBoxShadowGroundScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundTransparency = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTransparency, 7, 0);
     spinBoxShadowGroundTransparency = new Gui::PrefDoubleSpinBox(this);
@@ -348,7 +348,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowGroundTransparency->setEntryName("ShadowGroundTransparency");
     spinBoxShadowGroundTransparency->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundTexture = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTexture, 8, 0);
     fileChooserShadowGroundTexture = new Gui::PrefFileChooser(this);
@@ -357,7 +357,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     fileChooserShadowGroundTexture->setEntryName("ShadowGroundTexture");
     fileChooserShadowGroundTexture->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundTextureSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTextureSize, 9, 0);
     spinBoxShadowGroundTextureSize = new Gui::PrefDoubleSpinBox(this);
@@ -366,7 +366,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowGroundTextureSize->setEntryName("ShadowGroundTextureSize");
     spinBoxShadowGroundTextureSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowGroundBumpMap = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundBumpMap, 10, 0);
     fileChooserShadowGroundBumpMap = new Gui::PrefFileChooser(this);
@@ -375,21 +375,21 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     fileChooserShadowGroundBumpMap->setEntryName("ShadowGroundBumpMap");
     fileChooserShadowGroundBumpMap->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowGroundShading = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowGroundShading, 11, 0);
     checkBoxShadowGroundShading->setChecked(Gui::ViewParams::defaultShadowGroundShading());
     checkBoxShadowGroundShading->setEntryName("ShadowGroundShading");
     checkBoxShadowGroundShading->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowUpdateGround = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowUpdateGround, 12, 0);
     checkBoxShadowUpdateGround->setChecked(Gui::ViewParams::defaultShadowUpdateGround());
     checkBoxShadowUpdateGround->setEntryName("ShadowUpdateGround");
     checkBoxShadowUpdateGround->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowDisplayMode = new QLabel(this);
     layoutShadow->addWidget(labelShadowDisplayMode, 13, 0);
     comboBoxShadowDisplayMode = new Gui::PrefComboBox(this);
@@ -400,7 +400,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     comboBoxShadowDisplayMode->setEntryName("ShadowDisplayMode");
     comboBoxShadowDisplayMode->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowPrecision = new QLabel(this);
     layoutShadow->addWidget(labelShadowPrecision, 14, 0);
     spinBoxShadowPrecision = new Gui::PrefDoubleSpinBox(this);
@@ -409,7 +409,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowPrecision->setEntryName("ShadowPrecision");
     spinBoxShadowPrecision->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowSmoothBorder = new QLabel(this);
     layoutShadow->addWidget(labelShadowSmoothBorder, 15, 0);
     spinBoxShadowSmoothBorder = new Gui::PrefSpinBox(this);
@@ -418,7 +418,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowSmoothBorder->setEntryName("ShadowSmoothBorder");
     spinBoxShadowSmoothBorder->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowSpreadSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowSpreadSize, 16, 0);
     spinBoxShadowSpreadSize = new Gui::PrefSpinBox(this);
@@ -427,7 +427,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowSpreadSize->setEntryName("ShadowSpreadSize");
     spinBoxShadowSpreadSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowSpreadSampleSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowSpreadSampleSize, 17, 0);
     spinBoxShadowSpreadSampleSize = new Gui::PrefSpinBox(this);
@@ -436,7 +436,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowSpreadSampleSize->setEntryName("ShadowSpreadSampleSize");
     spinBoxShadowSpreadSampleSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowEpsilon = new QLabel(this);
     layoutShadow->addWidget(labelShadowEpsilon, 18, 0);
     spinBoxShadowEpsilon = new Gui::PrefDoubleSpinBox(this);
@@ -445,7 +445,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowEpsilon->setEntryName("ShadowEpsilon");
     spinBoxShadowEpsilon->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowThreshold = new QLabel(this);
     layoutShadow->addWidget(labelShadowThreshold, 19, 0);
     spinBoxShadowThreshold = new Gui::PrefDoubleSpinBox(this);
@@ -454,7 +454,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowThreshold->setEntryName("ShadowThreshold");
     spinBoxShadowThreshold->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowBoundBoxScale = new QLabel(this);
     layoutShadow->addWidget(labelShadowBoundBoxScale, 20, 0);
     spinBoxShadowBoundBoxScale = new Gui::PrefDoubleSpinBox(this);
@@ -463,7 +463,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowBoundBoxScale->setEntryName("ShadowBoundBoxScale");
     spinBoxShadowBoundBoxScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     labelShadowMaxDistance = new QLabel(this);
     layoutShadow->addWidget(labelShadowMaxDistance, 21, 0);
     spinBoxShadowMaxDistance = new Gui::PrefDoubleSpinBox(this);
@@ -472,7 +472,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     spinBoxShadowMaxDistance->setEntryName("ShadowMaxDistance");
     spinBoxShadowMaxDistance->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:324)
+    // Auto generated code (Tools/params_utils.py:347)
     checkBoxShadowTransparentShadow = new Gui::PrefCheckBox(this);
     layoutShadow->addWidget(checkBoxShadowTransparentShadow, 22, 0);
     checkBoxShadowTransparentShadow->setChecked(Gui::ViewParams::defaultShadowTransparentShadow());
@@ -482,7 +482,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     retranslateUi();
 }
 
-// Auto generated code (Tools/params_utils.py:481)
+// Auto generated code (Tools/params_utils.py:504)
 #include "DlgSettingsDrawStyles.h"
 DlgSettingsDrawStyles::~DlgSettingsDrawStyles()
 {
@@ -490,8 +490,8 @@ DlgSettingsDrawStyles::~DlgSettingsDrawStyles()
 
 void DlgSettingsDrawStyles::saveSettings()
 {
-    // Auto generated code (Tools/params_utils.py:490)
-    // Auto generated code (Tools/params_utils.py:356)
+    // Auto generated code (Tools/params_utils.py:513)
+    // Auto generated code (Tools/params_utils.py:379)
     comboBoxDefaultDrawStyle->onSave();
     spinBoxTransparencyOnTop->onSave();
     spinBoxSelectionLineThicken->onSave();
@@ -540,8 +540,8 @@ void DlgSettingsDrawStyles::saveSettings()
 
 void DlgSettingsDrawStyles::loadSettings()
 {
-    // Auto generated code (Tools/params_utils.py:497)
-    // Auto generated code (Tools/params_utils.py:346)
+    // Auto generated code (Tools/params_utils.py:520)
+    // Auto generated code (Tools/params_utils.py:369)
     comboBoxDefaultDrawStyle->onRestore();
     spinBoxTransparencyOnTop->onRestore();
     spinBoxSelectionLineThicken->onRestore();
@@ -590,7 +590,7 @@ void DlgSettingsDrawStyles::loadSettings()
 
 void DlgSettingsDrawStyles::retranslateUi()
 {
-    // Auto generated code (Tools/params_utils.py:504)
+    // Auto generated code (Tools/params_utils.py:527)
     setWindowTitle(QObject::tr("Draw styles"));
     groupDocument->setTitle(QObject::tr("Document"));
     comboBoxDefaultDrawStyle->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docDefaultDrawStyle()));
@@ -741,7 +741,7 @@ void DlgSettingsDrawStyles::retranslateUi()
 
 void DlgSettingsDrawStyles::changeEvent(QEvent *e)
 {
-    // Auto generated code (Tools/params_utils.py:516)
+    // Auto generated code (Tools/params_utils.py:539)
     if (e->type() == QEvent::LanguageChange) {
         retranslateUi();
     }

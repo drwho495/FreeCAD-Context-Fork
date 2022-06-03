@@ -33,7 +33,6 @@
 import ViewParams
 ViewParams.declare_begin()
 ]]]*/
-
 // Auto generated code (Gui/ViewParams.py:450)
 #include <QString>
 
@@ -2061,7 +2060,7 @@ public:
     static const char *docSelectionStackSize();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:95)
+    // Auto generated code (Tools/params_utils.py:118)
     //@{
     /// Accessor for parameter DefaultDrawStyle
     ///
@@ -2091,7 +2090,7 @@ ViewParams.declare_end()
 }; // class ViewParams
 } // namespace Gui
 
-// Auto generated code (Gui/ViewParams.py:369)
+// Auto generated code (Gui/ViewParams.py:392)
 namespace Gui {
 /// Obtain draw style name from index. Returns nullptr if out of range.
 GuiExport const char *drawStyleNameFromIndex(int index);
