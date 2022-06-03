@@ -54,6 +54,26 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
 
 
     // Auto generated code (Tools/params_utils.py:313)
+    groupDocument = new QGroupBox(this);
+    layout->addWidget(groupDocument);
+    auto layoutHorizDocument = new QHBoxLayout(groupDocument);
+    auto layoutDocument = new QGridLayout();
+    layoutHorizDocument->addLayout(layoutDocument);
+    layoutHorizDocument->addStretch();
+
+    // Auto generated code (Tools/params_utils.py:324)
+    labelDefaultDrawStyle = new QLabel(this);
+    layoutDocument->addWidget(labelDefaultDrawStyle, 0, 0);
+    comboBoxDefaultDrawStyle = new Gui::PrefComboBox(this);
+    layoutDocument->addWidget(comboBoxDefaultDrawStyle, 0, 1);
+    for (int i=0; i<9; ++i)
+        comboBoxDefaultDrawStyle->addItem(QString());
+    comboBoxDefaultDrawStyle->setCurrentIndex(Gui::ViewParams::defaultDefaultDrawStyle());
+    comboBoxDefaultDrawStyle->setEntryName("DefaultDrawStyle");
+    comboBoxDefaultDrawStyle->setParamGrpPath("View");
+
+
+    // Auto generated code (Tools/params_utils.py:313)
     groupSelection = new QGroupBox(this);
     layout->addWidget(groupSelection);
     auto layoutHorizSelection = new QHBoxLayout(groupSelection);
@@ -472,6 +492,7 @@ void DlgSettingsDrawStyles::saveSettings()
 {
     // Auto generated code (Tools/params_utils.py:490)
     // Auto generated code (Tools/params_utils.py:356)
+    comboBoxDefaultDrawStyle->onSave();
     spinBoxTransparencyOnTop->onSave();
     spinBoxSelectionLineThicken->onSave();
     spinBoxSelectionLineMaxWidth->onSave();
@@ -521,6 +542,7 @@ void DlgSettingsDrawStyles::loadSettings()
 {
     // Auto generated code (Tools/params_utils.py:497)
     // Auto generated code (Tools/params_utils.py:346)
+    comboBoxDefaultDrawStyle->onRestore();
     spinBoxTransparencyOnTop->onRestore();
     spinBoxSelectionLineThicken->onRestore();
     spinBoxSelectionLineMaxWidth->onRestore();
@@ -570,6 +592,28 @@ void DlgSettingsDrawStyles::retranslateUi()
 {
     // Auto generated code (Tools/params_utils.py:504)
     setWindowTitle(QObject::tr("Draw styles"));
+    groupDocument->setTitle(QObject::tr("Document"));
+    comboBoxDefaultDrawStyle->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docDefaultDrawStyle()));
+    labelDefaultDrawStyle->setText(QObject::tr("Default draw style"));
+    labelDefaultDrawStyle->setToolTip(comboBoxDefaultDrawStyle->toolTip());
+    comboBoxDefaultDrawStyle->setItemText(0, QObject::tr("As Is"));
+    comboBoxDefaultDrawStyle->setItemData(0, QObject::tr("Draw style, normal display mode"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(1, QObject::tr("Points"));
+    comboBoxDefaultDrawStyle->setItemData(1, QObject::tr("Draw style, show points only"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(2, QObject::tr("Wireframe"));
+    comboBoxDefaultDrawStyle->setItemData(2, QObject::tr("Draw style, show wire frame only"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(3, QObject::tr("Hidden Line"));
+    comboBoxDefaultDrawStyle->setItemData(3, QObject::tr("Draw style, show hidden line by display object as transparent"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(4, QObject::tr("No Shading"));
+    comboBoxDefaultDrawStyle->setItemData(4, QObject::tr("Draw style, shading forced off"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(5, QObject::tr("Shaded"));
+    comboBoxDefaultDrawStyle->setItemData(5, QObject::tr("Draw style, shading force on"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(6, QObject::tr("Flat Lines"));
+    comboBoxDefaultDrawStyle->setItemData(6, QObject::tr("Draw style, show both wire frame and face with shading"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(7, QObject::tr("Tessellation"));
+    comboBoxDefaultDrawStyle->setItemData(7, QObject::tr("Draw style, show tessellation wire frame"), Qt::ToolTipRole);
+    comboBoxDefaultDrawStyle->setItemText(8, QObject::tr("Shadow"));
+    comboBoxDefaultDrawStyle->setItemData(8, QObject::tr("Draw style, drop shadows for the scene.\nClick this button while in shadow mode to toggle light manipulator"), Qt::ToolTipRole);
     groupSelection->setTitle(QObject::tr("Selection"));
     spinBoxTransparencyOnTop->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docTransparencyOnTop()));
     labelTransparencyOnTop->setText(QObject::tr("Transparency"));

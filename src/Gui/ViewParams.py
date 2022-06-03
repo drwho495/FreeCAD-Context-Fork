@@ -351,6 +351,9 @@ Params = [
     ParamFloat('BacklightIntensity',  1.0),
     ParamBool('OverrideSelectability',  False, "Override object selectability to enable selection"),
     ParamUInt('SelectionStackSize', 30, "Maximum selection history record size"),
+    ParamInt('DefaultDrawStyle', 0, 'Default draw style of a new document',
+        title='Default draw style',
+        proxy=ParamComboBox(items=[(item[0], item[1]) for item in DrawStyles])),
 ]
 
 def declare_begin():

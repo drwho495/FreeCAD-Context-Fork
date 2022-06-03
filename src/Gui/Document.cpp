@@ -2051,6 +2051,10 @@ MDIView *Document::createView(const Base::Type& typeId)
             const char *ppReturn = 0;
             view3D->onMsg(cameraSettings.c_str(),&ppReturn);
         }
+        else if (ViewParams::getDefaultDrawStyle() != 0) {
+            if (auto mode = drawStyleNameFromIndex(ViewParams::getDefaultDrawStyle()))
+                view3D->getViewer()->setOverrideMode(mode);
+        }
 
         getMainWindow()->addWindow(view3D);
         setModified(false);

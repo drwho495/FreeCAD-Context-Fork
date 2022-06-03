@@ -2061,7 +2061,7 @@ public:
     static const char *docSelectionStackSize();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:95)
     //@{
     /// Accessor for parameter DefaultDrawStyle
     ///
@@ -2072,23 +2072,6 @@ public:
     static void setDefaultDrawStyle(const long &v);
     static const char *docDefaultDrawStyle();
     //@}
-
-    // Auto generated code (Tools/params_utils.py:118)
-    //@{
-    /// Accessor for parameter ToolTipIconSize
-    ///
-    /// Specifies the size of static icon image in tooltip. GIF animation
-    /// will be shown in its original size. You can disable all images in
-    /// the tooltip by setting this option to zero.
-    static const long & getToolTipIconSize();
-    static const long & defaultToolTipIconSize();
-    static void removeToolTipIconSize();
-    static void setToolTipIconSize(const long &v);
-    static const char *docToolTipIconSize();
-    //@}
-
-    // Auto generated code (Gui/ViewParams.py:456)
-    static const std::vector<QString> AnimationCurveTypes;
 //[[[end]]]
 
     static bool highlightIndicesOnFullSelect() {
@@ -2108,7 +2091,7 @@ ViewParams.declare_end()
 }; // class ViewParams
 } // namespace Gui
 
-// Auto generated code (Gui/ViewParams.py:464)
+// Auto generated code (Gui/ViewParams.py:369)
 namespace Gui {
 /// Obtain draw style name from index. Returns nullptr if out of range.
 GuiExport const char *drawStyleNameFromIndex(int index);

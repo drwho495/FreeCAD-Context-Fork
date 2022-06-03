@@ -69,6 +69,11 @@ protected:
 private:
 
     // Auto generated code (Tools/params_utils.py:299)
+    QGroupBox * groupDocument = nullptr;
+    QLabel *labelDefaultDrawStyle = nullptr;
+    Gui::PrefComboBox *comboBoxDefaultDrawStyle = nullptr;
+
+    // Auto generated code (Tools/params_utils.py:299)
     QGroupBox * groupSelection = nullptr;
     QLabel *labelTransparencyOnTop = nullptr;
     Gui::PrefDoubleSpinBox *spinBoxTransparencyOnTop = nullptr;
