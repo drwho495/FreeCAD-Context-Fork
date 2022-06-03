@@ -43,7 +43,11 @@
 # include <boost_bind_bind.hpp>
 #endif
 
-#include "Command.h"
+#include <boost/algorithm/string.hpp>
+
+#include <App/AutoTransaction.h>
+#include <App/Document.h>
+#include "CommandT.h"
 #include "Action.h"
 #include "Application.h"
 #include "BitmapFactory.h"
@@ -651,28 +655,34 @@ bool StdCmdToggleClipPlane::isActive(void)
 class StdCmdDrawStyleBase : public Command 
 {
 public:
-    StdCmdDrawStyleBase(const char *name, const char *title, 
-                        const char *doc, const char *shortcut, const char *pixmap);
+    StdCmdDrawStyleBase(int idx, const char *title, const char *doc);
 
     virtual const char* className() const;
+
+    static const char *cacheString(const char *prefix, const char *text)
+    {
+        static std::list<std::string> _cache;
+        _cache.push_back(prefix);
+        _cache.back() += text;
+        boost::replace_all(_cache.back(), " ", "");
+        return _cache.back().c_str();
+    }
 
 protected: 
     bool isActive(void);
     virtual void activated(int iMsg);
 };
 
-StdCmdDrawStyleBase::StdCmdDrawStyleBase(const char *name, const char *title, 
-                                         const char *doc, const char *shortcut,
-                                         const char *pixmap)
-    :Command(name)
+StdCmdDrawStyleBase::StdCmdDrawStyleBase(int idx, const char *title, const char *doc)
+    :Command(cacheString("Std_DrawStyle", title))
 {
-    sGroup        = QT_TR_NOOP("Standard-View");
+    sGroup        = "Standard-View";
     sMenuText     = title;
     sToolTipText  = doc;
     sStatusTip    = sToolTipText;
-    sWhatsThis    = name;
-    sPixmap       = pixmap;
-    sAccel        = shortcut;
+    sWhatsThis    = getName();
+    sPixmap       = cacheString("DrawStyle", title);
+    sAccel        = cacheString("V,", std::to_string(idx).c_str());
     eType         = Alter3DView;
 }
 
@@ -727,7 +737,6 @@ class StdCmdDrawStyle : public GroupCommand
 public:
     StdCmdDrawStyle();
     virtual const char* className() const {return "StdCmdDrawStyle";}
-    bool isActive(void);
     void updateIcon(const MDIView *);
     virtual Action * createAction(void) {
         Action * action = GroupCommand::createAction();
@@ -747,29 +756,9 @@ StdCmdDrawStyle::StdCmdDrawStyle()
     eType         = 0;
     bCanLog       = false;
 
-#define DRAW_STYLE_CMD(_name, _title, _doc, _shortcut) \
-    addCommand(new StdCmdDrawStyleBase(\
-        "Std_DrawStyle" #_name, _title, _doc, _shortcut, "DrawStyle" #_name));
-
-    DRAW_STYLE_CMD(AsIs,"As Is",
-            "Draw style, normal display mode", "V,1")
-    DRAW_STYLE_CMD(Points, "Points",
-            "Draw style, show points only", "V,2")
-    DRAW_STYLE_CMD(WireFrame, "Wireframe",
-            "Draw style, show wire frame only", "V,3")
-    DRAW_STYLE_CMD(HiddenLine, "Hidden Line",
-            "Draw style, show hidden line by display object as transparent", "V,4")
-    DRAW_STYLE_CMD(NoShading, "No Shading",
-            "Draw style, shading forced off", "V,5")
-    DRAW_STYLE_CMD(Shaded, "Shaded",
-            "Draw style, shading force on", "V,6")
-    DRAW_STYLE_CMD(FlatLines, "Flat Lines",
-            "Draw style, show both wire frame and face with shading", "V,7")
-    DRAW_STYLE_CMD(Tessellation, "Tessellation",
-            "Draw style, show tessellation wire frame", "V,8")
-    DRAW_STYLE_CMD(Shadow, "Shadow",
-            "Draw style, drop shadows for the scene.\n"
-            "Click this button while in shadow mode to toggle light manipulator", "V,9");
+    int i = 0;
+    while(const char *title = drawStyleNameFromIndex(i++))
+        addCommand(new StdCmdDrawStyleBase(i, title, drawStyleDocumentation(i-1)));
 
     this->getGuiApplication()->signalActivateView.connect(boost::bind(&StdCmdDrawStyle::updateIcon, this, bp::_1));
     this->getGuiApplication()->signalViewModeChanged.connect(
@@ -794,30 +783,11 @@ void StdCmdDrawStyle::updateIcon(const MDIView *view)
     if (!actionGroup)
         return;
 
-    int index = 0;
-    if (mode == "Point")
-        index = 1;
-    else if (mode == "Wireframe")
-        index = 2;
-    else if (mode == "Hidden Line")
-        index = 3;
-    else if (mode == "No shading")
-        index = 4;
-    else if (mode == "Shaded")
-        index = 5;
-    else if (mode == "Flat Lines")
-        index = 6;
-    else if (mode == "Tessellation")
-        index = 7;
-    else if (mode == "Shadow")
-        index = 8;
-    _pcAction->setProperty("defaultAction", QVariant(index));
-    setup(_pcAction);
-}
-
-bool StdCmdDrawStyle::isActive(void)
-{
-    return Gui::Application::Instance->activeDocument();
+    int index = drawStyleIndexFromName(mode.c_str());;
+    if (index >= 0) {
+        _pcAction->setProperty("defaultAction", QVariant(index));
+        setup(_pcAction);
+    }
 }
 
 //===========================================================================

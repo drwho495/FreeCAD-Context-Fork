@@ -9,7 +9,6 @@ from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat
 
 NameSpace = 'App'
 ClassName = 'GroupParams'
-HeadFile = 'App/GroupParams.h'
 ParamPath = 'User parameter:BaseApp/Preferences/Group'
 ClassDoc = 'Convenient class to obtain group object (App::GroupExtension and GeoFeatureGroupExtension) related parameters'
 
@@ -45,4 +44,4 @@ def declare():
 def define():
     params_utils.define(sys.modules[__name__])
 
-params_utils.init_params(Params, HeadFile, NameSpace, ClassName, ParamPath)
+params_utils.init_params(Params, NameSpace, ClassName, ParamPath)

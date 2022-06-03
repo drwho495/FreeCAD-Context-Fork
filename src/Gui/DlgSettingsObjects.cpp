@@ -27,72 +27,86 @@ import DlgSettingsObjects
 DlgSettingsObjects.define()
 ]]]*/
 
+// Auto generated code (Tools/params_utils.py:446)
 #ifndef _PreComp_
 #   include <QApplication>
 #   include <QLabel>
 #   include <QGroupBox>
 #   include <QGridLayout>
 #   include <QVBoxLayout>
+#   include <QHBoxLayout>
 #endif
 #include <Gui/PrefWidgets.h>
-#include "DlgSettingsObjects.h"
 #include <App/GroupParams.h>
-
+// Auto generated code (Tools/params_utils.py:464)
+#include "DlgSettingsObjects.h"
 using namespace Gui::Dialog;
-
 /* TRANSLATOR Gui::Dialog::DlgSettingsObjects */
 
+// Auto generated code (Tools/params_utils.py:471)
 DlgSettingsObjects::DlgSettingsObjects(QWidget* parent)
     : PreferencePage( parent )
 {
 
     auto layout = new QVBoxLayout(this);
-    // Auto generated code. See class document of DlgSettingsObjects.
+
+
+    // Auto generated code (Tools/params_utils.py:313)
     groupGroupObjects = new QGroupBox(this);
-    auto layoutGroupObjects = new QGridLayout(groupGroupObjects);
     layout->addWidget(groupGroupObjects);
-    // Auto generated code. See class document of DlgSettingsObjects.
+    auto layoutHorizGroupObjects = new QHBoxLayout(groupGroupObjects);
+    auto layoutGroupObjects = new QGridLayout();
+    layoutHorizGroupObjects->addLayout(layoutGroupObjects);
+    layoutHorizGroupObjects->addStretch();
+
+    // Auto generated code (Tools/params_utils.py:324)
     checkBoxClaimAllChildren = new Gui::PrefCheckBox(this);
     layoutGroupObjects->addWidget(checkBoxClaimAllChildren, 0, 0);
-    checkBoxClaimAllChildren->setChecked(true);
+    checkBoxClaimAllChildren->setChecked(App::GroupParams::defaultClaimAllChildren());
     checkBoxClaimAllChildren->setEntryName("ClaimAllChildren");
     checkBoxClaimAllChildren->setParamGrpPath("Group");
-    // Auto generated code. See class document of DlgSettingsObjects.
+
+    // Auto generated code (Tools/params_utils.py:324)
     checkBoxKeepHiddenChildren = new Gui::PrefCheckBox(this);
     layoutGroupObjects->addWidget(checkBoxKeepHiddenChildren, 1, 0);
-    checkBoxKeepHiddenChildren->setChecked(true);
+    checkBoxKeepHiddenChildren->setChecked(App::GroupParams::defaultKeepHiddenChildren());
     checkBoxKeepHiddenChildren->setEntryName("KeepHiddenChildren");
     checkBoxKeepHiddenChildren->setParamGrpPath("Group");
-    // Auto generated code. See class document of DlgSettingsObjects.
+
+    // Auto generated code (Tools/params_utils.py:324)
     checkBoxExportChildren = new Gui::PrefCheckBox(this);
     layoutGroupObjects->addWidget(checkBoxExportChildren, 2, 0);
-    checkBoxExportChildren->setChecked(true);
+    checkBoxExportChildren->setChecked(App::GroupParams::defaultExportChildren());
     checkBoxExportChildren->setEntryName("ExportChildren");
     checkBoxExportChildren->setParamGrpPath("Group");
-    // Auto generated code. See class document of DlgSettingsObjects.
+
+    // Auto generated code (Tools/params_utils.py:324)
     checkBoxCreateOrigin = new Gui::PrefCheckBox(this);
     layoutGroupObjects->addWidget(checkBoxCreateOrigin, 3, 0);
-    checkBoxCreateOrigin->setChecked(false);
+    checkBoxCreateOrigin->setChecked(App::GroupParams::defaultCreateOrigin());
     checkBoxCreateOrigin->setEntryName("CreateOrigin");
     checkBoxCreateOrigin->setParamGrpPath("Group");
-    // Auto generated code. See class document of DlgSettingsObjects.
+
+    // Auto generated code (Tools/params_utils.py:324)
     checkBoxGeoGroupAllowCrossLink = new Gui::PrefCheckBox(this);
     layoutGroupObjects->addWidget(checkBoxGeoGroupAllowCrossLink, 4, 0);
-    checkBoxGeoGroupAllowCrossLink->setChecked(false);
+    checkBoxGeoGroupAllowCrossLink->setChecked(App::GroupParams::defaultGeoGroupAllowCrossLink());
     checkBoxGeoGroupAllowCrossLink->setEntryName("GeoGroupAllowCrossLink");
     checkBoxGeoGroupAllowCrossLink->setParamGrpPath("Group");
     layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Fixed, QSizePolicy::Expanding));
     retranslateUi();
 }
 
+// Auto generated code (Tools/params_utils.py:481)
+#include "DlgSettingsObjects.h"
 DlgSettingsObjects::~DlgSettingsObjects()
 {
 }
 
-
 void DlgSettingsObjects::saveSettings()
 {
-    // Auto generated code. See class document of DlgSettingsObjects.
+    // Auto generated code (Tools/params_utils.py:490)
+    // Auto generated code (Tools/params_utils.py:356)
     checkBoxClaimAllChildren->onSave();
     checkBoxKeepHiddenChildren->onSave();
     checkBoxExportChildren->onSave();
@@ -102,7 +116,8 @@ void DlgSettingsObjects::saveSettings()
 
 void DlgSettingsObjects::loadSettings()
 {
-    // Auto generated code. See class document of DlgSettingsObjects.
+    // Auto generated code (Tools/params_utils.py:497)
+    // Auto generated code (Tools/params_utils.py:346)
     checkBoxClaimAllChildren->onRestore();
     checkBoxKeepHiddenChildren->onRestore();
     checkBoxExportChildren->onRestore();
@@ -112,40 +127,28 @@ void DlgSettingsObjects::loadSettings()
 
 void DlgSettingsObjects::retranslateUi()
 {
-    // Auto generated code. See class document of DlgSettingsObjects.
+    // Auto generated code (Tools/params_utils.py:504)
     setWindowTitle(QObject::tr("Objects"));
     groupGroupObjects->setTitle(QObject::tr("Group objects"));
+    checkBoxClaimAllChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docClaimAllChildren()));
     checkBoxClaimAllChildren->setText(QObject::tr("Claim all children"));
-    checkBoxClaimAllChildren->setToolTip(QApplication::translate(
-                                    "GroupParams",
-                                    App::GroupParams::docClaimAllChildren()));
+    checkBoxKeepHiddenChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docKeepHiddenChildren()));
     checkBoxKeepHiddenChildren->setText(QObject::tr("Remember hidden children"));
-    checkBoxKeepHiddenChildren->setToolTip(QApplication::translate(
-                                    "GroupParams",
-                                    App::GroupParams::docKeepHiddenChildren()));
+    checkBoxExportChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docExportChildren()));
     checkBoxExportChildren->setText(QObject::tr("Export children by visibility"));
-    checkBoxExportChildren->setToolTip(QApplication::translate(
-                                    "GroupParams",
-                                    App::GroupParams::docExportChildren()));
+    checkBoxCreateOrigin->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docCreateOrigin()));
     checkBoxCreateOrigin->setText(QObject::tr("Always create origin features in origin group"));
-    checkBoxCreateOrigin->setToolTip(QApplication::translate(
-                                    "GroupParams",
-                                    App::GroupParams::docCreateOrigin()));
+    checkBoxGeoGroupAllowCrossLink->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docGeoGroupAllowCrossLink()));
     checkBoxGeoGroupAllowCrossLink->setText(QObject::tr("Allow cross coordinate links in GeoFeatureGroup (App::Part)"));
-    checkBoxGeoGroupAllowCrossLink->setToolTip(QApplication::translate(
-                                    "GroupParams",
-                                    App::GroupParams::docGeoGroupAllowCrossLink()));
 }
 
 void DlgSettingsObjects::changeEvent(QEvent *e)
 {
-    // Auto generated code. See class document of DlgSettingsObjects.
+    // Auto generated code (Tools/params_utils.py:516)
     if (e->type() == QEvent::LanguageChange) {
         retranslateUi();
     }
-    else {
-        QWidget::changeEvent(e);
-    }
+    QWidget::changeEvent(e);
 }
 
 #include "moc_DlgSettingsObjects.cpp"

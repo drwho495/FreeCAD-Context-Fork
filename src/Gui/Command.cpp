@@ -439,7 +439,7 @@ void Command::invoke(int i, TriggerSource trigger)
     }
 
     App::AutoTransaction committer(
-            (App::DocumentParams::ViewObjectTransaction()
+            (App::DocumentParams::getViewObjectTransaction()
              || (eType&NoTransaction)) ? "" : displayText.c_str(), true);
 
     // Do not query _pcAction since it isn't created necessarily
@@ -456,16 +456,16 @@ void Command::invoke(int i, TriggerSource trigger)
         getGuiApplication()->macroManager()->setModule(sAppModule);
 
         std::unique_ptr<LogDisabler> logdisabler;
-        if (disablelog)
+        if (logdisabler)
             logdisabler.reset(new LogDisabler);
 
         // check if it really works NOW (could be a delay between click deactivation of the button)
         if (isActive()) {
             auto manager = getGuiApplication()->macroManager();
             auto editDoc = getGuiApplication()->editDocument();
-            if(!disabler)
+            if (!logdisabler) {
                 activated( i );
-            else {
+            } else {
                 Gui::SelectionLogDisabler disabler;
                 auto lines = manager->getLines();
                 std::ostringstream ss;

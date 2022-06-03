@@ -842,6 +842,12 @@ void FileChooser::setFileName( const QString& s )
     lineEdit->setText( s );
 }
 
+void FileChooser::setFileNameStd( const std::string& s )
+{
+    lineEdit->setText( QString::fromUtf8(s.c_str()) );
+}
+
+
 /**
  * Opens a FileDialog to choose either a file or a directory in dependency of the
  * value of the Mode property.

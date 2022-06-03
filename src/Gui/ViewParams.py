@@ -1,16 +1,51 @@
-import sys
+import cog
+import inspect, sys
 from os import sys, path
 
 # import Tools/params_utils.py
 sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Tools'))
 import params_utils
 
-from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat
+from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamHex, \
+                         ParamFloat, ParamProxy, ParamLinePattern, ParamFile, \
+                         ParamComboBox, ParamColor, auto_comment
 
 NameSpace = 'Gui'
 ClassName = 'ViewParams'
 ParamPath = 'User parameter:BaseApp/Preferences/View'
 ClassDoc = 'Convenient class to obtain view provider related parameters'
+
+ParamHiddenLineOverrideFaceColor = ParamBool(
+        'HiddenLineOverrideFaceColor', True,
+        doc="Enable preselection and highlight by specified color.",
+        title='Override face color')
+
+ParamHiddenLineOverrideColor = ParamBool(
+        'HiddenLineOverrideColor', True,
+        doc="Enable selection highlighting and use specified color",
+        title='Override line color')
+
+ParamHiddenLineOverrideBackground = ParamBool(
+        'HiddenLineOverrideBackground', True,
+        title='Override background color')
+
+ParamHiddenLineOverrideTransparency = ParamBool(
+        'HiddenLineOverrideTransparency', True,
+        "Whether to override transparency of all objects in the scene.",
+        title='Override transparency')
+
+DrawStyles = (
+    ("As Is", "Draw style, normal display mode", 'V,1'),
+    ("Points", "Draw style, show points only", 'V,2'),
+    ("Wireframe", "Draw style, show wire frame only", "V,3"),
+    ("Hidden Line", "Draw style, show hidden line by display object as transparent", "V,4"),
+    ("No Shading", "Draw style, shading forced off", "V,5"),
+    ("Shaded", "Draw style, shading force on", "V,6"),
+    ("Flat Lines", "Draw style, show both wire frame and face with shading", "V,7"),
+    ("Tessellation", "Draw style, show tessellation wire frame", "V,8"),
+    ("Shadow", "Draw style, drop shadows for the scene.\\n"
+               "Click this button while in shadow mode to toggle light manipulator", "V,9"),
+)
 
 Params = [
     ParamBool('UseNewSelection', True),
@@ -19,15 +54,15 @@ Params = [
     ParamBool('EnablePreselection', True),
     ParamInt('RenderCache', 0, on_change=True),
     ParamBool('RandomColor', False),
-    ParamUInt('BoundingBoxColor', 0xffffffff),
-    ParamUInt('AnnotationTextColor', 0xffffffff),
-    ParamUInt('HighlightColor', 0xe1e114ff),
-    ParamUInt('SelectionColor', 0x1cad1cff),
+    ParamHex('BoundingBoxColor', 0xffffffff),
+    ParamHex('AnnotationTextColor', 0xffffffff),
+    ParamHex('HighlightColor', 0xe1e114ff),
+    ParamHex('SelectionColor', 0x1cad1cff),
     ParamInt('MarkerSize', 9),
-    ParamUInt('DefaultLinkColor', 0x66FFFFFF),
-    ParamUInt('DefaultShapeLineColor', 0x191919FF),
-    ParamUInt('DefaultShapeVertexColor', 0x191919FF),
-    ParamUInt('DefaultShapeColor', 0xCCCCCCFF),
+    ParamHex('DefaultLinkColor', 0x66FFFFFF),
+    ParamHex('DefaultShapeLineColor', 0x191919FF),
+    ParamHex('DefaultShapeVertexColor', 0x191919FF),
+    ParamHex('DefaultShapeColor', 0xCCCCCCFF),
     ParamInt('DefaultShapeLineWidth', 2),
     ParamInt('DefaultShapePointSize', 2),
     ParamBool('CoinCycleCheck', True),
@@ -44,26 +79,32 @@ Params = [
     ParamBool('SelectElementOnTop', False,
        "Do box/lasso element selection on already selected object(sg if SelectionOnTop is enabled."),
     ParamFloat('TransparencyOnTop', 0.5,
-       "Transparency for the selected object when being shown on top."),
+       title='Transparency',
+       doc="Transparency for the selected object when being shown on top."),
     ParamBool('HiddenLineSelectionOnTop', True,
        "Enable hidden line/point selection when SelectionOnTop is active."),
     ParamBool('PartialHighlightOnFullSelect', False,
        "Enable partial highlight on full selection for object that supports it."),
     ParamFloat('SelectionLineThicken',  1.5,
-       "Muplication factor to increase the width of the selected line."),
+       title='Line width multiplier',
+       doc="Muplication factor to increase the width of the selected line."),
     ParamFloat('SelectionLineMaxWidth',  4.0,
-       "Limit the selected line width when applying line thickening."),
+       title='Maximum line width',
+       doc="Limit the selected line width when applying line thickening."),
     ParamFloat('SelectionPointScale',  2.5,
-       "Muplication factor to increase the size of the selected point.\n"
+       title='Point size multiplier',
+       doc="Muplication factor to increase the size of the selected point.\n"
        "If zero, then use line multiplication factor."),
     ParamFloat('SelectionPointMaxSize',  6.0,
-       "Limit the selected point size when applying size scale."),
+       title='Maximum point size',
+       doc="Limit the selected point size when applying size scale."),
     ParamFloat('PickRadius', 5.0),
     ParamFloat('SelectionTransparency', 0.5),
-    ParamInt('SelectionLinePattern', 0),
-    ParamInt('SelectionLinePatternScale', 1),
+    ParamInt('SelectionLinePattern', 0, title='Selected hidden line pattern', proxy=ParamLinePattern()),
+    ParamInt('SelectionLinePatternScale', 1, title='Selected line pattern scale'),
     ParamFloat('SelectionHiddenLineWidth', 1.0,
-       "Width of the hidden line."),
+        title='Selected hidden line width',
+        doc="Width of the hidden line."),
     ParamFloat('SelectionBBoxLineWidth', 3.0),
     ParamBool('ShowHighlightEdgeOnly', False,
        "Show pre-selection highlight edge only"),
@@ -124,100 +165,122 @@ Params = [
     ParamFloat('EditingTransparency', 0.5,
         "Automatically make all object transparent except the one in edit"),
     ParamFloat('HiddenLineTransparency', 0.4,
-       "Overridden transparency value of all objects in the scene."),
-    ParamBool('HiddenLineOverrideTransparency', True,
-       "Whether to override transparency of all objects in the scene."),
-    ParamUInt('HiddenLineFaceColor', 0xffffffff),
-    ParamBool('HiddenLineOverrideFaceColor', True,
-       "Enable preselection and highlight by specified color."),
-    ParamUInt('HiddenLineColor', 0x000000ff),
-    ParamBool('HiddenLineOverrideColor', True,
-       "Enable selection highlighting and use specified color"),
-    ParamUInt('HiddenLineBackground', 0xffffffff),
-    ParamBool('HiddenLineOverrideBackground', False),
-    ParamBool('HiddenLineShaded',  False),
+        doc="Overridden transparency value of all objects in the scene.",
+        proxy=ParamProxy(ParamHiddenLineOverrideTransparency)),
+    ParamHiddenLineOverrideTransparency,
+    ParamHex('HiddenLineFaceColor', 0xffffffff, proxy=ParamColor(ParamHiddenLineOverrideFaceColor)),
+    ParamHiddenLineOverrideFaceColor,
+    ParamHex('HiddenLineColor', 0x000000ff, proxy=ParamColor(ParamHiddenLineOverrideColor)),
+    ParamHiddenLineOverrideColor,
+    ParamHex('HiddenLineBackground', 0xffffffff, proxy=ParamColor(ParamHiddenLineOverrideBackground)),
+    ParamHiddenLineOverrideBackground,
+    ParamBool('HiddenLineShaded',  False, title='Shaded'),
     ParamBool('HiddenLineShowOutline',  True,
-        "Show outline in hidden line draw style (only works in experiemental renderer),."),
+        "Show outline in hidden line draw style (only works in experiemental renderer),.",
+        title='Draw outline'),
     ParamBool('HiddenLinePerFaceOutline',  False,
-        "Render per face outline in hidden line draw style (Warning! this may cause slow down),."),
-    ParamFloat('HiddenLineWidth',  1.5),
-    ParamFloat('HiddenLinePointSize',  2),
+        "Render per face outline in hidden line draw style (Warning! this may cause slow down),.",
+        title='Draw per face outline'),
+    ParamFloat('HiddenLineWidth',  1.5, title='Line width'),
+    ParamFloat('HiddenLinePointSize',  2, title='Point size'),
     ParamBool('HiddenLineHideSeam',  True,
-        "Hide seam edges in hidden line draw style."),
+        "Hide seam edges in hidden line draw style.",
+        title='Hide seam edge'),
     ParamBool('HiddenLineHideVertex',  True,
-        "Hide vertex in hidden line draw style."),
+        "Hide vertex in hidden line draw style.",
+        title='Hide vertex'),
     ParamBool('HiddenLineHideFace', False,
-       "Hide face in hidden line draw style."),
+       "Hide face in hidden line draw style.",
+       title='Hide face'),
     ParamInt('StatusMessageTimeout',  5000),
     ParamBool('ShadowFlatLines',  True,
        "Draw object with 'Flat lines' style when shadow is enabled."),
     ParamInt('ShadowDisplayMode',  2,
-       "Override view object display mode when shadow is enabled."),
+       "Override view object display mode when shadow is enabled.",
+       title='Override display mode',
+       proxy=ParamComboBox(items=['Flat Lines', 'Shaded', 'As Is'])),
     ParamBool('ShadowSpotLight',  False,
-       "Whether to use spot light or directional light."),
-    ParamFloat('ShadowLightIntensity',  0.8),
+       doc="Whether to use spot light or directional light.",
+       title='Use spot light'),
+    ParamFloat('ShadowLightIntensity',  0.8, title='Light intensity'),
     ParamFloat('ShadowLightDirectionX',  -1.0),
     ParamFloat('ShadowLightDirectionY',  -1.0),
     ParamFloat('ShadowLightDirectionZ',  -1.0),
-    ParamUInt('ShadowLightColor',  0xf0fdffff),
+    ParamHex('ShadowLightColor',  0xf0fdffff, title='Light color', proxy=ParamColor()),
     ParamBool('ShadowShowGround',  True,
        "Whether to show auto generated ground face. You can specify you own ground\n"
        "object by changing its view property 'ShadowStyle' to 'Shadowed', meaning\n"
-       "that it will only receive but not cast shadow."),
+       "that it will only receive but not cast shadow.",
+       title='Show ground'),
     ParamBool('ShadowGroundBackFaceCull',  True,
-       "Whether to show the ground when viewing from under the ground face"),
+       "Whether to show the ground when viewing from under the ground face",
+       title='Ground back face culling'),
     ParamFloat('ShadowGroundScale',  2.0,
        "The auto generated ground face is determined by the scene bounding box\n"
-       "multiplied by this scale"),
-    ParamUInt('ShadowGroundColor',  0x7d7d7dff),
-    ParamString('ShadowGroundBumpMap', ''),
-    ParamString('ShadowGroundTexture', ''),
+       "multiplied by this scale",
+       title='Ground scale'),
+    ParamHex('ShadowGroundColor',  0x7d7d7dff, title='Ground color', proxy=ParamColor()),
+    ParamString('ShadowGroundBumpMap', '', title='Ground bump map', proxy=ParamFile()),
+    ParamString('ShadowGroundTexture', '', title='Ground texture', proxy=ParamFile()),
     ParamFloat('ShadowGroundTextureSize',  100.0,
        "Specifies the physcal length of the ground texture image size.\n"
-       "Texture mappings beyond this size will be wrapped around"),
+       "Texture mappings beyond this size will be wrapped around",
+       title='Ground texture size'),
     ParamFloat('ShadowGroundTransparency',  0.0,
        "Specifics the ground transparency. When set to 0, the non-shadowed part\n"
        "of the ground will be complete transparent, showing only the shadowed part\n"
-       "of the ground with some transparency."),
+       "of the ground with some transparency.",
+       title='Ground transparency'),
     ParamBool('ShadowGroundShading',  True,
         "Render ground with shading. If disabled, the ground and the shadow casted\n"
-        "on ground will not change shading when viewing in different angle."),
+        "on ground will not change shading when viewing in different angle.",
+        title='Ground shading'),
     ParamBool('ShadowExtraRedraw',  True),
     ParamInt('ShadowSmoothBorder',  0,
         "Specifies the blur raidus of the shadow edge. Higher number will result in\n"
         "slower rendering speed on scene change. Use a lower 'Precision' value to\n"
-        "counter the effect."),
+        "counter the effect.",
+        title='Smooth border'),
     ParamInt('ShadowSpreadSize',  0,
         "Specifies the spread size for a soft shadow. The resulting spread size is\n"
-        "dependent on the model scale"),
+        "dependent on the model scale",
+        title='Spread size'),
     ParamInt('ShadowSpreadSampleSize',  0,
         "Specifies the sample size used for rendering shadow spread. A value 0\n"
         "corresponds to a sampling square of 2x2. And 1 corresponds to 3x3, etc.\n"
         "The bigger the size the slower the rendering speed. You can use a lower\n"
-        "'Precision' value to counter the effect."),
+        "'Precision' value to counter the effect.",
+        title='Spread sample size'),
     ParamFloat('ShadowPrecision',  1.0,
         "Specifies shadow precision. This parameter affects the internal texture\n"
         "size used to hold the casted shadows. You might want a bigger texture if\n"
-        "you want a hard shadow but a smaller one for soft shadow."),
+        "you want a hard shadow but a smaller one for soft shadow.",
+        title='Precision'),
     ParamFloat('ShadowEpsilon',  1e-5,
         "Epsilon is used to offset the shadow map depth from the model depth.\n"
         "Should be set to as low a number as possible without causing flickering\n"
-        "in the shadows or on non-shadowed objects."),
+        "in the shadows or on non-shadowed objects.",
+        title='Epsilon'),
     ParamFloat('ShadowThreshold',  0.0,
-        "Can be used to avoid light bleeding in merged shadows cast from different objects."),
+        "Can be used to avoid light bleeding in merged shadows cast from different objects.",
+        title='Threshold'),
     ParamFloat('ShadowBoundBoxScale',  1.2,
         "Scene bounding box is used to determine the scale of the shadow texture.\n"
         "You can increase the bounding box scale to avoid execessive clipping of\n"
-        "shadows when viewing up close in certain angle."),
+        "shadows when viewing up close in certain angle.",
+        title='Bounding box scale'),
     ParamFloat('ShadowMaxDistance',  0.0,
         "Specifics the clipping distance for when rendering shadows.\n"
         "You can increase the bounding box scale to avoid execessive\n"
-        "clipping of shadows when viewing up close in certain angle."),
+        "clipping of shadows when viewing up close in certain angle.",
+        title='Maximum distance'),
     ParamBool('ShadowTransparentShadow',  False,
-        "Whether to cast shadow from transparent objects."),
+        "Whether to cast shadow from transparent objects.",
+        title='Transparent shadow'),
     ParamBool('ShadowUpdateGround',  True,
         "Auto update shadow ground on scene changes. You can manually\n"
-        "update the ground by using the 'Fit view' command"),
+        "update the ground by using the 'Fit view' command",
+        title='Update ground on scene change'),
     ParamUInt('PropertyViewTimer',  100),
     ParamBool('HierarchyAscend',  False,
         "Enable selection of upper hierarchy by repeatedly click some already\n"
@@ -284,10 +347,10 @@ Params = [
     ParamBool('EnableTaskPanelKeyTranslate',  False, on_change=True),
     ParamBool('EnableMenuBarCheckBox',  'FC_ENABLE_MENUBAR_CHECKBOX'),
     ParamBool('EnableBacklight',  False),
-    ParamUInt('BacklightColor',  0xffffffff),
+    ParamHex('BacklightColor',  0xffffffff),
     ParamFloat('BacklightIntensity',  1.0),
     ParamBool('OverrideSelectability',  False, "Override object selectability to enable selection"),
-    ParamUInt('SelectionStackSize', 30, "Maximum selection history record size")
+    ParamUInt('SelectionStackSize', 30, "Maximum selection history record size"),
 ]
 
 def declare_begin():
@@ -296,5 +359,71 @@ def declare_begin():
 def declare_end():
     params_utils.declare_end(sys.modules[__name__])
 
+    cog.out(f'''
+{auto_comment()}
+namespace {NameSpace} {{
+/// Obtain draw style name from index. Returns nullptr if out of range.
+{NameSpace}Export const char *drawStyleNameFromIndex(int index);
+/// Obtain draw style index from name. Returns -1 for invalid name.
+{NameSpace}Export int drawStyleIndexFromName(const char *);
+/// Obtain documentation of a draw style.
+{NameSpace}Export const char *drawStyleDocumentation(int index);
+}} // namespace Gui
+''')
+
 def define():
     params_utils.define(sys.modules[__name__])
+
+    cog.out(f'''
+{auto_comment()}
+static const char *DrawStyleNames[] = {{''')
+    for item in DrawStyles:
+        cog.out(f'''
+    QT_TRANSLATE_NOOP("DrawStyle", "{item[0]}"),''')
+    cog.out(f'''
+}};
+''')
+    cog.out(f'''
+{auto_comment()}
+static const char *DrawStyleDocs[] = {{''')
+    for item in DrawStyles:
+        cog.out(f'''
+    QT_TRANSLATE_NOOP("DrawStyle", "{item[1]}"),''')
+    cog.out(f'''
+}};
+
+namespace Gui {{
+{auto_comment()}
+const char *drawStyleNameFromIndex(int i)
+{{
+    if (i < 0 || i>= {len(DrawStyles)})
+        return nullptr;
+    return DrawStyleNames[i];
+}}
+''')
+    cog.out(f'''
+{auto_comment()}
+int drawStyleIndexFromName(const char *name)
+{{
+    if (!name)
+        return -1;
+    for (int i=0; i< {len(DrawStyles)}; ++i) {{
+        if (strcmp(name, DrawStyleNames[i]) == 0)
+            return i;
+    }}
+    return -1;
+}}
+''')
+    cog.out(f'''
+{auto_comment()}
+const char *drawStyleDocumentation(int i)
+{{
+    if (i < 0 || i>= {len(DrawStyles)})
+        return "";
+    return DrawStyleDocs[i];
+}}
+
+}} // namespace Gui
+''')
+
+params_utils.init_params(Params, NameSpace, ClassName, ParamPath)

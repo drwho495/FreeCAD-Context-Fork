@@ -73,6 +73,7 @@
 #include "WaitCursor.h"
 #include "Thumbnail.h"
 #include "ViewProviderLink.h"
+#include "ViewParams.h"
 
 FC_LOG_LEVEL_INIT("Gui",true,true)
 
@@ -2052,6 +2053,7 @@ MDIView *Document::createView(const Base::Type& typeId)
         }
 
         getMainWindow()->addWindow(view3D);
+        setModified(false);
         return view3D;
     }
     return 0;
