@@ -2093,11 +2093,11 @@ ExpressionCompleter::ExpressionCompleter(const App::DocumentObject * currentDocO
     , searchUnit(false)
     , leadChar(leadChar)
 {
-    setCaseSensitivity(ExprParams::CompleterCaseSensitive()
+    setCaseSensitivity(ExprParams::getCompleterCaseSensitive()
             ? Qt::CaseSensitive : Qt::CaseInsensitive);
-    setCompletionMode(ExprParams::CompleterUnfiltered()
+    setCompletionMode(ExprParams::getCompleterUnfiltered()
             ? UnfilteredPopupCompletion : PopupCompletion);
-    setFilterMode(ExprParams::CompleterMatchExact()
+    setFilterMode(ExprParams::getCompleterMatchExact()
             ? Qt::MatchStartsWith : Qt::MatchContains);
 }
 
@@ -2618,7 +2618,7 @@ void ExpressionCompleter::setupContextMenu(QMenu *menu)
         setFilterMode(checked ? Qt::MatchStartsWith : Qt::MatchContains);
     });
     action->setCheckable(true);
-    action->setChecked(ExprParams::CompleterMatchExact());
+    action->setChecked(ExprParams::getCompleterMatchExact());
 #endif
 
     action = menu->addAction(tr("Case sensitive match"), [this](bool checked) {
@@ -2626,14 +2626,14 @@ void ExpressionCompleter::setupContextMenu(QMenu *menu)
         setCaseSensitivity(checked ? Qt::CaseSensitive : Qt::CaseInsensitive);
     });
     action->setCheckable(true);
-    action->setChecked(ExprParams::CompleterCaseSensitive());
+    action->setChecked(ExprParams::getCompleterCaseSensitive());
 
     action = menu->addAction(tr("Unfiltered completion"), [this](bool checked) {
         ExprParams::setCompleterUnfiltered(checked);
         setCompletionMode(checked ? UnfilteredPopupCompletion : PopupCompletion);
     });
     action->setCheckable(true);
-    action->setChecked(ExprParams::CompleterUnfiltered());
+    action->setChecked(ExprParams::getCompleterUnfiltered());
 }
 
 ///////////////////////////////////////////////////////////////////////

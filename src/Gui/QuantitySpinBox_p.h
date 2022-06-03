@@ -56,7 +56,7 @@ public:
         setState(None);
         parent->installEventFilter(this);
         if (parent->parentWidget()) {
-            const std::string & trigger = Gui::ExprParams::EditorTrigger();
+            const std::string & trigger = Gui::ExprParams::getEditorTrigger();
             if (trigger.size() == 1) {
                 shortcutKey = QString::fromLatin1(trigger.c_str());
                 parent->parentWidget()->installEventFilter(this);
@@ -86,7 +86,7 @@ public:
             if (icn.isNull())
                 icn = Gui::BitmapFactory().pixmapFromSvg("bound-expression-unset.svg", QSize(64, 64));
             icon = icn;
-            if (_state == Binding && !Gui::ExprParams::AutoHideEditorIcon())
+            if (_state == Binding && !Gui::ExprParams::getAutoHideEditorIcon())
                 show();
             else
                 hide();
@@ -133,7 +133,7 @@ protected:
                 break;
             case QEvent::Leave:
                 if (_state != Bound
-                        && (_state == Binding && Gui::ExprParams::AutoHideEditorIcon()))
+                        && (_state == Binding && Gui::ExprParams::getAutoHideEditorIcon()))
                     hide();
                 break;
             case QEvent::Resize:
