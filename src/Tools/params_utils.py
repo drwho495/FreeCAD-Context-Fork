@@ -1,34 +1,54 @@
 import cog
+import inspect
+from os import path
 
-def init_params(params, header_file, namespace, class_name, param_path):
+def quote(txt):
+    lines = [ '"' + l.replace('"', '\"').replace('\\', '\\\\') for l in txt.split('\n')]
+    return '\\n"\n'.join(lines) + '"'
+
+def init_params(params, namespace, class_name, param_path, header_file=None):
     for param in params:
         param.path = param_path
+        if not header_file:
+            header_file = f'{namespace}/{class_name}.h'
         param.header_file = header_file
         param.namespace = namespace
         param.class_name = class_name
     return params
 
-def get_warning_comment(class_name):
-    return f'// Auto generated code. See class document of {class_name}.'
+def auto_comment(frame=1, msg=None, count=1):
+    trace = []
+    for stack in inspect.stack()[frame:frame+count]:
+        filename = path.normpath(stack[1]).split('/src/')[-1]
+        if filename.find('<') >= 0:
+            break
+        lineno = stack[2]
+        trace.insert(0, f'{filename}:{lineno}')
+    return f'{"// Auto generated code" if msg is None else msg} ({" <- ".join(trace)})'
+
+def trace_comment():
+    return auto_comment(2)
 
 def declare_begin(module, header=True):
     class_name = module.ClassName
     namespace = module.NameSpace
     params = module.Params
     param_path = module.ParamPath
-    param_file = getattr(module, 'ParamFile', module.ClassName + '.py')
-    header_file = getattr(module, 'HeaderFile', module.ClassName + '.h')
-    source_file = getattr(module, 'SourceFile', module.ClassName + '.cpp')
+    param_file = getattr(module, 'ParamFile', f'{namespace}/{class_name}.py')
+    header_file = getattr(module, 'HeaderFile', f'{namespace}/{class_name}.h')
+    source_file = getattr(module, 'SourceFile', f'{namespace}/{class_name}.cpp')
     class_doc = module.ClassDoc
     signal = getattr(module, 'Signal', False)
 
     if header:
         cog.out(f'''
+{trace_comment()}
 #include <Base/Parameter.h>
 {"#include <boost_signals2.hpp>" if signal else ""}
 ''')
 
     cog.out(f'''
+{trace_comment()}
 namespace {namespace} {{
 /** {class_doc}
 
@@ -72,6 +92,7 @@ public:
 
     for param in params:
         cog.out(f'''
+    {trace_comment()}
     //@{{
     /// Accessor for parameter {param.name}''')
         if param._doc:
@@ -97,11 +118,10 @@ public:
 def declare_end(module):
     class_name = module.ClassName
     namespace = module.NameSpace
-    warning_comment = get_warning_comment(class_name)
 
     cog.out(f'''
-    {warning_comment}
-}};
+{trace_comment()}
+}}; // class {class_name}
 }} // namespace {namespace}
 ''')
 
@@ -112,12 +132,11 @@ def define(module, header=True):
     params = module.Params
     param_path = module.ParamPath
     class_doc = module.ClassDoc
-    warning_comment = get_warning_comment(class_name)
     signal = getattr(module, 'Signal', False)
 
     if header:
         cog.out(f'''
-{warning_comment}
+{trace_comment()}
 #include <unordered_map>
 #include <App/Application.h>
 #include <App/DynamicProperty.h>
@@ -126,39 +145,35 @@ using namespace {namespace};
 ''')
 
     cog.out(f'''
+{trace_comment()}
 namespace {{
-
-{warning_comment}
 class {class_name}P: public ParameterGrp::ObserverType {{
 public:
-    {warning_comment}
     ParameterGrp::handle handle;
-
-    {warning_comment}
     std::unordered_map<const char *,void(*)({class_name}P*),App::CStringHasher,App::CStringHasher> funcs;
 ''')
 
     if signal:
         cog.out(f'''
-    {warning_comment}
+    {trace_comment()}
     boost::signals2::signal<void (const char*)> signalParamChanged;
-
-    {warning_comment}
     void signalAll()
     {{''')
         for param in params:
             cog.out(f'''
         signalParamChanged("{param.name}");''')
         cog.out(f'''
+
+    {trace_comment()}
     }}''')
 
     for param in params:
         cog.out(f'''
-    {param.C_Type} {param.name}; {warning_comment}''')
+    {param.C_Type} {param.name};''')
 
     cog.out(f'''
 
-    {warning_comment}
+    {trace_comment()}
     {class_name}P() {{
         handle = App::GetApplication().GetParameterGroupByPath("{param_path}");
         handle->Attach(this);
@@ -172,11 +187,12 @@ public:
     cog.out(f'''
     }}
 
-    {warning_comment}
+    {trace_comment()}
     ~{class_name}P() {{
     }}
-
-    {warning_comment}
+''')
+    cog.out(f'''
+    {trace_comment()}
     void OnChange(Base::Subject<const char*> &, const char* sReason) {{
         if(!sReason)
             return;
@@ -192,13 +208,13 @@ public:
     for param in params:
         if not param.on_change:
             cog.out(f'''
-    {warning_comment}
+    {trace_comment()}
     static void update{param.name}({class_name}P *self) {{
         self->{param.name} = {param.getter('self->handle')};
     }}''')
         else:
             cog.out(f'''
-    {warning_comment}
+    {trace_comment()}
     static void update{param.name}({class_name}P *self) {{
         auto v = {param.getter('self->handle')};
         if (self->{param.name} != v) {{
@@ -210,15 +226,16 @@ public:
     cog.out(f'''
 }};
 
-{warning_comment}
+{trace_comment()}
 {class_name}P *instance() {{
     static {class_name}P *inst = new {class_name}P;
     return inst;
 }}
 
 }} // Anonymous namespace
-
-{warning_comment}
+''')
+    cog.out(f'''
+{trace_comment()}
 ParameterGrp::handle {class_name}::getHandle() {{
     return instance()->handle;
 }}
@@ -226,13 +243,14 @@ ParameterGrp::handle {class_name}::getHandle() {{
 
     if signal:
         cog.out(f'''
-{warning_comment}
+{trace_comment()}
 boost::signals2::signal<void (const char*)> &
 {class_name}::signalParamChanged() {{
     return instance()->signalParamChanged;
 }}
-
-{warning_comment}
+''')
+        cog.out(f'''
+{trace_comment()}
 void signalAll() {{
     instance()->signalAll();
 }}
@@ -240,29 +258,33 @@ void signalAll() {{
 
     for param in params:
         cog.out(f'''
-{warning_comment}
+{trace_comment()}
 const char *{class_name}::doc{param.name}() {{
     return {param.doc(class_name)};
 }}
-
-{warning_comment}
+''')
+        cog.out(f'''
+{trace_comment()}
 const {param.C_Type} & {class_name}::get{param.name}() {{
     return instance()->{param.name};
 }}
-
-{warning_comment}
+''')
+        cog.out(f'''
+{trace_comment()}
 const {param.C_Type} & {class_name}::default{param.name}() {{
     const static {param.C_Type} def = {param.default};
     return def;
 }}
-
-{warning_comment}
+''')
+        cog.out(f'''
+{trace_comment()}
 void {class_name}::set{param.name}(const {param.C_Type} &v) {{
     {param.setter()};
     instance()->{param.name} = v;
 }}
-
-{warning_comment}
+''')
+        cog.out(f'''
+{trace_comment()}
 void {class_name}::remove{param.name}() {{
     instance()->handle->Remove{param.Type}("{param.name}");
 }}
@@ -270,59 +292,48 @@ void {class_name}::remove{param.name}() {{
 
 def widgets_declare(param_set):
     param_group = param_set.ParamGroup
-    class_name = param_set.ClassName
-    warning_comment = get_warning_comment(class_name)
 
     for name,_,params in param_group:
         cog.out(f'''
-    {warning_comment}
+
+    {trace_comment()}
     QGroupBox * group{name} = nullptr;''')
         for param in params:
-            if not isinstance(param, ParamBool):
-                cog.out(f'''
-    QLabel *label{param.name} = nullptr;''')
-            cog.out(f'''
-    {param.WidgetType} *{param.WidgetPrefix}{param.name} = nullptr;''')
+            param.declare_widget()
 
-def widgets_init(param_set, parent='this'):
-    class_name = param_set.ClassName
+def widgets_init(param_set):
     param_group = param_set.ParamGroup
-    warning_comment = get_warning_comment(class_name)
 
     cog.out(f'''
-    auto layout = new QVBoxLayout({parent});''')
+    auto layout = new QVBoxLayout(this);''')
     for name, title, params in param_group:
-        row = 0
         cog.out(f'''
-    {warning_comment}
-    group{name} = new QGroupBox({parent});
-    auto layout{name} = new QGridLayout(group{name});
-    layout->addWidget(group{name});''')
 
-        for param in params:
-            widget_name = param.WidgetPrefix + param.name
+
+    {trace_comment()}
+    group{name} = new QGroupBox(this);
+    layout->addWidget(group{name});
+    auto layoutHoriz{name} = new QHBoxLayout(group{name});
+    auto layout{name} = new QGridLayout();
+    layoutHoriz{name}->addLayout(layout{name});
+    layoutHoriz{name}->addStretch();''')
+
+        for row,param in enumerate(params):
             cog.out(f'''
-    {warning_comment}
-    {widget_name} = new {param.WidgetType}({parent});''')
-            if not isinstance(param, ParamBool):
-                cog.out(f'''
-    label{param.name} = new QLabel({parent});
-    layout{name}->addWidget(label{param.name}, {row}, 0);
-    layout{name}->addWidget({widget_name}, {row}, 1);''')
-            else:
-                cog.out(f'''
-    layout{name}->addWidget({widget_name}, {row}, 0);''')
+
+    {trace_comment()}''')
+
+            param.init_widget(row, name)
+
             cog.out(f'''
-    {widget_name}->{param.WidgetSetter}({param.default});
-    {widget_name}->setEntryName("{param.name}");''')
+    {param.widget_name}->setEntryName("{param.name}");''')
             prefix = 'User parameter:BaseApp/Preferences/'
             if param.path.startswith(prefix):
                 cog.out(f'''
-    {widget_name}->setParamGrpPath("{param.path[len(prefix):]}");''')
+    {param.widget_name}->setParamGrpPath("{param.path[len(prefix):]}");''')
             else:
                 cog.out(f'''
-    {widget_name}->setParamGrpPath("{param.path}");''')
-            row += 1
+    {param.widget_name}->setParamGrpPath("{param.path}");''')
 
     cog.out('''
     layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Fixed, QSizePolicy::Expanding));
@@ -331,18 +342,22 @@ def widgets_init(param_set, parent='this'):
 def widgets_restore(param_set):
     param_group = param_set.ParamGroup
 
+    cog.out(f'''
+    {trace_comment()}''')
     for _,_,params in param_group:
         for param in params:
             cog.out(f'''
-    {param.WidgetPrefix}{param.name}->onRestore();''')
+    {param.widget_prefix}{param.name}->onRestore();''')
 
 def widgets_save(param_set):
     param_group = param_set.ParamGroup
 
+    cog.out(f'''
+    {trace_comment()}''')
     for _,_,params in param_group:
         for param in params:
             cog.out(f'''
-    {param.WidgetPrefix}{param.name}->onSave();''')
+    {param.widget_prefix}{param.name}->onSave();''')
 
 def preference_dialog_declare_begin(param_set, header=True):
     namespace = param_set.NameSpace
@@ -356,12 +371,14 @@ def preference_dialog_declare_begin(param_set, header=True):
 
     if header:
         cog.out(f'''
+{trace_comment()}
 #include <Gui/PropertyPage.h>
 #include <Gui/PrefWidgets.h>''')
 
     cog.out(f'''
-
+{trace_comment()}
 class QLabel;
+class QGroupBox;
 
 namespace {namespace} {{
 namespace {dialog_namespace} {{
@@ -379,7 +396,7 @@ namespace {dialog_namespace} {{
  *     python3 -m cogapp -r {header_file} {source_file}
  * @endcode
  */
-class {class_name} : public PreferencePage
+class {class_name} : public Gui::Dialog::PreferencePage
 {{
     Q_OBJECT
 
@@ -394,16 +411,17 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
-private:
-''')
+private:''')
     widgets_declare(param_set)
 
 
 def preference_dialog_declare_end(param_set):
+    class_name = param_set.ClassName
     namespace = param_set.NameSpace
     dialog_namespace = getattr(param_set, 'DialogNameSpace', 'Dialog')
 
     cog.out(f'''
+{trace_comment()}
 }};
 }} // namespace {{dialog_namespace}}
 }} // namespace {{namespace}}
@@ -421,33 +439,36 @@ def preference_dialog_define(param_set, header=True):
     param_file = getattr(param_set, 'ParamFile', class_name + '.py')
     header_file = getattr(param_set, 'HeaderFile', class_name + '.h')
     source_file = getattr(param_set, 'SourceFile', class_name + '.cpp')
-    warning_comment = get_warning_comment(class_name)
     headers = set()
 
     if header:
         cog.out(f'''
+{trace_comment()}
 #ifndef _PreComp_
 #   include <QApplication>
 #   include <QLabel>
 #   include <QGroupBox>
 #   include <QGridLayout>
 #   include <QVBoxLayout>
+#   include <QHBoxLayout>
 #endif
-#include <Gui/PrefWidgets.h>
-#include "{header_file}"''')
+#include <Gui/PrefWidgets.h>''')
         for _,_,params in param_group:
             for param in params:
-                if not param.header_file in headers:
+                if param.header_file not in headers:
                     headers.add(param.header_file)
                     cog.out(f'''
 #include <{param.header_file}>''')
 
     cog.out(f'''
-
+{trace_comment()}
+#include "{header_file}"
 using namespace {namespace};
-
 /* TRANSLATOR {namespace}::{class_name} */
+''')
 
+    cog.out(f'''
+{trace_comment()}
 {class_name}::{class_name}(QWidget* parent)
     : PreferencePage( parent )
 {{
@@ -457,70 +478,128 @@ using namespace {namespace};
     cog.out(f'''
 }}
 
+{trace_comment()}
+#include "{header_file}"
 {class_name}::~{class_name}()
 {{
 }}
-
-
+''')
+    cog.out(f'''
 void {class_name}::saveSettings()
 {{
-    {warning_comment}''')
+    {trace_comment()}''')
     widgets_save(param_set)
     cog.out(f'''
 }}
 
 void {class_name}::loadSettings()
 {{
-    {warning_comment}''')
+    {trace_comment()}''')
     widgets_restore(param_set)
     cog.out(f'''
 }}
 
 void {class_name}::retranslateUi()
 {{
-    {warning_comment}
+    {trace_comment()}
     setWindowTitle(QObject::tr("{param_set.Title}"));''')
     for name, title, params in param_group:
         cog.out(f'''
     group{name}->setTitle(QObject::tr("{title}"));''')
-        for param in params:
-            widget_name = param.WidgetPrefix + param.name
-            if not isinstance(param, ParamBool):
-                cog.out(f'''
-    label{param.name}->setText(QObject::tr("{param.title}"));
-    label{param.name}->setToolTip(QApplication::translate(
-                                    "{param.class_name}",
-                                    {param.namespace}::{param.class_name}::doc{param.name}()));''')
-            else:
-                cog.out(f'''
-    {widget_name}->setText(QObject::tr("{param.title}"));
-    {widget_name}->setToolTip(QApplication::translate(
-                                    "{param.class_name}",
-                                    {param.namespace}::{param.class_name}::doc{param.name}()));''')
+        for row,param in enumerate(params):
+            param.retranslate()
     cog.out(f'''
 }}
 
 void {class_name}::changeEvent(QEvent *e)
 {{
-    {warning_comment}
+    {trace_comment()}
     if (e->type() == QEvent::LanguageChange) {{
         retranslateUi();
     }}
-    else {{
-        QWidget::changeEvent(e);
-    }}
+    QWidget::changeEvent(e);
 }}
 
 #include "moc_{class_name}.cpp"
 ''')
 
 class Param:
-    def __init__(self, name, default, doc='', title='', on_change=False):
+    def __init__(self, name, default, doc='', title='', on_change=False, proxy=None):
         self.name = name
         self.title = title if title else name
         self._default = default
         self._doc = doc
         self.on_change = on_change
+        self.proxy = proxy
+
+    def _declare_label(self):
+        cog.out(f'''
+    QLabel *label{self.name} = nullptr;''')
+
+    def declare_label(self):
+        if self.proxy:
+            self.proxy.declare_label(self)
+        else:
+            self._declare_label()
+
+    def _init_label(self, row, group_name):
+        cog.out(f'''
+    label{self.name} = new QLabel(this);
+    layout{group_name}->addWidget(label{self.name}, {row}, 0);''')
+
+    def init_label(self, row, group_name):
+        if self.proxy:
+            self.proxy.init_label(self, row, group_name)
+        else:
+            self._init_label(row, group_name)
+
+    def _declare_widget(self):
+        self.declare_label()
+        cog.out(f'''
+    {self.widget_type} *{self.widget_prefix}{self.name} = nullptr;''')
+
+    def declare_widget(self):
+        if self.proxy:
+            self.proxy.declare_widget(self)
+        else:
+            self._declare_widget()
+
+    def _init_widget(self, row, group_name):
+        self.init_label(row, group_name)
+        cog.out(f'''
+    {self.widget_name} = new {self.widget_type}(this);
+    layout{group_name}->addWidget({self.widget_name}, {row}, {self.widget_column});''')
+        if self.widget_setter:
+            cog.out(f'''
+    {self.widget_name}->{self.widget_setter}({self.namespace}::{self.class_name}::default{self.name}());''')
+
+    def init_widget(self, row, group_name):
+        if self.proxy:
+            self.proxy.init_widget(self, row, group_name)
+        else:
+            self._init_widget(row, group_name)
+
+    def _retranslate_label(self):
+        cog.out(f'''
+    label{self.name}->setText(QObject::tr("{self.title}"));
+    label{self.name}->setToolTip({self.widget_name}->toolTip());''')
+
+    def retranslate_label(self):
+        if self.proxy:
+            self.proxy.retranslate_label(self)
+        else:
+            self._retranslate_label()
+
+    def _retranslate(self):
+        cog.out(f'''
+    {self.widget_name}->setToolTip(QApplication::translate("{self.class_name}", {self.namespace}::{self.class_name}::doc{self.name}()));''')
+        self.retranslate_label()
+
+    def retranslate(self):
+        if self.proxy:
+            self.proxy.retranslate(self)
+        else:
+            self._retranslate()
 
     @property
     def default(self):
@@ -529,17 +608,34 @@ class Param:
     def doc(self, class_name):
         if not self._doc:
             return '""'
-
-        def quote(txt):
-            lines = [ '"' + l.replace('"', '\"').replace('\\', '\\\\') for l in txt.split('\n')]
-            return '\\n"\n'.join(lines) + '"'
-
         return f'''QT_TRANSLATE_NOOP("{class_name}",
 {quote(self._doc)})'''
 
     @property
+    def widget_type(self):
+        if self.proxy:
+            return self.proxy.widget_type(self)
+        return self.WidgetType
+
+    @property
+    def widget_prefix(self):
+        if self.proxy:
+            return self.proxy.widget_prefix(self)
+        return self.WidgetPrefix
+
+    @property
+    def widget_setter(self):
+        if self.proxy:
+            return self.proxy.widget_setter(self)
+        return self.WidgetSetter
+
+    @property
     def widget_name(self):
-        return f'{self.WidgetPrefix}{self.name}'
+        return f'{self.widget_prefix}{self.name}'
+
+    @property
+    def widget_column(self):
+        return 1
 
     def getter(self, handle):
         return f'{handle}->Get{self.Type}("{self.name}", {self.default})'
@@ -547,18 +643,34 @@ class Param:
     def setter(self):
         return f'instance()->handle->Set{self.Type}("{self.name}",v)'
 
+
 class ParamBool(Param):
     Type = 'Bool'
     C_Type = 'bool'
     WidgetType = 'Gui::PrefCheckBox'
     WidgetPrefix = 'checkBox'
     WidgetSetter = 'setChecked'
+    WidgetHasText = 'True'
 
     @property
     def default(self):
         if isinstance(self._default, str):
             return self._default
         return 'true' if self._default else 'false'
+
+    def _declare_label(self):
+        pass
+
+    def _init_label(self, _row, _group_name):
+        pass
+
+    @property
+    def widget_column(self):
+        return 0
+
+    def _retranslate_label(self):
+        cog.out(f'''
+    {self.widget_name}->setText(QObject::tr("{self.title}"));''')
 
 class ParamFloat(Param):
     Type = 'Float'
@@ -609,3 +721,134 @@ class ParamUInt(Param):
     WidgetPrefix = 'spinBox'
     WidgetSetter = 'setValue'
 
+class ParamHex(ParamUInt):
+    @property
+    def default(self):
+        return '0x%08X' % self._default
+
+class ParamProxy:
+    WidgetType = None
+    WidgetPrefix = None
+    WidgetSetter = None
+
+    def __init__(self, param_bool=None):
+        self.param_bool = param_bool
+
+    def declare_label(self, param):
+        if not self.param_bool:
+            param._declare_label()
+
+    def widget_prefix(self, param):
+        return self.WidgetPrefix if self.WidgetPrefix else param.WidgetPrefix
+
+    def widget_type(self, param):
+        return self.WidgetType if self.WidgetType else param.WidgetType
+
+    def widget_setter(self, param):
+        return self.WidgetSetter if self.WidgetSetter else param.WidgetSetter
+
+    def declare_widget(self, param):
+        if self.param_bool:
+            self.param_bool.declare_widget()
+        param._declare_widget()
+
+    def init_label(self, param, row, group_name):
+        if not self.param_bool:
+            param._init_label(row, group_name)
+
+    def init_widget(self, param, row, group_name):
+        param._init_widget(row, group_name)
+        if self.param_bool:
+            self.param_bool.init_widget(row, group_name)
+            cog.out(f'''
+    {param.widget_name}->setEnabled({self.param_bool.widget_name}->isChecked());
+    connect({self.param_bool.widget_name}, SIGNAL(toggled(bool)), {param.widget_name}, SLOT(setEnabled(bool)));''')
+
+    def retranslate_label(self, param):
+        if not self.param_bool:
+            param._retranslate_label()
+
+    def retranslate(self, param):
+        param._retranslate()
+        if self.param_bool:
+            self.param_bool.retranslate()
+
+class ComboBoxItem:
+    def __init__(self, text, tooltips=None, data=None):
+        self.text = text
+        self.tooltips = tooltips
+        self._data = data
+
+    @property
+    def data(self):
+        if self._data is None:
+            return 'QVariant()'
+        if isinstance(self._data, str):
+            return f'QByteArray("{self._data}")'
+        return self._data
+
+class ParamComboBox(ParamProxy):
+    WidgetType = 'Gui::PrefComboBox'
+    WidgetPrefix = 'comboBox'
+
+    def __init__(self, items, param_bool=None):
+        super().__init__(param_bool)
+        self.items = []
+        for item in items:
+            if isinstance(item, str):
+                item = ComboBoxItem(item);
+            elif isinstance(item, tuple):
+                item = ComboBoxItem(*item)
+            else:
+                assert(isinstance(item, ComboBoxItem))
+            self.items.append(item)
+
+    def widget_setter(self, _param):
+        return None
+
+    def init_widget(self, param, row, group_name):
+        super().init_widget(param, row, group_name)
+        cog.out(f'''
+    for (int i=0; i<{len(self.items)}; ++i)
+        {param.widget_name}->addItem(QString());''')
+        for i,item in enumerate(self.items):
+            if item._data is not None:
+                cog.out(f'''
+    {param.widget_name}->setItemData({param.widget_name}->count()-1, {item.data});''')
+
+        cog.out(f'''
+    {param.widget_name}->setCurrentIndex({param.namespace}::{param.class_name}::default{param.name}());''')
+
+    def retranslate(self, param):
+        super().retranslate(param)
+        for i,item in enumerate(self.items):
+            cog.out(f'''
+    {param.widget_name}->setItemText({i}, QObject::tr("{item.text}"));''')
+            if item.tooltips:
+                cog.out(f'''
+    {param.widget_name}->setItemData({i}, QObject::tr("{item.tooltips}"), Qt::ToolTipRole);''')
+
+class ParamLinePattern(ParamProxy):
+    WidgetType = 'Gui::PrefLinePattern'
+    WidgetPrefix = 'linePattern'
+
+    def widget_setter(self, _param):
+        return None
+
+    def init_widget(self, param, row, group_name):
+        super().init_widget(param, row, group_name)
+        cog.out(f'''
+    for (int i=1; i<{param.widget_name}->count(); ++i) {{
+        if ({param.widget_name}->itemData(i).toInt() == {param.default})
+            {param.widget_name}->setCurrentIndex(i);
+    }}''')
+
+class ParamColor(ParamProxy):
+    WidgetType = 'Gui::PrefColorButton'
+    WidgetPrefix = 'colorButton'
+    WidgetSetter = 'setPackedColor'
+
+class ParamFile(ParamProxy):
+    WidgetType = 'Gui::PrefFileChooser'
+    WidgetPrefix = 'fileChooser'
+    WidgetSetter = 'setFileNameStd'
