@@ -25,8 +25,8 @@ import cog
 import inspect
 from os import path
 
-def quote(txt):
-    lines = [ '"' + l.replace('"', '\"').replace('\\', '\\\\') for l in txt.split('\n')]
+def quote(txt, indent=0):
+    lines = [ ' '*indent + '"' + l.replace('"', '\"').replace('\\', '\\\\') for l in txt.split('\n')]
     return '\\n"\n'.join(lines) + '"'
 
 def init_params(params, namespace, class_name, param_path, header_file=None):
