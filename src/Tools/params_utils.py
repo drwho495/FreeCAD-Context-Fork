@@ -316,7 +316,8 @@ void {class_name}::remove{param.name}() {{
 def widgets_declare(param_set):
     param_group = param_set.ParamGroup
 
-    for name,_,params in param_group:
+    for title,params in param_group:
+        name = title.replace(' ', '')
         cog.out(f'''
 
     {trace_comment()}
@@ -329,7 +330,8 @@ def widgets_init(param_set):
 
     cog.out(f'''
     auto layout = new QVBoxLayout(this);''')
-    for name, title, params in param_group:
+    for title, params in param_group:
+        name = title.replace(' ', '')
         cog.out(f'''
 
 
@@ -367,7 +369,7 @@ def widgets_restore(param_set):
 
     cog.out(f'''
     {trace_comment()}''')
-    for _,_,params in param_group:
+    for _,params in param_group:
         for param in params:
             cog.out(f'''
     {param.widget_prefix}{param.name}->onRestore();''')
@@ -377,7 +379,7 @@ def widgets_save(param_set):
 
     cog.out(f'''
     {trace_comment()}''')
-    for _,_,params in param_group:
+    for _,params in param_group:
         for param in params:
             cog.out(f'''
     {param.widget_prefix}{param.name}->onSave();''')
@@ -446,8 +448,8 @@ def preference_dialog_declare_end(param_set):
     cog.out(f'''
 {trace_comment()}
 }};
-}} // namespace {{dialog_namespace}}
-}} // namespace {{namespace}}
+}} // namespace {dialog_namespace}
+}} // namespace {namespace}
 ''')
 
 def preference_dialog_declare(param_set, header=True):
@@ -462,6 +464,7 @@ def preference_dialog_define(param_set, header=True):
     param_file = getattr(param_set, 'ParamFile', class_name + '.py')
     header_file = getattr(param_set, 'HeaderFile', class_name + '.h')
     source_file = getattr(param_set, 'SourceFile', class_name + '.cpp')
+    user_init = getattr(param_set, 'UserInit', '')
     headers = set()
 
     if header:
@@ -476,7 +479,7 @@ def preference_dialog_define(param_set, header=True):
 #   include <QHBoxLayout>
 #endif
 #include <Gui/PrefWidgets.h>''')
-        for _,_,params in param_group:
+        for _,params in param_group:
             for param in params:
                 if param.header_file not in headers:
                     headers.add(param.header_file)
@@ -497,36 +500,39 @@ using namespace {namespace};
 {{
 ''')
     widgets_init(param_set)
-
     cog.out(f'''
+    {trace_comment()}
+    {user_init}
 }}
-
-{trace_comment()}
+''')
+    cog.out(f'''
 #include "{header_file}"
+{trace_comment()}
 {class_name}::~{class_name}()
 {{
 }}
 ''')
     cog.out(f'''
+{trace_comment()}
 void {class_name}::saveSettings()
-{{
-    {trace_comment()}''')
+{{''')
     widgets_save(param_set)
     cog.out(f'''
 }}
 
+{trace_comment()}
 void {class_name}::loadSettings()
-{{
-    {trace_comment()}''')
+{{''')
     widgets_restore(param_set)
     cog.out(f'''
 }}
 
+{trace_comment()}
 void {class_name}::retranslateUi()
 {{
-    {trace_comment()}
     setWindowTitle(QObject::tr("{param_set.Title}"));''')
-    for name, title, params in param_group:
+    for title, params in param_group:
+        name = title.replace(' ', '')
         cog.out(f'''
     group{name}->setTitle(QObject::tr("{title}"));''')
         for row,param in enumerate(params):
@@ -534,20 +540,25 @@ void {class_name}::retranslateUi()
     cog.out(f'''
 }}
 
+{trace_comment()}
 void {class_name}::changeEvent(QEvent *e)
 {{
-    {trace_comment()}
     if (e->type() == QEvent::LanguageChange) {{
         retranslateUi();
     }}
     QWidget::changeEvent(e);
 }}
+''')
 
+    cog.out(f'''
+{trace_comment()}
 #include "moc_{class_name}.cpp"
 ''')
 
 class Param:
-    def __init__(self, name, default, doc='', title='', on_change=False, proxy=None):
+    WidgetPrefix = ''
+
+    def __init__(self, name, default, doc='', title='', on_change=False, proxy=None, **kwd):
         self.name = name
         self.title = title if title else name
         self._default = default
@@ -671,9 +682,7 @@ class ParamBool(Param):
     Type = 'Bool'
     C_Type = 'bool'
     WidgetType = 'Gui::PrefCheckBox'
-    WidgetPrefix = 'checkBox'
     WidgetSetter = 'setChecked'
-    WidgetHasText = 'True'
 
     @property
     def default(self):
@@ -699,14 +708,12 @@ class ParamFloat(Param):
     Type = 'Float'
     C_Type = 'double'
     WidgetType = 'Gui::PrefDoubleSpinBox'
-    WidgetPrefix = 'spinBox'
     WidgetSetter = 'setValue'
 
 class ParamString(Param):
     Type = 'ASCII'
     C_Type = 'std::string'
     WidgetType = 'Gui::PrefLineEdit'
-    WidgetPrefix = 'edit'
     WidgetSetter = 'setText'
 
     @property
@@ -717,7 +724,6 @@ class ParamQString(Param):
     Type = 'ASCII'
     C_Type = 'QString'
     WidgetType = 'Gui::PrefLineEdit'
-    WidgetPrefix = 'edit'
     WidgetSetter = 'setText'
 
     @property
@@ -734,14 +740,12 @@ class ParamInt(Param):
     Type = 'Int'
     C_Type = 'long'
     WidgetType = 'Gui::PrefSpinBox'
-    WidgetPrefix = 'spinBox'
     WidgetSetter = 'setValue'
 
 class ParamUInt(Param):
     Type = 'Unsigned'
     C_Type = 'unsigned long'
     WidgetType = 'Gui::PrefSpinBox'
-    WidgetPrefix = 'spinBox'
     WidgetSetter = 'setValue'
 
 class ParamHex(ParamUInt):
@@ -751,7 +755,7 @@ class ParamHex(ParamUInt):
 
 class ParamProxy:
     WidgetType = None
-    WidgetPrefix = None
+    WidgetPrefix = ''
     WidgetSetter = None
 
     def __init__(self, param_bool=None):
@@ -812,10 +816,10 @@ class ComboBoxItem:
 
 class ParamComboBox(ParamProxy):
     WidgetType = 'Gui::PrefComboBox'
-    WidgetPrefix = 'comboBox'
 
-    def __init__(self, items, param_bool=None):
+    def __init__(self, items, translate=True, param_bool=None):
         super().__init__(param_bool)
+        self.translate = translate
         self.items = []
         for item in items:
             if isinstance(item, str):
@@ -831,10 +835,15 @@ class ParamComboBox(ParamProxy):
 
     def init_widget(self, param, row, group_name):
         super().init_widget(param, row, group_name)
-        cog.out(f'''
-    for (int i=0; i<{len(self.items)}; ++i)
+        if self.translate:
+            cog.out(f'''
+    for (int i=0; i<{len(self.items)}; ++i) {trace_comment()}
         {param.widget_name}->addItem(QString());''')
+
         for i,item in enumerate(self.items):
+            if not self.translate:
+                cog.out(f'''
+    {param.widget_name}->addItem(QStringLiteral("{item.text}"));''')
             if item._data is not None:
                 cog.out(f'''
     {param.widget_name}->setItemData({param.widget_name}->count()-1, {item.data});''')
@@ -844,8 +853,11 @@ class ParamComboBox(ParamProxy):
 
     def retranslate(self, param):
         super().retranslate(param)
+        cog.out(f'''
+    {trace_comment()}''')
         for i,item in enumerate(self.items):
-            cog.out(f'''
+            if self.translate:
+                cog.out(f'''
     {param.widget_name}->setItemText({i}, QObject::tr("{item.text}"));''')
             if item.tooltips:
                 cog.out(f'''
@@ -853,7 +865,6 @@ class ParamComboBox(ParamProxy):
 
 class ParamLinePattern(ParamProxy):
     WidgetType = 'Gui::PrefLinePattern'
-    WidgetPrefix = 'linePattern'
 
     def widget_setter(self, _param):
         return None
@@ -861,6 +872,7 @@ class ParamLinePattern(ParamProxy):
     def init_widget(self, param, row, group_name):
         super().init_widget(param, row, group_name)
         cog.out(f'''
+    {trace_comment()}
     for (int i=1; i<{param.widget_name}->count(); ++i) {{
         if ({param.widget_name}->itemData(i).toInt() == {param.default})
             {param.widget_name}->setCurrentIndex(i);
@@ -868,10 +880,27 @@ class ParamLinePattern(ParamProxy):
 
 class ParamColor(ParamProxy):
     WidgetType = 'Gui::PrefColorButton'
-    WidgetPrefix = 'colorButton'
     WidgetSetter = 'setPackedColor'
 
 class ParamFile(ParamProxy):
     WidgetType = 'Gui::PrefFileChooser'
-    WidgetPrefix = 'fileChooser'
     WidgetSetter = 'setFileNameStd'
+
+class ParamSpinBox(ParamProxy):
+    def __init__(self, value_min, value_max, value_step, param_bool=None):
+        super().__init__(param_bool)
+        self.value_min = value_min
+        self.value_max = value_max
+        self.value_step = value_step
+
+    def init_widget(self, param, row, group_name):
+        super().init_widget(param, row, group_name)
+        cog.out(f'''
+    {trace_comment()}
+    {param.widget_name}->setMaximum({self.value_min});
+    {param.widget_name}->setMaximum({self.value_max});
+    {param.widget_name}->setSingleStep({self.value_step});''')
+
+class ParamShortcutEdit(ParamProxy):
+    WidgetType = 'Gui::PrefAccelLineEdit'
+    WidgetSetter = 'setDisplayText'
