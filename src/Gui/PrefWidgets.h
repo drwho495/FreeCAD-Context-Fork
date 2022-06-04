@@ -323,6 +323,30 @@ private:
 };
 
 /**
+ * The PrefAccelLineEdit class.
+ */
+class GuiExport PrefAccelLineEdit : public AccelLineEdit, public PrefWidget
+{
+  Q_OBJECT
+
+  Q_PROPERTY( QByteArray prefEntry READ entryName     WRITE setEntryName     )
+  Q_PROPERTY( QByteArray prefPath  READ paramGrpPath  WRITE setParamGrpPath  )
+
+public:
+  PrefAccelLineEdit ( QWidget * parent = 0 );
+  virtual ~PrefAccelLineEdit();
+  virtual void setAutoSave(bool enable);
+
+protected:
+  // restore from/save to parameters
+  void restorePreferences();
+  void savePreferences();
+
+private:
+  QString m_Default;
+};
+
+/**
  * The PrefFileChooser class.
  * \author Werner Mayer
  */

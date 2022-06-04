@@ -132,12 +132,12 @@ public:
     AccelLineEdit(QWidget * parent=0);
     bool isNone() const;
 
-    std::string latinText() const {
-        return std::string(text().toLatin1().constData());
+    std::string displayText() const {
+        return std::string(text().toUtf8().constData());
     }
 
-    void setLatinText(const std::string &txt) {
-        setText(QLatin1String(txt.c_str()));
+    void setDisplayText(const std::string &txt) {
+        setText(QString::fromUtf8(txt.c_str()));
     }
 
 protected:

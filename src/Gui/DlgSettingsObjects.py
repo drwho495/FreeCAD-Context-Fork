@@ -38,7 +38,7 @@ NameSpace = 'Gui'
 ClassName = 'DlgSettingsObjects'
 ClassDoc = 'Preference dialog for various document objects related settings'
 ParamGroup = (
-    ('GroupObjects', 'Group objects', GroupParams.Params),
+    ('Group objects', GroupParams.Params),
 )
 
 def declare():

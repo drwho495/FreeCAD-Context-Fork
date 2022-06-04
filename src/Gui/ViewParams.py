@@ -31,7 +31,7 @@ import params_utils
 
 from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamHex, \
                          ParamFloat, ParamProxy, ParamLinePattern, ParamFile, \
-                         ParamComboBox, ParamColor, auto_comment
+                         ParamComboBox, ParamColor, ParamSpinBox, auto_comment
 
 NameSpace = 'Gui'
 ClassName = 'ViewParams'
@@ -69,6 +69,65 @@ DrawStyles = (
     ("Shadow", "Draw style, drop shadows for the scene.\\n"
                "Click this button while in shadow mode to toggle light manipulator", "V,9"),
 )
+
+AnimationCurveTypes = (
+    "Linear",
+    "InQuad",
+    "OutQuad",
+    "InOutQuad",
+    "OutInQuad",
+    "InCubic",
+    "OutCubic",
+    "InOutCubic",
+    "OutInCubic",
+    "InQuart",
+    "OutQuart",
+    "InOutQuart",
+    "OutInQuart",
+    "InQuint",
+    "OutQuint",
+    "InOutQuint",
+    "OutInQuint",
+    "InSine",
+    "OutSine",
+    "InOutSine",
+    "OutInSine",
+    "InExpo",
+    "OutExpo",
+    "InOutExpo",
+    "OutInExpo",
+    "InCirc",
+    "OutCirc",
+    "InOutCirc",
+    "OutInCirc",
+    "InElastic",
+    "OutElastic",
+    "InOutElastic",
+    "OutInElastic",
+    "InBack",
+    "OutBack",
+    "InOutBack",
+    "OutInBack",
+    "InBounce",
+    "OutBounce",
+    "InOutBounce",
+    "OutInBounce",
+)
+
+class ParamAnimationCurve(ParamProxy):
+    WidgetType = 'Gui::PrefComboBox'
+
+    def widget_setter(self, _param):
+        return None
+
+    def init_widget(self, param, row, group_name):
+        super().init_widget(param, row, group_name)
+        cog.out(f'''
+    {auto_comment()}
+    for (const auto &item : ViewParams::AnimationCurveTypes)
+        {param.widget_name}->addItem(item);''')
+        cog.out(f'''
+    {param.widget_name}->setCurrentIndex({param.namespace}::{param.class_name}::default{param.name}());''')
 
 Params = [
     ParamBool('UseNewSelection', True),
@@ -152,39 +211,40 @@ Params = [
         "Note that once activated, this option will also activate option ShowOnTop.\n"
         "WARNING! This is an experimental option. Please use with caution."),
     ParamInt('CornerNaviCube', 1, on_change=True),
-    ParamBool('DockOverlayAutoView', True, on_change=True),
+    ParamBool('DockOverlayAutoView', True, on_change=True, title="Auto hide in non 3D view"),
     ParamBool('DockOverlayExtraState', False, on_change=True),
-    ParamInt('DockOverlayDelay', 200, "Overlay dock (re),layout delay."),
+    ParamInt('DockOverlayDelay', 200, "Overlay dock (re),layout delay.", title="Layout delay (ms)", proxy=ParamSpinBox(0, 5000, 100)),
     ParamInt('DockOverlayRevealDelay', 2000),
-    ParamInt('DockOverlaySplitterHandleTimeout', 0,
-         "Overlay splitter handle auto hide delay. Set zero to disable auto hiding."),
-    ParamBool('DockOverlayActivateOnHover', True,
-         "Show auto hidden dock overlay on mouse over.\n"
-         "If disabled, then show on mouse click."),
+    ParamInt('DockOverlaySplitterHandleTimeout', 0, title="Splitter auto hide delay (ms)", proxy=ParamSpinBox(0, 99999, 100),
+         doc="Overlay splitter handle auto hide delay. Set zero to disable auto hiding."),
+    ParamBool('DockOverlayActivateOnHover', True, title="Activate on hover",
+         doc="Show auto hidden dock overlay on mouse over.\n"
+             "If disabled, then show on mouse click."),
     ParamBool('DockOverlayAutoMouseThrough', True,
-         "Auto mouse click through transparent part of dock overlay."),
+         "Auto mouse click through transparent part of dock overlay.", title="Auto mouse pass through"),
     ParamBool('DockOverlayWheelPassThrough', True,
-         "Auto pass through mouse wheel event on transparent dock overlay."),
-    ParamInt('DockOverlayWheelDelay', 1000,
-         "Delay capturing mouse wheel event for passing through if it is\n"
-         "previously handled by other widget."),
-    ParamInt('DockOverlayAlphaRadius', 2,
+         "Auto pass through mouse wheel event on transparent dock overlay.", title="Auto mouse wheel pass through"),
+    ParamInt('DockOverlayWheelDelay', 1000, title="Delay mouse wheel pass through (ms)", proxy=ParamSpinBox(0, 99999, 1),
+         doc="Delay capturing mouse wheel event for passing through if it is\n"
+              "previously handled by other widget."),
+    ParamInt('DockOverlayAlphaRadius', 2, title="Alpha test radius", proxy=ParamSpinBox(1, 100, 1), doc=\
          "If auto mouse click through is enabled, then this radius\n"
          "defines a region of alpha test under the mouse cursor.\n"
          "Auto click through is only activated if all pixels within\n"
          "the region are non-opaque."),
-    ParamBool('DockOverlayCheckNaviCube', True, on_change=True,
-        doc="Leave space for Navigation Cube in dock overlay"),
-    ParamInt('DockOverlayHintTriggerSize', 16,
-         "Auto hide hint visual display triggering width"),
-    ParamInt('DockOverlayHintSize', 8,
-         "Auto hide hint visual display size"),
-    ParamBool('DockOverlayHintTabBar', True, "Show tab bar on mouse over when auto hide"),
-    ParamBool('DockOverlayHideTabBar', True, on_change=True, doc="Hide tab bar in dock overlay"),
-    ParamInt('DockOverlayHintDelay', 200, "Delay before show hint visual"),
-    ParamInt('DockOverlayAnimationDuration', 200, "Auto hide animation duration, 0 to disable"),
-    ParamInt('DockOverlayAnimationCurve', 7, "Auto hide animation curve type"),
-    ParamBool('DockOverlayHidePropertyViewScrollBar', False, "Hide property view scroll bar in dock overlay"),
+    ParamBool('DockOverlayCheckNaviCube', True, on_change=True, title="Check Navigation Cube",
+         doc="Leave space for Navigation Cube in dock overlay"),
+    ParamInt('DockOverlayHintTriggerSize', 16, title="Hint trigger size", proxy=ParamSpinBox(1, 100, 1),
+         doc="Auto hide hint visual display triggering width"),
+    ParamInt('DockOverlayHintSize', 8, title="Hint width", proxy=ParamSpinBox(1, 100, 1),
+         doc="Auto hide hint visual display size"),
+    ParamBool('DockOverlayHintTabBar', True, "Show tab bar on mouse over when auto hide", title="Hint show tab bar"),
+    ParamBool('DockOverlayHideTabBar', True, on_change=True, doc="Hide tab bar in dock overlay", title='Hide tab bar'),
+    ParamInt('DockOverlayHintDelay', 200, "Delay before show hint visual", title="Hint delay (ms)", proxy=ParamSpinBox(0, 1000, 100)),
+    ParamInt('DockOverlayAnimationDuration', 200, "Auto hide animation duration, 0 to disable",
+         title="Animation duration (ms)", proxy=ParamSpinBox(0, 5000, 100)),
+    ParamInt('DockOverlayAnimationCurve', 7, "Auto hide animation curve type", title="Animation curve type", proxy=ParamAnimationCurve()),
+    ParamBool('DockOverlayHidePropertyViewScrollBar', False, "Hide property view scroll bar in dock overlay", title="Hide property view scroll bar"),
     ParamFloat('EditingTransparency', 0.5,
         "Automatically make all object transparent except the one in edit"),
     ParamFloat('HiddenLineTransparency', 0.4,
@@ -309,18 +369,18 @@ Params = [
         "Enable selection of upper hierarchy by repeatedly click some already\n"
         "selected sub-element."),
     ParamInt('CommandHistorySize',  20, "Maximum number of commands saved in history"),
-    ParamInt('PieMenuIconSize',  24, "Pie menu icon size"),
-    ParamInt('PieMenuRadius',  100, "Pie menu radius"),
-    ParamInt('PieMenuTriggerRadius',  60, "Pie menu hover trigger radius"),
-    ParamInt('PieMenuFontSize',  0, "Pie menu font size"),
+    ParamInt('PieMenuIconSize',  24, "Pie menu icon size", title='Icon size', proxy=ParamSpinBox(0, 64, 1)),
+    ParamInt('PieMenuRadius',  100, "Pie menu radius", title='Radius', proxy=ParamSpinBox(10, 500, 10)),
+    ParamInt('PieMenuTriggerRadius',  60, "Pie menu hover trigger radius", title='Trigger radius', proxy=ParamSpinBox(10, 500, 10)),
+    ParamInt('PieMenuFontSize',  0, "Pie menu font size", title='Font size', proxy=ParamSpinBox(0, 32, 1)),
     ParamInt('PieMenuTriggerDelay',  200,
-        "Pie menu sub-menu hover trigger delay, 0 to disable"),
-    ParamBool('PieMenuTriggerAction',  False, "Pie menu action trigger on hover"),
-    ParamInt('PieMenuAnimationDuration',  250, "Pie menu animation duration, 0 to disable"),
-    ParamInt('PieMenuAnimationCurve',  38, "Pie menu animation curve type"),
-    ParamInt('PieMenuCenterRadius',  10, "Pie menu center circle radius, 0 to disable"),
+        "Pie menu sub-menu hover trigger delay, 0 to disable", title="Trigger delay (ms)", proxy=ParamSpinBox(0, 10000, 100)),
+    ParamBool('PieMenuTriggerAction',  False, "Pie menu action trigger on hover", title='Trigger action'),
+    ParamInt('PieMenuAnimationDuration',  250, "Pie menu animation duration, 0 to disable", title="Animation duration (ms)", proxy=ParamSpinBox(0, 5000, 100)),
+    ParamInt('PieMenuAnimationCurve',  38, "Pie menu animation curve type", title='Animation curve type', proxy=ParamAnimationCurve()),
+    ParamInt('PieMenuCenterRadius',  10, "Pie menu center circle radius, 0 to disable", title='Center radius', proxy=ParamSpinBox(0, 250, 1)),
     ParamBool('PieMenuPopup',  False,
-        "Show pie menu as a popup widget, disable it to work around some graphics driver problem"),
+        "Show pie menu as a popup widget, disable it to work around some graphics driver problem", title='Show pie menu as popup'),
     ParamBool('StickyTaskControl',  True,
         "Makes the task dialog buttons stay at top or bottom of task view."),
     ParamBool('ColorOnTop',  True, "Show object on top when editing its color."),
@@ -333,7 +393,7 @@ Params = [
         "Set rotation center on press in gesture navigation mode."),
     ParamBool('CheckWidgetPlacementOnRestore',  True,
         "Check widget position and size on restore to make sure it is within the current screen."),
-    ParamInt('TextCursorWidth',  1, on_change=True, doc="Text cursor width in pixel."),
+    ParamInt('TextCursorWidth',  1, on_change=True, doc="Text cursor width in pixel.", title='Text cursor width', proxy=ParamSpinBox(1, 100, 1)),
     ParamInt('PreselectionToolTipCorner',  3, "Preselection tool tip docking corner."),
     ParamInt('PreselectionToolTipOffsetX',  0, "Preselection tool tip x offset relative to its docking corner."),
     ParamInt('PreselectionToolTipOffsetY',  0, "Preselection tool tip y offset relative to its docking corner."),
@@ -380,7 +440,16 @@ Params = [
 ]
 
 def declare_begin():
+    cog.out(f'''
+{auto_comment()}
+#include <QString>
+''')
+
     params_utils.declare_begin(sys.modules[__name__])
+    cog.out(f'''
+    {auto_comment()}
+    static const std::vector<QString> AnimationCurveTypes;
+''')
 
 def declare_end():
     params_utils.declare_end(sys.modules[__name__])
@@ -399,8 +468,15 @@ namespace {NameSpace} {{
 
 def define():
     params_utils.define(sys.modules[__name__])
-
     cog.out(f'''
+{auto_comment()}
+const std::vector<QString> ViewParams::AnimationCurveTypes = {{''')
+    for item in AnimationCurveTypes:
+        cog.out(f'''
+    QStringLiteral("{item}"),''')
+    cog.out(f'''
+}};
+
 {auto_comment()}
 static const char *DrawStyleNames[] = {{''')
     for item in DrawStyles:

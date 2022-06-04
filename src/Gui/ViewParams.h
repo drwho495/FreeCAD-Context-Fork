@@ -36,6 +36,9 @@ ViewParams.declare_begin()
 // Auto generated code (Gui/ViewParams.py:450)
 #include <QString>
 
+// Auto generated code (Gui/ViewParams.py:447)
+#include <QString>
+
 // Auto generated code (Tools/params_utils.py:68)
 #include <Base/Parameter.h>
 
@@ -2071,6 +2074,9 @@ public:
     static void setDefaultDrawStyle(const long &v);
     static const char *docDefaultDrawStyle();
     //@}
+
+    // Auto generated code (Gui/ViewParams.py:453)
+    static const std::vector<QString> AnimationCurveTypes;
 //[[[end]]]
 
     static bool highlightIndicesOnFullSelect() {
@@ -2090,7 +2096,7 @@ ViewParams.declare_end()
 }; // class ViewParams
 } // namespace Gui
 
-// Auto generated code (Gui/ViewParams.py:392)
+// Auto generated code (Gui/ViewParams.py:461)
 namespace Gui {
 /// Obtain draw style name from index. Returns nullptr if out of range.
 GuiExport const char *drawStyleNameFromIndex(int index);

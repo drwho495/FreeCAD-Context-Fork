@@ -29,7 +29,7 @@ import DlgSettingsDrawStyles
 DlgSettingsDrawStyles.define()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:469)
+// Auto generated code (Tools/params_utils.py:472)
 #ifndef _PreComp_
 #   include <QApplication>
 #   include <QLabel>
@@ -40,12 +40,12 @@ DlgSettingsDrawStyles.define()
 #endif
 #include <Gui/PrefWidgets.h>
 #include <Gui/ViewParams.h>
-// Auto generated code (Tools/params_utils.py:487)
+// Auto generated code (Tools/params_utils.py:490)
 #include "DlgSettingsDrawStyles.h"
 using namespace Gui::Dialog;
 /* TRANSLATOR Gui::Dialog::DlgSettingsDrawStyles */
 
-// Auto generated code (Tools/params_utils.py:494)
+// Auto generated code (Tools/params_utils.py:497)
 DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     : PreferencePage( parent )
 {
@@ -53,7 +53,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     auto layout = new QVBoxLayout(this);
 
 
-    // Auto generated code (Tools/params_utils.py:336)
+    // Auto generated code (Tools/params_utils.py:338)
     groupDocument = new QGroupBox(this);
     layout->addWidget(groupDocument);
     auto layoutHorizDocument = new QHBoxLayout(groupDocument);
@@ -61,19 +61,19 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizDocument->addLayout(layoutDocument);
     layoutHorizDocument->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelDefaultDrawStyle = new QLabel(this);
     layoutDocument->addWidget(labelDefaultDrawStyle, 0, 0);
-    comboBoxDefaultDrawStyle = new Gui::PrefComboBox(this);
-    layoutDocument->addWidget(comboBoxDefaultDrawStyle, 0, 1);
-    for (int i=0; i<9; ++i)
-        comboBoxDefaultDrawStyle->addItem(QString());
-    comboBoxDefaultDrawStyle->setCurrentIndex(Gui::ViewParams::defaultDefaultDrawStyle());
-    comboBoxDefaultDrawStyle->setEntryName("DefaultDrawStyle");
-    comboBoxDefaultDrawStyle->setParamGrpPath("View");
+    DefaultDrawStyle = new Gui::PrefComboBox(this);
+    layoutDocument->addWidget(DefaultDrawStyle, 0, 1);
+    for (int i=0; i<9; ++i) // Auto generated code (Tools/params_utils.py:840)
+        DefaultDrawStyle->addItem(QString());
+    DefaultDrawStyle->setCurrentIndex(Gui::ViewParams::defaultDefaultDrawStyle());
+    DefaultDrawStyle->setEntryName("DefaultDrawStyle");
+    DefaultDrawStyle->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:336)
+    // Auto generated code (Tools/params_utils.py:338)
     groupSelection = new QGroupBox(this);
     layout->addWidget(groupSelection);
     auto layoutHorizSelection = new QHBoxLayout(groupSelection);
@@ -81,83 +81,84 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizSelection->addLayout(layoutSelection);
     layoutHorizSelection->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelTransparencyOnTop = new QLabel(this);
     layoutSelection->addWidget(labelTransparencyOnTop, 0, 0);
-    spinBoxTransparencyOnTop = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxTransparencyOnTop, 0, 1);
-    spinBoxTransparencyOnTop->setValue(Gui::ViewParams::defaultTransparencyOnTop());
-    spinBoxTransparencyOnTop->setEntryName("TransparencyOnTop");
-    spinBoxTransparencyOnTop->setParamGrpPath("View");
+    TransparencyOnTop = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(TransparencyOnTop, 0, 1);
+    TransparencyOnTop->setValue(Gui::ViewParams::defaultTransparencyOnTop());
+    TransparencyOnTop->setEntryName("TransparencyOnTop");
+    TransparencyOnTop->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionLineThicken = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLineThicken, 1, 0);
-    spinBoxSelectionLineThicken = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionLineThicken, 1, 1);
-    spinBoxSelectionLineThicken->setValue(Gui::ViewParams::defaultSelectionLineThicken());
-    spinBoxSelectionLineThicken->setEntryName("SelectionLineThicken");
-    spinBoxSelectionLineThicken->setParamGrpPath("View");
+    SelectionLineThicken = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(SelectionLineThicken, 1, 1);
+    SelectionLineThicken->setValue(Gui::ViewParams::defaultSelectionLineThicken());
+    SelectionLineThicken->setEntryName("SelectionLineThicken");
+    SelectionLineThicken->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionLineMaxWidth = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLineMaxWidth, 2, 0);
-    spinBoxSelectionLineMaxWidth = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionLineMaxWidth, 2, 1);
-    spinBoxSelectionLineMaxWidth->setValue(Gui::ViewParams::defaultSelectionLineMaxWidth());
-    spinBoxSelectionLineMaxWidth->setEntryName("SelectionLineMaxWidth");
-    spinBoxSelectionLineMaxWidth->setParamGrpPath("View");
+    SelectionLineMaxWidth = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(SelectionLineMaxWidth, 2, 1);
+    SelectionLineMaxWidth->setValue(Gui::ViewParams::defaultSelectionLineMaxWidth());
+    SelectionLineMaxWidth->setEntryName("SelectionLineMaxWidth");
+    SelectionLineMaxWidth->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionPointScale = new QLabel(this);
     layoutSelection->addWidget(labelSelectionPointScale, 3, 0);
-    spinBoxSelectionPointScale = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionPointScale, 3, 1);
-    spinBoxSelectionPointScale->setValue(Gui::ViewParams::defaultSelectionPointScale());
-    spinBoxSelectionPointScale->setEntryName("SelectionPointScale");
-    spinBoxSelectionPointScale->setParamGrpPath("View");
+    SelectionPointScale = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(SelectionPointScale, 3, 1);
+    SelectionPointScale->setValue(Gui::ViewParams::defaultSelectionPointScale());
+    SelectionPointScale->setEntryName("SelectionPointScale");
+    SelectionPointScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionPointMaxSize = new QLabel(this);
     layoutSelection->addWidget(labelSelectionPointMaxSize, 4, 0);
-    spinBoxSelectionPointMaxSize = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionPointMaxSize, 4, 1);
-    spinBoxSelectionPointMaxSize->setValue(Gui::ViewParams::defaultSelectionPointMaxSize());
-    spinBoxSelectionPointMaxSize->setEntryName("SelectionPointMaxSize");
-    spinBoxSelectionPointMaxSize->setParamGrpPath("View");
+    SelectionPointMaxSize = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(SelectionPointMaxSize, 4, 1);
+    SelectionPointMaxSize->setValue(Gui::ViewParams::defaultSelectionPointMaxSize());
+    SelectionPointMaxSize->setEntryName("SelectionPointMaxSize");
+    SelectionPointMaxSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionLinePattern = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLinePattern, 5, 0);
-    linePatternSelectionLinePattern = new Gui::PrefLinePattern(this);
-    layoutSelection->addWidget(linePatternSelectionLinePattern, 5, 1);
-    for (int i=1; i<linePatternSelectionLinePattern->count(); ++i) {
-        if (linePatternSelectionLinePattern->itemData(i).toInt() == 0)
-            linePatternSelectionLinePattern->setCurrentIndex(i);
+    SelectionLinePattern = new Gui::PrefLinePattern(this);
+    layoutSelection->addWidget(SelectionLinePattern, 5, 1);
+    // Auto generated code (Tools/params_utils.py:875)
+    for (int i=1; i<SelectionLinePattern->count(); ++i) {
+        if (SelectionLinePattern->itemData(i).toInt() == 0)
+            SelectionLinePattern->setCurrentIndex(i);
     }
-    linePatternSelectionLinePattern->setEntryName("SelectionLinePattern");
-    linePatternSelectionLinePattern->setParamGrpPath("View");
+    SelectionLinePattern->setEntryName("SelectionLinePattern");
+    SelectionLinePattern->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionLinePatternScale = new QLabel(this);
     layoutSelection->addWidget(labelSelectionLinePatternScale, 6, 0);
-    spinBoxSelectionLinePatternScale = new Gui::PrefSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionLinePatternScale, 6, 1);
-    spinBoxSelectionLinePatternScale->setValue(Gui::ViewParams::defaultSelectionLinePatternScale());
-    spinBoxSelectionLinePatternScale->setEntryName("SelectionLinePatternScale");
-    spinBoxSelectionLinePatternScale->setParamGrpPath("View");
+    SelectionLinePatternScale = new Gui::PrefSpinBox(this);
+    layoutSelection->addWidget(SelectionLinePatternScale, 6, 1);
+    SelectionLinePatternScale->setValue(Gui::ViewParams::defaultSelectionLinePatternScale());
+    SelectionLinePatternScale->setEntryName("SelectionLinePatternScale");
+    SelectionLinePatternScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelSelectionHiddenLineWidth = new QLabel(this);
     layoutSelection->addWidget(labelSelectionHiddenLineWidth, 7, 0);
-    spinBoxSelectionHiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
-    layoutSelection->addWidget(spinBoxSelectionHiddenLineWidth, 7, 1);
-    spinBoxSelectionHiddenLineWidth->setValue(Gui::ViewParams::defaultSelectionHiddenLineWidth());
-    spinBoxSelectionHiddenLineWidth->setEntryName("SelectionHiddenLineWidth");
-    spinBoxSelectionHiddenLineWidth->setParamGrpPath("View");
+    SelectionHiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
+    layoutSelection->addWidget(SelectionHiddenLineWidth, 7, 1);
+    SelectionHiddenLineWidth->setValue(Gui::ViewParams::defaultSelectionHiddenLineWidth());
+    SelectionHiddenLineWidth->setEntryName("SelectionHiddenLineWidth");
+    SelectionHiddenLineWidth->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:336)
+    // Auto generated code (Tools/params_utils.py:338)
     groupHiddenLines = new QGroupBox(this);
     layout->addWidget(groupHiddenLines);
     auto layoutHorizHiddenLines = new QHBoxLayout(groupHiddenLines);
@@ -165,116 +166,116 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizHiddenLines->addLayout(layoutHiddenLines);
     layoutHorizHiddenLines->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:347)
-    colorButtonHiddenLineFaceColor = new Gui::PrefColorButton(this);
-    layoutHiddenLines->addWidget(colorButtonHiddenLineFaceColor, 0, 1);
-    colorButtonHiddenLineFaceColor->setPackedColor(Gui::ViewParams::defaultHiddenLineFaceColor());
-    checkBoxHiddenLineOverrideFaceColor = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineOverrideFaceColor, 0, 0);
-    checkBoxHiddenLineOverrideFaceColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideFaceColor());
-    colorButtonHiddenLineFaceColor->setEnabled(checkBoxHiddenLineOverrideFaceColor->isChecked());
-    connect(checkBoxHiddenLineOverrideFaceColor, SIGNAL(toggled(bool)), colorButtonHiddenLineFaceColor, SLOT(setEnabled(bool)));
-    colorButtonHiddenLineFaceColor->setEntryName("HiddenLineFaceColor");
-    colorButtonHiddenLineFaceColor->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineFaceColor = new Gui::PrefColorButton(this);
+    layoutHiddenLines->addWidget(HiddenLineFaceColor, 0, 1);
+    HiddenLineFaceColor->setPackedColor(Gui::ViewParams::defaultHiddenLineFaceColor());
+    HiddenLineOverrideFaceColor = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineOverrideFaceColor, 0, 0);
+    HiddenLineOverrideFaceColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideFaceColor());
+    HiddenLineFaceColor->setEnabled(HiddenLineOverrideFaceColor->isChecked());
+    connect(HiddenLineOverrideFaceColor, SIGNAL(toggled(bool)), HiddenLineFaceColor, SLOT(setEnabled(bool)));
+    HiddenLineFaceColor->setEntryName("HiddenLineFaceColor");
+    HiddenLineFaceColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    colorButtonHiddenLineColor = new Gui::PrefColorButton(this);
-    layoutHiddenLines->addWidget(colorButtonHiddenLineColor, 1, 1);
-    colorButtonHiddenLineColor->setPackedColor(Gui::ViewParams::defaultHiddenLineColor());
-    checkBoxHiddenLineOverrideColor = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineOverrideColor, 1, 0);
-    checkBoxHiddenLineOverrideColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideColor());
-    colorButtonHiddenLineColor->setEnabled(checkBoxHiddenLineOverrideColor->isChecked());
-    connect(checkBoxHiddenLineOverrideColor, SIGNAL(toggled(bool)), colorButtonHiddenLineColor, SLOT(setEnabled(bool)));
-    colorButtonHiddenLineColor->setEntryName("HiddenLineColor");
-    colorButtonHiddenLineColor->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineColor = new Gui::PrefColorButton(this);
+    layoutHiddenLines->addWidget(HiddenLineColor, 1, 1);
+    HiddenLineColor->setPackedColor(Gui::ViewParams::defaultHiddenLineColor());
+    HiddenLineOverrideColor = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineOverrideColor, 1, 0);
+    HiddenLineOverrideColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideColor());
+    HiddenLineColor->setEnabled(HiddenLineOverrideColor->isChecked());
+    connect(HiddenLineOverrideColor, SIGNAL(toggled(bool)), HiddenLineColor, SLOT(setEnabled(bool)));
+    HiddenLineColor->setEntryName("HiddenLineColor");
+    HiddenLineColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    colorButtonHiddenLineBackground = new Gui::PrefColorButton(this);
-    layoutHiddenLines->addWidget(colorButtonHiddenLineBackground, 2, 1);
-    colorButtonHiddenLineBackground->setPackedColor(Gui::ViewParams::defaultHiddenLineBackground());
-    checkBoxHiddenLineOverrideBackground = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineOverrideBackground, 2, 0);
-    checkBoxHiddenLineOverrideBackground->setChecked(Gui::ViewParams::defaultHiddenLineOverrideBackground());
-    colorButtonHiddenLineBackground->setEnabled(checkBoxHiddenLineOverrideBackground->isChecked());
-    connect(checkBoxHiddenLineOverrideBackground, SIGNAL(toggled(bool)), colorButtonHiddenLineBackground, SLOT(setEnabled(bool)));
-    colorButtonHiddenLineBackground->setEntryName("HiddenLineBackground");
-    colorButtonHiddenLineBackground->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineBackground = new Gui::PrefColorButton(this);
+    layoutHiddenLines->addWidget(HiddenLineBackground, 2, 1);
+    HiddenLineBackground->setPackedColor(Gui::ViewParams::defaultHiddenLineBackground());
+    HiddenLineOverrideBackground = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineOverrideBackground, 2, 0);
+    HiddenLineOverrideBackground->setChecked(Gui::ViewParams::defaultHiddenLineOverrideBackground());
+    HiddenLineBackground->setEnabled(HiddenLineOverrideBackground->isChecked());
+    connect(HiddenLineOverrideBackground, SIGNAL(toggled(bool)), HiddenLineBackground, SLOT(setEnabled(bool)));
+    HiddenLineBackground->setEntryName("HiddenLineBackground");
+    HiddenLineBackground->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLineShaded = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineShaded, 3, 0);
-    checkBoxHiddenLineShaded->setChecked(Gui::ViewParams::defaultHiddenLineShaded());
-    checkBoxHiddenLineShaded->setEntryName("HiddenLineShaded");
-    checkBoxHiddenLineShaded->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineShaded = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineShaded, 3, 0);
+    HiddenLineShaded->setChecked(Gui::ViewParams::defaultHiddenLineShaded());
+    HiddenLineShaded->setEntryName("HiddenLineShaded");
+    HiddenLineShaded->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLineShowOutline = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineShowOutline, 4, 0);
-    checkBoxHiddenLineShowOutline->setChecked(Gui::ViewParams::defaultHiddenLineShowOutline());
-    checkBoxHiddenLineShowOutline->setEntryName("HiddenLineShowOutline");
-    checkBoxHiddenLineShowOutline->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineShowOutline = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineShowOutline, 4, 0);
+    HiddenLineShowOutline->setChecked(Gui::ViewParams::defaultHiddenLineShowOutline());
+    HiddenLineShowOutline->setEntryName("HiddenLineShowOutline");
+    HiddenLineShowOutline->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLinePerFaceOutline = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLinePerFaceOutline, 5, 0);
-    checkBoxHiddenLinePerFaceOutline->setChecked(Gui::ViewParams::defaultHiddenLinePerFaceOutline());
-    checkBoxHiddenLinePerFaceOutline->setEntryName("HiddenLinePerFaceOutline");
-    checkBoxHiddenLinePerFaceOutline->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLinePerFaceOutline = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLinePerFaceOutline, 5, 0);
+    HiddenLinePerFaceOutline->setChecked(Gui::ViewParams::defaultHiddenLinePerFaceOutline());
+    HiddenLinePerFaceOutline->setEntryName("HiddenLinePerFaceOutline");
+    HiddenLinePerFaceOutline->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLineHideFace = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineHideFace, 6, 0);
-    checkBoxHiddenLineHideFace->setChecked(Gui::ViewParams::defaultHiddenLineHideFace());
-    checkBoxHiddenLineHideFace->setEntryName("HiddenLineHideFace");
-    checkBoxHiddenLineHideFace->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineHideFace = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineHideFace, 6, 0);
+    HiddenLineHideFace->setChecked(Gui::ViewParams::defaultHiddenLineHideFace());
+    HiddenLineHideFace->setEntryName("HiddenLineHideFace");
+    HiddenLineHideFace->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLineHideSeam = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineHideSeam, 7, 0);
-    checkBoxHiddenLineHideSeam->setChecked(Gui::ViewParams::defaultHiddenLineHideSeam());
-    checkBoxHiddenLineHideSeam->setEntryName("HiddenLineHideSeam");
-    checkBoxHiddenLineHideSeam->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineHideSeam = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineHideSeam, 7, 0);
+    HiddenLineHideSeam->setChecked(Gui::ViewParams::defaultHiddenLineHideSeam());
+    HiddenLineHideSeam->setEntryName("HiddenLineHideSeam");
+    HiddenLineHideSeam->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxHiddenLineHideVertex = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineHideVertex, 8, 0);
-    checkBoxHiddenLineHideVertex->setChecked(Gui::ViewParams::defaultHiddenLineHideVertex());
-    checkBoxHiddenLineHideVertex->setEntryName("HiddenLineHideVertex");
-    checkBoxHiddenLineHideVertex->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineHideVertex = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineHideVertex, 8, 0);
+    HiddenLineHideVertex->setChecked(Gui::ViewParams::defaultHiddenLineHideVertex());
+    HiddenLineHideVertex->setEntryName("HiddenLineHideVertex");
+    HiddenLineHideVertex->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    spinBoxHiddenLineTransparency = new Gui::PrefDoubleSpinBox(this);
-    layoutHiddenLines->addWidget(spinBoxHiddenLineTransparency, 9, 1);
-    spinBoxHiddenLineTransparency->setValue(Gui::ViewParams::defaultHiddenLineTransparency());
-    checkBoxHiddenLineOverrideTransparency = new Gui::PrefCheckBox(this);
-    layoutHiddenLines->addWidget(checkBoxHiddenLineOverrideTransparency, 9, 0);
-    checkBoxHiddenLineOverrideTransparency->setChecked(Gui::ViewParams::defaultHiddenLineOverrideTransparency());
-    spinBoxHiddenLineTransparency->setEnabled(checkBoxHiddenLineOverrideTransparency->isChecked());
-    connect(checkBoxHiddenLineOverrideTransparency, SIGNAL(toggled(bool)), spinBoxHiddenLineTransparency, SLOT(setEnabled(bool)));
-    spinBoxHiddenLineTransparency->setEntryName("HiddenLineTransparency");
-    spinBoxHiddenLineTransparency->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    HiddenLineTransparency = new Gui::PrefDoubleSpinBox(this);
+    layoutHiddenLines->addWidget(HiddenLineTransparency, 9, 1);
+    HiddenLineTransparency->setValue(Gui::ViewParams::defaultHiddenLineTransparency());
+    HiddenLineOverrideTransparency = new Gui::PrefCheckBox(this);
+    layoutHiddenLines->addWidget(HiddenLineOverrideTransparency, 9, 0);
+    HiddenLineOverrideTransparency->setChecked(Gui::ViewParams::defaultHiddenLineOverrideTransparency());
+    HiddenLineTransparency->setEnabled(HiddenLineOverrideTransparency->isChecked());
+    connect(HiddenLineOverrideTransparency, SIGNAL(toggled(bool)), HiddenLineTransparency, SLOT(setEnabled(bool)));
+    HiddenLineTransparency->setEntryName("HiddenLineTransparency");
+    HiddenLineTransparency->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelHiddenLineWidth = new QLabel(this);
     layoutHiddenLines->addWidget(labelHiddenLineWidth, 10, 0);
-    spinBoxHiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
-    layoutHiddenLines->addWidget(spinBoxHiddenLineWidth, 10, 1);
-    spinBoxHiddenLineWidth->setValue(Gui::ViewParams::defaultHiddenLineWidth());
-    spinBoxHiddenLineWidth->setEntryName("HiddenLineWidth");
-    spinBoxHiddenLineWidth->setParamGrpPath("View");
+    HiddenLineWidth = new Gui::PrefDoubleSpinBox(this);
+    layoutHiddenLines->addWidget(HiddenLineWidth, 10, 1);
+    HiddenLineWidth->setValue(Gui::ViewParams::defaultHiddenLineWidth());
+    HiddenLineWidth->setEntryName("HiddenLineWidth");
+    HiddenLineWidth->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelHiddenLinePointSize = new QLabel(this);
     layoutHiddenLines->addWidget(labelHiddenLinePointSize, 11, 0);
-    spinBoxHiddenLinePointSize = new Gui::PrefDoubleSpinBox(this);
-    layoutHiddenLines->addWidget(spinBoxHiddenLinePointSize, 11, 1);
-    spinBoxHiddenLinePointSize->setValue(Gui::ViewParams::defaultHiddenLinePointSize());
-    spinBoxHiddenLinePointSize->setEntryName("HiddenLinePointSize");
-    spinBoxHiddenLinePointSize->setParamGrpPath("View");
+    HiddenLinePointSize = new Gui::PrefDoubleSpinBox(this);
+    layoutHiddenLines->addWidget(HiddenLinePointSize, 11, 1);
+    HiddenLinePointSize->setValue(Gui::ViewParams::defaultHiddenLinePointSize());
+    HiddenLinePointSize->setEntryName("HiddenLinePointSize");
+    HiddenLinePointSize->setParamGrpPath("View");
 
 
-    // Auto generated code (Tools/params_utils.py:336)
+    // Auto generated code (Tools/params_utils.py:338)
     groupShadow = new QGroupBox(this);
     layout->addWidget(groupShadow);
     auto layoutHorizShadow = new QHBoxLayout(groupShadow);
@@ -282,471 +283,476 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutHorizShadow->addLayout(layoutShadow);
     layoutHorizShadow->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowSpotLight = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowSpotLight, 0, 0);
-    checkBoxShadowSpotLight->setChecked(Gui::ViewParams::defaultShadowSpotLight());
-    checkBoxShadowSpotLight->setEntryName("ShadowSpotLight");
-    checkBoxShadowSpotLight->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowSpotLight = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowSpotLight, 0, 0);
+    ShadowSpotLight->setChecked(Gui::ViewParams::defaultShadowSpotLight());
+    ShadowSpotLight->setEntryName("ShadowSpotLight");
+    ShadowSpotLight->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowLightColor = new QLabel(this);
     layoutShadow->addWidget(labelShadowLightColor, 1, 0);
-    colorButtonShadowLightColor = new Gui::PrefColorButton(this);
-    layoutShadow->addWidget(colorButtonShadowLightColor, 1, 1);
-    colorButtonShadowLightColor->setPackedColor(Gui::ViewParams::defaultShadowLightColor());
-    colorButtonShadowLightColor->setEntryName("ShadowLightColor");
-    colorButtonShadowLightColor->setParamGrpPath("View");
+    ShadowLightColor = new Gui::PrefColorButton(this);
+    layoutShadow->addWidget(ShadowLightColor, 1, 1);
+    ShadowLightColor->setPackedColor(Gui::ViewParams::defaultShadowLightColor());
+    ShadowLightColor->setEntryName("ShadowLightColor");
+    ShadowLightColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowLightIntensity = new QLabel(this);
     layoutShadow->addWidget(labelShadowLightIntensity, 2, 0);
-    spinBoxShadowLightIntensity = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowLightIntensity, 2, 1);
-    spinBoxShadowLightIntensity->setValue(Gui::ViewParams::defaultShadowLightIntensity());
-    spinBoxShadowLightIntensity->setEntryName("ShadowLightIntensity");
-    spinBoxShadowLightIntensity->setParamGrpPath("View");
+    ShadowLightIntensity = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowLightIntensity, 2, 1);
+    ShadowLightIntensity->setValue(Gui::ViewParams::defaultShadowLightIntensity());
+    ShadowLightIntensity->setEntryName("ShadowLightIntensity");
+    ShadowLightIntensity->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowShowGround = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowShowGround, 3, 0);
-    checkBoxShadowShowGround->setChecked(Gui::ViewParams::defaultShadowShowGround());
-    checkBoxShadowShowGround->setEntryName("ShadowShowGround");
-    checkBoxShadowShowGround->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowShowGround = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowShowGround, 3, 0);
+    ShadowShowGround->setChecked(Gui::ViewParams::defaultShadowShowGround());
+    ShadowShowGround->setEntryName("ShadowShowGround");
+    ShadowShowGround->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowGroundBackFaceCull = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowGroundBackFaceCull, 4, 0);
-    checkBoxShadowGroundBackFaceCull->setChecked(Gui::ViewParams::defaultShadowGroundBackFaceCull());
-    checkBoxShadowGroundBackFaceCull->setEntryName("ShadowGroundBackFaceCull");
-    checkBoxShadowGroundBackFaceCull->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowGroundBackFaceCull = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowGroundBackFaceCull, 4, 0);
+    ShadowGroundBackFaceCull->setChecked(Gui::ViewParams::defaultShadowGroundBackFaceCull());
+    ShadowGroundBackFaceCull->setEntryName("ShadowGroundBackFaceCull");
+    ShadowGroundBackFaceCull->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundColor = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundColor, 5, 0);
-    colorButtonShadowGroundColor = new Gui::PrefColorButton(this);
-    layoutShadow->addWidget(colorButtonShadowGroundColor, 5, 1);
-    colorButtonShadowGroundColor->setPackedColor(Gui::ViewParams::defaultShadowGroundColor());
-    colorButtonShadowGroundColor->setEntryName("ShadowGroundColor");
-    colorButtonShadowGroundColor->setParamGrpPath("View");
+    ShadowGroundColor = new Gui::PrefColorButton(this);
+    layoutShadow->addWidget(ShadowGroundColor, 5, 1);
+    ShadowGroundColor->setPackedColor(Gui::ViewParams::defaultShadowGroundColor());
+    ShadowGroundColor->setEntryName("ShadowGroundColor");
+    ShadowGroundColor->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundScale = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundScale, 6, 0);
-    spinBoxShadowGroundScale = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowGroundScale, 6, 1);
-    spinBoxShadowGroundScale->setValue(Gui::ViewParams::defaultShadowGroundScale());
-    spinBoxShadowGroundScale->setEntryName("ShadowGroundScale");
-    spinBoxShadowGroundScale->setParamGrpPath("View");
+    ShadowGroundScale = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowGroundScale, 6, 1);
+    ShadowGroundScale->setValue(Gui::ViewParams::defaultShadowGroundScale());
+    ShadowGroundScale->setEntryName("ShadowGroundScale");
+    ShadowGroundScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundTransparency = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTransparency, 7, 0);
-    spinBoxShadowGroundTransparency = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowGroundTransparency, 7, 1);
-    spinBoxShadowGroundTransparency->setValue(Gui::ViewParams::defaultShadowGroundTransparency());
-    spinBoxShadowGroundTransparency->setEntryName("ShadowGroundTransparency");
-    spinBoxShadowGroundTransparency->setParamGrpPath("View");
+    ShadowGroundTransparency = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowGroundTransparency, 7, 1);
+    ShadowGroundTransparency->setValue(Gui::ViewParams::defaultShadowGroundTransparency());
+    ShadowGroundTransparency->setEntryName("ShadowGroundTransparency");
+    ShadowGroundTransparency->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundTexture = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTexture, 8, 0);
-    fileChooserShadowGroundTexture = new Gui::PrefFileChooser(this);
-    layoutShadow->addWidget(fileChooserShadowGroundTexture, 8, 1);
-    fileChooserShadowGroundTexture->setFileNameStd(Gui::ViewParams::defaultShadowGroundTexture());
-    fileChooserShadowGroundTexture->setEntryName("ShadowGroundTexture");
-    fileChooserShadowGroundTexture->setParamGrpPath("View");
+    ShadowGroundTexture = new Gui::PrefFileChooser(this);
+    layoutShadow->addWidget(ShadowGroundTexture, 8, 1);
+    ShadowGroundTexture->setFileNameStd(Gui::ViewParams::defaultShadowGroundTexture());
+    ShadowGroundTexture->setEntryName("ShadowGroundTexture");
+    ShadowGroundTexture->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundTextureSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundTextureSize, 9, 0);
-    spinBoxShadowGroundTextureSize = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowGroundTextureSize, 9, 1);
-    spinBoxShadowGroundTextureSize->setValue(Gui::ViewParams::defaultShadowGroundTextureSize());
-    spinBoxShadowGroundTextureSize->setEntryName("ShadowGroundTextureSize");
-    spinBoxShadowGroundTextureSize->setParamGrpPath("View");
+    ShadowGroundTextureSize = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowGroundTextureSize, 9, 1);
+    ShadowGroundTextureSize->setValue(Gui::ViewParams::defaultShadowGroundTextureSize());
+    ShadowGroundTextureSize->setEntryName("ShadowGroundTextureSize");
+    ShadowGroundTextureSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowGroundBumpMap = new QLabel(this);
     layoutShadow->addWidget(labelShadowGroundBumpMap, 10, 0);
-    fileChooserShadowGroundBumpMap = new Gui::PrefFileChooser(this);
-    layoutShadow->addWidget(fileChooserShadowGroundBumpMap, 10, 1);
-    fileChooserShadowGroundBumpMap->setFileNameStd(Gui::ViewParams::defaultShadowGroundBumpMap());
-    fileChooserShadowGroundBumpMap->setEntryName("ShadowGroundBumpMap");
-    fileChooserShadowGroundBumpMap->setParamGrpPath("View");
+    ShadowGroundBumpMap = new Gui::PrefFileChooser(this);
+    layoutShadow->addWidget(ShadowGroundBumpMap, 10, 1);
+    ShadowGroundBumpMap->setFileNameStd(Gui::ViewParams::defaultShadowGroundBumpMap());
+    ShadowGroundBumpMap->setEntryName("ShadowGroundBumpMap");
+    ShadowGroundBumpMap->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowGroundShading = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowGroundShading, 11, 0);
-    checkBoxShadowGroundShading->setChecked(Gui::ViewParams::defaultShadowGroundShading());
-    checkBoxShadowGroundShading->setEntryName("ShadowGroundShading");
-    checkBoxShadowGroundShading->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowGroundShading = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowGroundShading, 11, 0);
+    ShadowGroundShading->setChecked(Gui::ViewParams::defaultShadowGroundShading());
+    ShadowGroundShading->setEntryName("ShadowGroundShading");
+    ShadowGroundShading->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowUpdateGround = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowUpdateGround, 12, 0);
-    checkBoxShadowUpdateGround->setChecked(Gui::ViewParams::defaultShadowUpdateGround());
-    checkBoxShadowUpdateGround->setEntryName("ShadowUpdateGround");
-    checkBoxShadowUpdateGround->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowUpdateGround = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowUpdateGround, 12, 0);
+    ShadowUpdateGround->setChecked(Gui::ViewParams::defaultShadowUpdateGround());
+    ShadowUpdateGround->setEntryName("ShadowUpdateGround");
+    ShadowUpdateGround->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowDisplayMode = new QLabel(this);
     layoutShadow->addWidget(labelShadowDisplayMode, 13, 0);
-    comboBoxShadowDisplayMode = new Gui::PrefComboBox(this);
-    layoutShadow->addWidget(comboBoxShadowDisplayMode, 13, 1);
-    for (int i=0; i<3; ++i)
-        comboBoxShadowDisplayMode->addItem(QString());
-    comboBoxShadowDisplayMode->setCurrentIndex(Gui::ViewParams::defaultShadowDisplayMode());
-    comboBoxShadowDisplayMode->setEntryName("ShadowDisplayMode");
-    comboBoxShadowDisplayMode->setParamGrpPath("View");
+    ShadowDisplayMode = new Gui::PrefComboBox(this);
+    layoutShadow->addWidget(ShadowDisplayMode, 13, 1);
+    for (int i=0; i<3; ++i) // Auto generated code (Tools/params_utils.py:840)
+        ShadowDisplayMode->addItem(QString());
+    ShadowDisplayMode->setCurrentIndex(Gui::ViewParams::defaultShadowDisplayMode());
+    ShadowDisplayMode->setEntryName("ShadowDisplayMode");
+    ShadowDisplayMode->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowPrecision = new QLabel(this);
     layoutShadow->addWidget(labelShadowPrecision, 14, 0);
-    spinBoxShadowPrecision = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowPrecision, 14, 1);
-    spinBoxShadowPrecision->setValue(Gui::ViewParams::defaultShadowPrecision());
-    spinBoxShadowPrecision->setEntryName("ShadowPrecision");
-    spinBoxShadowPrecision->setParamGrpPath("View");
+    ShadowPrecision = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowPrecision, 14, 1);
+    ShadowPrecision->setValue(Gui::ViewParams::defaultShadowPrecision());
+    ShadowPrecision->setEntryName("ShadowPrecision");
+    ShadowPrecision->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowSmoothBorder = new QLabel(this);
     layoutShadow->addWidget(labelShadowSmoothBorder, 15, 0);
-    spinBoxShadowSmoothBorder = new Gui::PrefSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowSmoothBorder, 15, 1);
-    spinBoxShadowSmoothBorder->setValue(Gui::ViewParams::defaultShadowSmoothBorder());
-    spinBoxShadowSmoothBorder->setEntryName("ShadowSmoothBorder");
-    spinBoxShadowSmoothBorder->setParamGrpPath("View");
+    ShadowSmoothBorder = new Gui::PrefSpinBox(this);
+    layoutShadow->addWidget(ShadowSmoothBorder, 15, 1);
+    ShadowSmoothBorder->setValue(Gui::ViewParams::defaultShadowSmoothBorder());
+    ShadowSmoothBorder->setEntryName("ShadowSmoothBorder");
+    ShadowSmoothBorder->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowSpreadSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowSpreadSize, 16, 0);
-    spinBoxShadowSpreadSize = new Gui::PrefSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowSpreadSize, 16, 1);
-    spinBoxShadowSpreadSize->setValue(Gui::ViewParams::defaultShadowSpreadSize());
-    spinBoxShadowSpreadSize->setEntryName("ShadowSpreadSize");
-    spinBoxShadowSpreadSize->setParamGrpPath("View");
+    ShadowSpreadSize = new Gui::PrefSpinBox(this);
+    layoutShadow->addWidget(ShadowSpreadSize, 16, 1);
+    ShadowSpreadSize->setValue(Gui::ViewParams::defaultShadowSpreadSize());
+    ShadowSpreadSize->setEntryName("ShadowSpreadSize");
+    ShadowSpreadSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowSpreadSampleSize = new QLabel(this);
     layoutShadow->addWidget(labelShadowSpreadSampleSize, 17, 0);
-    spinBoxShadowSpreadSampleSize = new Gui::PrefSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowSpreadSampleSize, 17, 1);
-    spinBoxShadowSpreadSampleSize->setValue(Gui::ViewParams::defaultShadowSpreadSampleSize());
-    spinBoxShadowSpreadSampleSize->setEntryName("ShadowSpreadSampleSize");
-    spinBoxShadowSpreadSampleSize->setParamGrpPath("View");
+    ShadowSpreadSampleSize = new Gui::PrefSpinBox(this);
+    layoutShadow->addWidget(ShadowSpreadSampleSize, 17, 1);
+    ShadowSpreadSampleSize->setValue(Gui::ViewParams::defaultShadowSpreadSampleSize());
+    ShadowSpreadSampleSize->setEntryName("ShadowSpreadSampleSize");
+    ShadowSpreadSampleSize->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowEpsilon = new QLabel(this);
     layoutShadow->addWidget(labelShadowEpsilon, 18, 0);
-    spinBoxShadowEpsilon = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowEpsilon, 18, 1);
-    spinBoxShadowEpsilon->setValue(Gui::ViewParams::defaultShadowEpsilon());
-    spinBoxShadowEpsilon->setEntryName("ShadowEpsilon");
-    spinBoxShadowEpsilon->setParamGrpPath("View");
+    ShadowEpsilon = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowEpsilon, 18, 1);
+    ShadowEpsilon->setValue(Gui::ViewParams::defaultShadowEpsilon());
+    ShadowEpsilon->setEntryName("ShadowEpsilon");
+    ShadowEpsilon->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowThreshold = new QLabel(this);
     layoutShadow->addWidget(labelShadowThreshold, 19, 0);
-    spinBoxShadowThreshold = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowThreshold, 19, 1);
-    spinBoxShadowThreshold->setValue(Gui::ViewParams::defaultShadowThreshold());
-    spinBoxShadowThreshold->setEntryName("ShadowThreshold");
-    spinBoxShadowThreshold->setParamGrpPath("View");
+    ShadowThreshold = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowThreshold, 19, 1);
+    ShadowThreshold->setValue(Gui::ViewParams::defaultShadowThreshold());
+    ShadowThreshold->setEntryName("ShadowThreshold");
+    ShadowThreshold->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowBoundBoxScale = new QLabel(this);
     layoutShadow->addWidget(labelShadowBoundBoxScale, 20, 0);
-    spinBoxShadowBoundBoxScale = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowBoundBoxScale, 20, 1);
-    spinBoxShadowBoundBoxScale->setValue(Gui::ViewParams::defaultShadowBoundBoxScale());
-    spinBoxShadowBoundBoxScale->setEntryName("ShadowBoundBoxScale");
-    spinBoxShadowBoundBoxScale->setParamGrpPath("View");
+    ShadowBoundBoxScale = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowBoundBoxScale, 20, 1);
+    ShadowBoundBoxScale->setValue(Gui::ViewParams::defaultShadowBoundBoxScale());
+    ShadowBoundBoxScale->setEntryName("ShadowBoundBoxScale");
+    ShadowBoundBoxScale->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
+    // Auto generated code (Tools/params_utils.py:349)
     labelShadowMaxDistance = new QLabel(this);
     layoutShadow->addWidget(labelShadowMaxDistance, 21, 0);
-    spinBoxShadowMaxDistance = new Gui::PrefDoubleSpinBox(this);
-    layoutShadow->addWidget(spinBoxShadowMaxDistance, 21, 1);
-    spinBoxShadowMaxDistance->setValue(Gui::ViewParams::defaultShadowMaxDistance());
-    spinBoxShadowMaxDistance->setEntryName("ShadowMaxDistance");
-    spinBoxShadowMaxDistance->setParamGrpPath("View");
+    ShadowMaxDistance = new Gui::PrefDoubleSpinBox(this);
+    layoutShadow->addWidget(ShadowMaxDistance, 21, 1);
+    ShadowMaxDistance->setValue(Gui::ViewParams::defaultShadowMaxDistance());
+    ShadowMaxDistance->setEntryName("ShadowMaxDistance");
+    ShadowMaxDistance->setParamGrpPath("View");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxShadowTransparentShadow = new Gui::PrefCheckBox(this);
-    layoutShadow->addWidget(checkBoxShadowTransparentShadow, 22, 0);
-    checkBoxShadowTransparentShadow->setChecked(Gui::ViewParams::defaultShadowTransparentShadow());
-    checkBoxShadowTransparentShadow->setEntryName("ShadowTransparentShadow");
-    checkBoxShadowTransparentShadow->setParamGrpPath("View");
+    // Auto generated code (Tools/params_utils.py:349)
+    ShadowTransparentShadow = new Gui::PrefCheckBox(this);
+    layoutShadow->addWidget(ShadowTransparentShadow, 22, 0);
+    ShadowTransparentShadow->setChecked(Gui::ViewParams::defaultShadowTransparentShadow());
+    ShadowTransparentShadow->setEntryName("ShadowTransparentShadow");
+    ShadowTransparentShadow->setParamGrpPath("View");
     layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Fixed, QSizePolicy::Expanding));
     retranslateUi();
+    // Auto generated code (Tools/params_utils.py:504)
+    
 }
 
-// Auto generated code (Tools/params_utils.py:504)
 #include "DlgSettingsDrawStyles.h"
+// Auto generated code (Tools/params_utils.py:510)
 DlgSettingsDrawStyles::~DlgSettingsDrawStyles()
 {
 }
 
+// Auto generated code (Tools/params_utils.py:516)
 void DlgSettingsDrawStyles::saveSettings()
 {
-    // Auto generated code (Tools/params_utils.py:513)
-    // Auto generated code (Tools/params_utils.py:379)
-    comboBoxDefaultDrawStyle->onSave();
-    spinBoxTransparencyOnTop->onSave();
-    spinBoxSelectionLineThicken->onSave();
-    spinBoxSelectionLineMaxWidth->onSave();
-    spinBoxSelectionPointScale->onSave();
-    spinBoxSelectionPointMaxSize->onSave();
-    linePatternSelectionLinePattern->onSave();
-    spinBoxSelectionLinePatternScale->onSave();
-    spinBoxSelectionHiddenLineWidth->onSave();
-    colorButtonHiddenLineFaceColor->onSave();
-    colorButtonHiddenLineColor->onSave();
-    colorButtonHiddenLineBackground->onSave();
-    checkBoxHiddenLineShaded->onSave();
-    checkBoxHiddenLineShowOutline->onSave();
-    checkBoxHiddenLinePerFaceOutline->onSave();
-    checkBoxHiddenLineHideFace->onSave();
-    checkBoxHiddenLineHideSeam->onSave();
-    checkBoxHiddenLineHideVertex->onSave();
-    spinBoxHiddenLineTransparency->onSave();
-    spinBoxHiddenLineWidth->onSave();
-    spinBoxHiddenLinePointSize->onSave();
-    checkBoxShadowSpotLight->onSave();
-    colorButtonShadowLightColor->onSave();
-    spinBoxShadowLightIntensity->onSave();
-    checkBoxShadowShowGround->onSave();
-    checkBoxShadowGroundBackFaceCull->onSave();
-    colorButtonShadowGroundColor->onSave();
-    spinBoxShadowGroundScale->onSave();
-    spinBoxShadowGroundTransparency->onSave();
-    fileChooserShadowGroundTexture->onSave();
-    spinBoxShadowGroundTextureSize->onSave();
-    fileChooserShadowGroundBumpMap->onSave();
-    checkBoxShadowGroundShading->onSave();
-    checkBoxShadowUpdateGround->onSave();
-    comboBoxShadowDisplayMode->onSave();
-    spinBoxShadowPrecision->onSave();
-    spinBoxShadowSmoothBorder->onSave();
-    spinBoxShadowSpreadSize->onSave();
-    spinBoxShadowSpreadSampleSize->onSave();
-    spinBoxShadowEpsilon->onSave();
-    spinBoxShadowThreshold->onSave();
-    spinBoxShadowBoundBoxScale->onSave();
-    spinBoxShadowMaxDistance->onSave();
-    checkBoxShadowTransparentShadow->onSave();
+    // Auto generated code (Tools/params_utils.py:381)
+    DefaultDrawStyle->onSave();
+    TransparencyOnTop->onSave();
+    SelectionLineThicken->onSave();
+    SelectionLineMaxWidth->onSave();
+    SelectionPointScale->onSave();
+    SelectionPointMaxSize->onSave();
+    SelectionLinePattern->onSave();
+    SelectionLinePatternScale->onSave();
+    SelectionHiddenLineWidth->onSave();
+    HiddenLineFaceColor->onSave();
+    HiddenLineColor->onSave();
+    HiddenLineBackground->onSave();
+    HiddenLineShaded->onSave();
+    HiddenLineShowOutline->onSave();
+    HiddenLinePerFaceOutline->onSave();
+    HiddenLineHideFace->onSave();
+    HiddenLineHideSeam->onSave();
+    HiddenLineHideVertex->onSave();
+    HiddenLineTransparency->onSave();
+    HiddenLineWidth->onSave();
+    HiddenLinePointSize->onSave();
+    ShadowSpotLight->onSave();
+    ShadowLightColor->onSave();
+    ShadowLightIntensity->onSave();
+    ShadowShowGround->onSave();
+    ShadowGroundBackFaceCull->onSave();
+    ShadowGroundColor->onSave();
+    ShadowGroundScale->onSave();
+    ShadowGroundTransparency->onSave();
+    ShadowGroundTexture->onSave();
+    ShadowGroundTextureSize->onSave();
+    ShadowGroundBumpMap->onSave();
+    ShadowGroundShading->onSave();
+    ShadowUpdateGround->onSave();
+    ShadowDisplayMode->onSave();
+    ShadowPrecision->onSave();
+    ShadowSmoothBorder->onSave();
+    ShadowSpreadSize->onSave();
+    ShadowSpreadSampleSize->onSave();
+    ShadowEpsilon->onSave();
+    ShadowThreshold->onSave();
+    ShadowBoundBoxScale->onSave();
+    ShadowMaxDistance->onSave();
+    ShadowTransparentShadow->onSave();
 }
 
+// Auto generated code (Tools/params_utils.py:523)
 void DlgSettingsDrawStyles::loadSettings()
 {
-    // Auto generated code (Tools/params_utils.py:520)
-    // Auto generated code (Tools/params_utils.py:369)
-    comboBoxDefaultDrawStyle->onRestore();
-    spinBoxTransparencyOnTop->onRestore();
-    spinBoxSelectionLineThicken->onRestore();
-    spinBoxSelectionLineMaxWidth->onRestore();
-    spinBoxSelectionPointScale->onRestore();
-    spinBoxSelectionPointMaxSize->onRestore();
-    linePatternSelectionLinePattern->onRestore();
-    spinBoxSelectionLinePatternScale->onRestore();
-    spinBoxSelectionHiddenLineWidth->onRestore();
-    colorButtonHiddenLineFaceColor->onRestore();
-    colorButtonHiddenLineColor->onRestore();
-    colorButtonHiddenLineBackground->onRestore();
-    checkBoxHiddenLineShaded->onRestore();
-    checkBoxHiddenLineShowOutline->onRestore();
-    checkBoxHiddenLinePerFaceOutline->onRestore();
-    checkBoxHiddenLineHideFace->onRestore();
-    checkBoxHiddenLineHideSeam->onRestore();
-    checkBoxHiddenLineHideVertex->onRestore();
-    spinBoxHiddenLineTransparency->onRestore();
-    spinBoxHiddenLineWidth->onRestore();
-    spinBoxHiddenLinePointSize->onRestore();
-    checkBoxShadowSpotLight->onRestore();
-    colorButtonShadowLightColor->onRestore();
-    spinBoxShadowLightIntensity->onRestore();
-    checkBoxShadowShowGround->onRestore();
-    checkBoxShadowGroundBackFaceCull->onRestore();
-    colorButtonShadowGroundColor->onRestore();
-    spinBoxShadowGroundScale->onRestore();
-    spinBoxShadowGroundTransparency->onRestore();
-    fileChooserShadowGroundTexture->onRestore();
-    spinBoxShadowGroundTextureSize->onRestore();
-    fileChooserShadowGroundBumpMap->onRestore();
-    checkBoxShadowGroundShading->onRestore();
-    checkBoxShadowUpdateGround->onRestore();
-    comboBoxShadowDisplayMode->onRestore();
-    spinBoxShadowPrecision->onRestore();
-    spinBoxShadowSmoothBorder->onRestore();
-    spinBoxShadowSpreadSize->onRestore();
-    spinBoxShadowSpreadSampleSize->onRestore();
-    spinBoxShadowEpsilon->onRestore();
-    spinBoxShadowThreshold->onRestore();
-    spinBoxShadowBoundBoxScale->onRestore();
-    spinBoxShadowMaxDistance->onRestore();
-    checkBoxShadowTransparentShadow->onRestore();
+    // Auto generated code (Tools/params_utils.py:371)
+    DefaultDrawStyle->onRestore();
+    TransparencyOnTop->onRestore();
+    SelectionLineThicken->onRestore();
+    SelectionLineMaxWidth->onRestore();
+    SelectionPointScale->onRestore();
+    SelectionPointMaxSize->onRestore();
+    SelectionLinePattern->onRestore();
+    SelectionLinePatternScale->onRestore();
+    SelectionHiddenLineWidth->onRestore();
+    HiddenLineFaceColor->onRestore();
+    HiddenLineColor->onRestore();
+    HiddenLineBackground->onRestore();
+    HiddenLineShaded->onRestore();
+    HiddenLineShowOutline->onRestore();
+    HiddenLinePerFaceOutline->onRestore();
+    HiddenLineHideFace->onRestore();
+    HiddenLineHideSeam->onRestore();
+    HiddenLineHideVertex->onRestore();
+    HiddenLineTransparency->onRestore();
+    HiddenLineWidth->onRestore();
+    HiddenLinePointSize->onRestore();
+    ShadowSpotLight->onRestore();
+    ShadowLightColor->onRestore();
+    ShadowLightIntensity->onRestore();
+    ShadowShowGround->onRestore();
+    ShadowGroundBackFaceCull->onRestore();
+    ShadowGroundColor->onRestore();
+    ShadowGroundScale->onRestore();
+    ShadowGroundTransparency->onRestore();
+    ShadowGroundTexture->onRestore();
+    ShadowGroundTextureSize->onRestore();
+    ShadowGroundBumpMap->onRestore();
+    ShadowGroundShading->onRestore();
+    ShadowUpdateGround->onRestore();
+    ShadowDisplayMode->onRestore();
+    ShadowPrecision->onRestore();
+    ShadowSmoothBorder->onRestore();
+    ShadowSpreadSize->onRestore();
+    ShadowSpreadSampleSize->onRestore();
+    ShadowEpsilon->onRestore();
+    ShadowThreshold->onRestore();
+    ShadowBoundBoxScale->onRestore();
+    ShadowMaxDistance->onRestore();
+    ShadowTransparentShadow->onRestore();
 }
 
+// Auto generated code (Tools/params_utils.py:530)
 void DlgSettingsDrawStyles::retranslateUi()
 {
-    // Auto generated code (Tools/params_utils.py:527)
     setWindowTitle(QObject::tr("Draw styles"));
     groupDocument->setTitle(QObject::tr("Document"));
-    comboBoxDefaultDrawStyle->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docDefaultDrawStyle()));
+    DefaultDrawStyle->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docDefaultDrawStyle()));
     labelDefaultDrawStyle->setText(QObject::tr("Default draw style"));
-    labelDefaultDrawStyle->setToolTip(comboBoxDefaultDrawStyle->toolTip());
-    comboBoxDefaultDrawStyle->setItemText(0, QObject::tr("As Is"));
-    comboBoxDefaultDrawStyle->setItemData(0, QObject::tr("Draw style, normal display mode"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(1, QObject::tr("Points"));
-    comboBoxDefaultDrawStyle->setItemData(1, QObject::tr("Draw style, show points only"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(2, QObject::tr("Wireframe"));
-    comboBoxDefaultDrawStyle->setItemData(2, QObject::tr("Draw style, show wire frame only"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(3, QObject::tr("Hidden Line"));
-    comboBoxDefaultDrawStyle->setItemData(3, QObject::tr("Draw style, show hidden line by display object as transparent"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(4, QObject::tr("No Shading"));
-    comboBoxDefaultDrawStyle->setItemData(4, QObject::tr("Draw style, shading forced off"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(5, QObject::tr("Shaded"));
-    comboBoxDefaultDrawStyle->setItemData(5, QObject::tr("Draw style, shading force on"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(6, QObject::tr("Flat Lines"));
-    comboBoxDefaultDrawStyle->setItemData(6, QObject::tr("Draw style, show both wire frame and face with shading"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(7, QObject::tr("Tessellation"));
-    comboBoxDefaultDrawStyle->setItemData(7, QObject::tr("Draw style, show tessellation wire frame"), Qt::ToolTipRole);
-    comboBoxDefaultDrawStyle->setItemText(8, QObject::tr("Shadow"));
-    comboBoxDefaultDrawStyle->setItemData(8, QObject::tr("Draw style, drop shadows for the scene.\nClick this button while in shadow mode to toggle light manipulator"), Qt::ToolTipRole);
+    labelDefaultDrawStyle->setToolTip(DefaultDrawStyle->toolTip());
+    // Auto generated code (Tools/params_utils.py:857)
+    DefaultDrawStyle->setItemText(0, QObject::tr("As Is"));
+    DefaultDrawStyle->setItemData(0, QObject::tr("Draw style, normal display mode"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(1, QObject::tr("Points"));
+    DefaultDrawStyle->setItemData(1, QObject::tr("Draw style, show points only"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(2, QObject::tr("Wireframe"));
+    DefaultDrawStyle->setItemData(2, QObject::tr("Draw style, show wire frame only"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(3, QObject::tr("Hidden Line"));
+    DefaultDrawStyle->setItemData(3, QObject::tr("Draw style, show hidden line by display object as transparent"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(4, QObject::tr("No Shading"));
+    DefaultDrawStyle->setItemData(4, QObject::tr("Draw style, shading forced off"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(5, QObject::tr("Shaded"));
+    DefaultDrawStyle->setItemData(5, QObject::tr("Draw style, shading force on"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(6, QObject::tr("Flat Lines"));
+    DefaultDrawStyle->setItemData(6, QObject::tr("Draw style, show both wire frame and face with shading"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(7, QObject::tr("Tessellation"));
+    DefaultDrawStyle->setItemData(7, QObject::tr("Draw style, show tessellation wire frame"), Qt::ToolTipRole);
+    DefaultDrawStyle->setItemText(8, QObject::tr("Shadow"));
+    DefaultDrawStyle->setItemData(8, QObject::tr("Draw style, drop shadows for the scene.\nClick this button while in shadow mode to toggle light manipulator"), Qt::ToolTipRole);
     groupSelection->setTitle(QObject::tr("Selection"));
-    spinBoxTransparencyOnTop->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docTransparencyOnTop()));
+    TransparencyOnTop->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docTransparencyOnTop()));
     labelTransparencyOnTop->setText(QObject::tr("Transparency"));
-    labelTransparencyOnTop->setToolTip(spinBoxTransparencyOnTop->toolTip());
-    spinBoxSelectionLineThicken->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLineThicken()));
+    labelTransparencyOnTop->setToolTip(TransparencyOnTop->toolTip());
+    SelectionLineThicken->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLineThicken()));
     labelSelectionLineThicken->setText(QObject::tr("Line width multiplier"));
-    labelSelectionLineThicken->setToolTip(spinBoxSelectionLineThicken->toolTip());
-    spinBoxSelectionLineMaxWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLineMaxWidth()));
+    labelSelectionLineThicken->setToolTip(SelectionLineThicken->toolTip());
+    SelectionLineMaxWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLineMaxWidth()));
     labelSelectionLineMaxWidth->setText(QObject::tr("Maximum line width"));
-    labelSelectionLineMaxWidth->setToolTip(spinBoxSelectionLineMaxWidth->toolTip());
-    spinBoxSelectionPointScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionPointScale()));
+    labelSelectionLineMaxWidth->setToolTip(SelectionLineMaxWidth->toolTip());
+    SelectionPointScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionPointScale()));
     labelSelectionPointScale->setText(QObject::tr("Point size multiplier"));
-    labelSelectionPointScale->setToolTip(spinBoxSelectionPointScale->toolTip());
-    spinBoxSelectionPointMaxSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionPointMaxSize()));
+    labelSelectionPointScale->setToolTip(SelectionPointScale->toolTip());
+    SelectionPointMaxSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionPointMaxSize()));
     labelSelectionPointMaxSize->setText(QObject::tr("Maximum point size"));
-    labelSelectionPointMaxSize->setToolTip(spinBoxSelectionPointMaxSize->toolTip());
-    linePatternSelectionLinePattern->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLinePattern()));
+    labelSelectionPointMaxSize->setToolTip(SelectionPointMaxSize->toolTip());
+    SelectionLinePattern->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLinePattern()));
     labelSelectionLinePattern->setText(QObject::tr("Selected hidden line pattern"));
-    labelSelectionLinePattern->setToolTip(linePatternSelectionLinePattern->toolTip());
-    spinBoxSelectionLinePatternScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLinePatternScale()));
+    labelSelectionLinePattern->setToolTip(SelectionLinePattern->toolTip());
+    SelectionLinePatternScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionLinePatternScale()));
     labelSelectionLinePatternScale->setText(QObject::tr("Selected line pattern scale"));
-    labelSelectionLinePatternScale->setToolTip(spinBoxSelectionLinePatternScale->toolTip());
-    spinBoxSelectionHiddenLineWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionHiddenLineWidth()));
+    labelSelectionLinePatternScale->setToolTip(SelectionLinePatternScale->toolTip());
+    SelectionHiddenLineWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docSelectionHiddenLineWidth()));
     labelSelectionHiddenLineWidth->setText(QObject::tr("Selected hidden line width"));
-    labelSelectionHiddenLineWidth->setToolTip(spinBoxSelectionHiddenLineWidth->toolTip());
+    labelSelectionHiddenLineWidth->setToolTip(SelectionHiddenLineWidth->toolTip());
     groupHiddenLines->setTitle(QObject::tr("Hidden Lines"));
-    colorButtonHiddenLineFaceColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineFaceColor()));
-    checkBoxHiddenLineOverrideFaceColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideFaceColor()));
-    checkBoxHiddenLineOverrideFaceColor->setText(QObject::tr("Override face color"));
-    colorButtonHiddenLineColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineColor()));
-    checkBoxHiddenLineOverrideColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideColor()));
-    checkBoxHiddenLineOverrideColor->setText(QObject::tr("Override line color"));
-    colorButtonHiddenLineBackground->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineBackground()));
-    checkBoxHiddenLineOverrideBackground->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideBackground()));
-    checkBoxHiddenLineOverrideBackground->setText(QObject::tr("Override background color"));
-    checkBoxHiddenLineShaded->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineShaded()));
-    checkBoxHiddenLineShaded->setText(QObject::tr("Shaded"));
-    checkBoxHiddenLineShowOutline->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineShowOutline()));
-    checkBoxHiddenLineShowOutline->setText(QObject::tr("Draw outline"));
-    checkBoxHiddenLinePerFaceOutline->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLinePerFaceOutline()));
-    checkBoxHiddenLinePerFaceOutline->setText(QObject::tr("Draw per face outline"));
-    checkBoxHiddenLineHideFace->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideFace()));
-    checkBoxHiddenLineHideFace->setText(QObject::tr("Hide face"));
-    checkBoxHiddenLineHideSeam->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideSeam()));
-    checkBoxHiddenLineHideSeam->setText(QObject::tr("Hide seam edge"));
-    checkBoxHiddenLineHideVertex->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideVertex()));
-    checkBoxHiddenLineHideVertex->setText(QObject::tr("Hide vertex"));
-    spinBoxHiddenLineTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineTransparency()));
-    checkBoxHiddenLineOverrideTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideTransparency()));
-    checkBoxHiddenLineOverrideTransparency->setText(QObject::tr("Override transparency"));
-    spinBoxHiddenLineWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineWidth()));
+    HiddenLineFaceColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineFaceColor()));
+    HiddenLineOverrideFaceColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideFaceColor()));
+    HiddenLineOverrideFaceColor->setText(QObject::tr("Override face color"));
+    HiddenLineColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineColor()));
+    HiddenLineOverrideColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideColor()));
+    HiddenLineOverrideColor->setText(QObject::tr("Override line color"));
+    HiddenLineBackground->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineBackground()));
+    HiddenLineOverrideBackground->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideBackground()));
+    HiddenLineOverrideBackground->setText(QObject::tr("Override background color"));
+    HiddenLineShaded->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineShaded()));
+    HiddenLineShaded->setText(QObject::tr("Shaded"));
+    HiddenLineShowOutline->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineShowOutline()));
+    HiddenLineShowOutline->setText(QObject::tr("Draw outline"));
+    HiddenLinePerFaceOutline->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLinePerFaceOutline()));
+    HiddenLinePerFaceOutline->setText(QObject::tr("Draw per face outline"));
+    HiddenLineHideFace->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideFace()));
+    HiddenLineHideFace->setText(QObject::tr("Hide face"));
+    HiddenLineHideSeam->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideSeam()));
+    HiddenLineHideSeam->setText(QObject::tr("Hide seam edge"));
+    HiddenLineHideVertex->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineHideVertex()));
+    HiddenLineHideVertex->setText(QObject::tr("Hide vertex"));
+    HiddenLineTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineTransparency()));
+    HiddenLineOverrideTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineOverrideTransparency()));
+    HiddenLineOverrideTransparency->setText(QObject::tr("Override transparency"));
+    HiddenLineWidth->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLineWidth()));
     labelHiddenLineWidth->setText(QObject::tr("Line width"));
-    labelHiddenLineWidth->setToolTip(spinBoxHiddenLineWidth->toolTip());
-    spinBoxHiddenLinePointSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLinePointSize()));
+    labelHiddenLineWidth->setToolTip(HiddenLineWidth->toolTip());
+    HiddenLinePointSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docHiddenLinePointSize()));
     labelHiddenLinePointSize->setText(QObject::tr("Point size"));
-    labelHiddenLinePointSize->setToolTip(spinBoxHiddenLinePointSize->toolTip());
+    labelHiddenLinePointSize->setToolTip(HiddenLinePointSize->toolTip());
     groupShadow->setTitle(QObject::tr("Shadow"));
-    checkBoxShadowSpotLight->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpotLight()));
-    checkBoxShadowSpotLight->setText(QObject::tr("Use spot light"));
-    colorButtonShadowLightColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowLightColor()));
+    ShadowSpotLight->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpotLight()));
+    ShadowSpotLight->setText(QObject::tr("Use spot light"));
+    ShadowLightColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowLightColor()));
     labelShadowLightColor->setText(QObject::tr("Light color"));
-    labelShadowLightColor->setToolTip(colorButtonShadowLightColor->toolTip());
-    spinBoxShadowLightIntensity->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowLightIntensity()));
+    labelShadowLightColor->setToolTip(ShadowLightColor->toolTip());
+    ShadowLightIntensity->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowLightIntensity()));
     labelShadowLightIntensity->setText(QObject::tr("Light intensity"));
-    labelShadowLightIntensity->setToolTip(spinBoxShadowLightIntensity->toolTip());
-    checkBoxShadowShowGround->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowShowGround()));
-    checkBoxShadowShowGround->setText(QObject::tr("Show ground"));
-    checkBoxShadowGroundBackFaceCull->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundBackFaceCull()));
-    checkBoxShadowGroundBackFaceCull->setText(QObject::tr("Ground back face culling"));
-    colorButtonShadowGroundColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundColor()));
+    labelShadowLightIntensity->setToolTip(ShadowLightIntensity->toolTip());
+    ShadowShowGround->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowShowGround()));
+    ShadowShowGround->setText(QObject::tr("Show ground"));
+    ShadowGroundBackFaceCull->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundBackFaceCull()));
+    ShadowGroundBackFaceCull->setText(QObject::tr("Ground back face culling"));
+    ShadowGroundColor->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundColor()));
     labelShadowGroundColor->setText(QObject::tr("Ground color"));
-    labelShadowGroundColor->setToolTip(colorButtonShadowGroundColor->toolTip());
-    spinBoxShadowGroundScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundScale()));
+    labelShadowGroundColor->setToolTip(ShadowGroundColor->toolTip());
+    ShadowGroundScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundScale()));
     labelShadowGroundScale->setText(QObject::tr("Ground scale"));
-    labelShadowGroundScale->setToolTip(spinBoxShadowGroundScale->toolTip());
-    spinBoxShadowGroundTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTransparency()));
+    labelShadowGroundScale->setToolTip(ShadowGroundScale->toolTip());
+    ShadowGroundTransparency->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTransparency()));
     labelShadowGroundTransparency->setText(QObject::tr("Ground transparency"));
-    labelShadowGroundTransparency->setToolTip(spinBoxShadowGroundTransparency->toolTip());
-    fileChooserShadowGroundTexture->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTexture()));
+    labelShadowGroundTransparency->setToolTip(ShadowGroundTransparency->toolTip());
+    ShadowGroundTexture->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTexture()));
     labelShadowGroundTexture->setText(QObject::tr("Ground texture"));
-    labelShadowGroundTexture->setToolTip(fileChooserShadowGroundTexture->toolTip());
-    spinBoxShadowGroundTextureSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTextureSize()));
+    labelShadowGroundTexture->setToolTip(ShadowGroundTexture->toolTip());
+    ShadowGroundTextureSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundTextureSize()));
     labelShadowGroundTextureSize->setText(QObject::tr("Ground texture size"));
-    labelShadowGroundTextureSize->setToolTip(spinBoxShadowGroundTextureSize->toolTip());
-    fileChooserShadowGroundBumpMap->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundBumpMap()));
+    labelShadowGroundTextureSize->setToolTip(ShadowGroundTextureSize->toolTip());
+    ShadowGroundBumpMap->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundBumpMap()));
     labelShadowGroundBumpMap->setText(QObject::tr("Ground bump map"));
-    labelShadowGroundBumpMap->setToolTip(fileChooserShadowGroundBumpMap->toolTip());
-    checkBoxShadowGroundShading->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundShading()));
-    checkBoxShadowGroundShading->setText(QObject::tr("Ground shading"));
-    checkBoxShadowUpdateGround->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowUpdateGround()));
-    checkBoxShadowUpdateGround->setText(QObject::tr("Update ground on scene change"));
-    comboBoxShadowDisplayMode->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowDisplayMode()));
+    labelShadowGroundBumpMap->setToolTip(ShadowGroundBumpMap->toolTip());
+    ShadowGroundShading->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowGroundShading()));
+    ShadowGroundShading->setText(QObject::tr("Ground shading"));
+    ShadowUpdateGround->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowUpdateGround()));
+    ShadowUpdateGround->setText(QObject::tr("Update ground on scene change"));
+    ShadowDisplayMode->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowDisplayMode()));
     labelShadowDisplayMode->setText(QObject::tr("Override display mode"));
-    labelShadowDisplayMode->setToolTip(comboBoxShadowDisplayMode->toolTip());
-    comboBoxShadowDisplayMode->setItemText(0, QObject::tr("Flat Lines"));
-    comboBoxShadowDisplayMode->setItemText(1, QObject::tr("Shaded"));
-    comboBoxShadowDisplayMode->setItemText(2, QObject::tr("As Is"));
-    spinBoxShadowPrecision->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowPrecision()));
+    labelShadowDisplayMode->setToolTip(ShadowDisplayMode->toolTip());
+    // Auto generated code (Tools/params_utils.py:857)
+    ShadowDisplayMode->setItemText(0, QObject::tr("Flat Lines"));
+    ShadowDisplayMode->setItemText(1, QObject::tr("Shaded"));
+    ShadowDisplayMode->setItemText(2, QObject::tr("As Is"));
+    ShadowPrecision->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowPrecision()));
     labelShadowPrecision->setText(QObject::tr("Precision"));
-    labelShadowPrecision->setToolTip(spinBoxShadowPrecision->toolTip());
-    spinBoxShadowSmoothBorder->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSmoothBorder()));
+    labelShadowPrecision->setToolTip(ShadowPrecision->toolTip());
+    ShadowSmoothBorder->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSmoothBorder()));
     labelShadowSmoothBorder->setText(QObject::tr("Smooth border"));
-    labelShadowSmoothBorder->setToolTip(spinBoxShadowSmoothBorder->toolTip());
-    spinBoxShadowSpreadSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpreadSize()));
+    labelShadowSmoothBorder->setToolTip(ShadowSmoothBorder->toolTip());
+    ShadowSpreadSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpreadSize()));
     labelShadowSpreadSize->setText(QObject::tr("Spread size"));
-    labelShadowSpreadSize->setToolTip(spinBoxShadowSpreadSize->toolTip());
-    spinBoxShadowSpreadSampleSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpreadSampleSize()));
+    labelShadowSpreadSize->setToolTip(ShadowSpreadSize->toolTip());
+    ShadowSpreadSampleSize->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowSpreadSampleSize()));
     labelShadowSpreadSampleSize->setText(QObject::tr("Spread sample size"));
-    labelShadowSpreadSampleSize->setToolTip(spinBoxShadowSpreadSampleSize->toolTip());
-    spinBoxShadowEpsilon->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowEpsilon()));
+    labelShadowSpreadSampleSize->setToolTip(ShadowSpreadSampleSize->toolTip());
+    ShadowEpsilon->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowEpsilon()));
     labelShadowEpsilon->setText(QObject::tr("Epsilon"));
-    labelShadowEpsilon->setToolTip(spinBoxShadowEpsilon->toolTip());
-    spinBoxShadowThreshold->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowThreshold()));
+    labelShadowEpsilon->setToolTip(ShadowEpsilon->toolTip());
+    ShadowThreshold->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowThreshold()));
     labelShadowThreshold->setText(QObject::tr("Threshold"));
-    labelShadowThreshold->setToolTip(spinBoxShadowThreshold->toolTip());
-    spinBoxShadowBoundBoxScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowBoundBoxScale()));
+    labelShadowThreshold->setToolTip(ShadowThreshold->toolTip());
+    ShadowBoundBoxScale->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowBoundBoxScale()));
     labelShadowBoundBoxScale->setText(QObject::tr("Bounding box scale"));
-    labelShadowBoundBoxScale->setToolTip(spinBoxShadowBoundBoxScale->toolTip());
-    spinBoxShadowMaxDistance->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowMaxDistance()));
+    labelShadowBoundBoxScale->setToolTip(ShadowBoundBoxScale->toolTip());
+    ShadowMaxDistance->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowMaxDistance()));
     labelShadowMaxDistance->setText(QObject::tr("Maximum distance"));
-    labelShadowMaxDistance->setToolTip(spinBoxShadowMaxDistance->toolTip());
-    checkBoxShadowTransparentShadow->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowTransparentShadow()));
-    checkBoxShadowTransparentShadow->setText(QObject::tr("Transparent shadow"));
+    labelShadowMaxDistance->setToolTip(ShadowMaxDistance->toolTip());
+    ShadowTransparentShadow->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowTransparentShadow()));
+    ShadowTransparentShadow->setText(QObject::tr("Transparent shadow"));
 }
 
+// Auto generated code (Tools/params_utils.py:543)
 void DlgSettingsDrawStyles::changeEvent(QEvent *e)
 {
-    // Auto generated code (Tools/params_utils.py:539)
     if (e->type() == QEvent::LanguageChange) {
         retranslateUi();
     }
     QWidget::changeEvent(e);
 }
 
+// Auto generated code (Tools/params_utils.py:554)
 #include "moc_DlgSettingsDrawStyles.cpp"
 //[[[end]]]

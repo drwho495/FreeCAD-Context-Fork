@@ -28,10 +28,10 @@ import DlgSettingsDrawStyles
 DlgSettingsDrawStyles.declare()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:397)
+// Auto generated code (Tools/params_utils.py:399)
 #include <Gui/PropertyPage.h>
 #include <Gui/PrefWidgets.h>
-// Auto generated code (Tools/params_utils.py:402)
+// Auto generated code (Tools/params_utils.py:404)
 class QLabel;
 class QGroupBox;
 
@@ -68,97 +68,97 @@ protected:
 
 private:
 
-    // Auto generated code (Tools/params_utils.py:322)
+    // Auto generated code (Tools/params_utils.py:323)
     QGroupBox * groupDocument = nullptr;
     QLabel *labelDefaultDrawStyle = nullptr;
-    Gui::PrefComboBox *comboBoxDefaultDrawStyle = nullptr;
+    Gui::PrefComboBox *DefaultDrawStyle = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:322)
+    // Auto generated code (Tools/params_utils.py:323)
     QGroupBox * groupSelection = nullptr;
     QLabel *labelTransparencyOnTop = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxTransparencyOnTop = nullptr;
+    Gui::PrefDoubleSpinBox *TransparencyOnTop = nullptr;
     QLabel *labelSelectionLineThicken = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxSelectionLineThicken = nullptr;
+    Gui::PrefDoubleSpinBox *SelectionLineThicken = nullptr;
     QLabel *labelSelectionLineMaxWidth = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxSelectionLineMaxWidth = nullptr;
+    Gui::PrefDoubleSpinBox *SelectionLineMaxWidth = nullptr;
     QLabel *labelSelectionPointScale = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxSelectionPointScale = nullptr;
+    Gui::PrefDoubleSpinBox *SelectionPointScale = nullptr;
     QLabel *labelSelectionPointMaxSize = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxSelectionPointMaxSize = nullptr;
+    Gui::PrefDoubleSpinBox *SelectionPointMaxSize = nullptr;
     QLabel *labelSelectionLinePattern = nullptr;
-    Gui::PrefLinePattern *linePatternSelectionLinePattern = nullptr;
+    Gui::PrefLinePattern *SelectionLinePattern = nullptr;
     QLabel *labelSelectionLinePatternScale = nullptr;
-    Gui::PrefSpinBox *spinBoxSelectionLinePatternScale = nullptr;
+    Gui::PrefSpinBox *SelectionLinePatternScale = nullptr;
     QLabel *labelSelectionHiddenLineWidth = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxSelectionHiddenLineWidth = nullptr;
+    Gui::PrefDoubleSpinBox *SelectionHiddenLineWidth = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:322)
+    // Auto generated code (Tools/params_utils.py:323)
     QGroupBox * groupHiddenLines = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineOverrideFaceColor = nullptr;
-    Gui::PrefColorButton *colorButtonHiddenLineFaceColor = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineOverrideColor = nullptr;
-    Gui::PrefColorButton *colorButtonHiddenLineColor = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineOverrideBackground = nullptr;
-    Gui::PrefColorButton *colorButtonHiddenLineBackground = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineShaded = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineShowOutline = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLinePerFaceOutline = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineHideFace = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineHideSeam = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineHideVertex = nullptr;
-    Gui::PrefCheckBox *checkBoxHiddenLineOverrideTransparency = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxHiddenLineTransparency = nullptr;
+    Gui::PrefCheckBox *HiddenLineOverrideFaceColor = nullptr;
+    Gui::PrefColorButton *HiddenLineFaceColor = nullptr;
+    Gui::PrefCheckBox *HiddenLineOverrideColor = nullptr;
+    Gui::PrefColorButton *HiddenLineColor = nullptr;
+    Gui::PrefCheckBox *HiddenLineOverrideBackground = nullptr;
+    Gui::PrefColorButton *HiddenLineBackground = nullptr;
+    Gui::PrefCheckBox *HiddenLineShaded = nullptr;
+    Gui::PrefCheckBox *HiddenLineShowOutline = nullptr;
+    Gui::PrefCheckBox *HiddenLinePerFaceOutline = nullptr;
+    Gui::PrefCheckBox *HiddenLineHideFace = nullptr;
+    Gui::PrefCheckBox *HiddenLineHideSeam = nullptr;
+    Gui::PrefCheckBox *HiddenLineHideVertex = nullptr;
+    Gui::PrefCheckBox *HiddenLineOverrideTransparency = nullptr;
+    Gui::PrefDoubleSpinBox *HiddenLineTransparency = nullptr;
     QLabel *labelHiddenLineWidth = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxHiddenLineWidth = nullptr;
+    Gui::PrefDoubleSpinBox *HiddenLineWidth = nullptr;
     QLabel *labelHiddenLinePointSize = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxHiddenLinePointSize = nullptr;
+    Gui::PrefDoubleSpinBox *HiddenLinePointSize = nullptr;
 
-    // Auto generated code (Tools/params_utils.py:322)
+    // Auto generated code (Tools/params_utils.py:323)
     QGroupBox * groupShadow = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowSpotLight = nullptr;
+    Gui::PrefCheckBox *ShadowSpotLight = nullptr;
     QLabel *labelShadowLightColor = nullptr;
-    Gui::PrefColorButton *colorButtonShadowLightColor = nullptr;
+    Gui::PrefColorButton *ShadowLightColor = nullptr;
     QLabel *labelShadowLightIntensity = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowLightIntensity = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowShowGround = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowGroundBackFaceCull = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowLightIntensity = nullptr;
+    Gui::PrefCheckBox *ShadowShowGround = nullptr;
+    Gui::PrefCheckBox *ShadowGroundBackFaceCull = nullptr;
     QLabel *labelShadowGroundColor = nullptr;
-    Gui::PrefColorButton *colorButtonShadowGroundColor = nullptr;
+    Gui::PrefColorButton *ShadowGroundColor = nullptr;
     QLabel *labelShadowGroundScale = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowGroundScale = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowGroundScale = nullptr;
     QLabel *labelShadowGroundTransparency = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowGroundTransparency = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowGroundTransparency = nullptr;
     QLabel *labelShadowGroundTexture = nullptr;
-    Gui::PrefFileChooser *fileChooserShadowGroundTexture = nullptr;
+    Gui::PrefFileChooser *ShadowGroundTexture = nullptr;
     QLabel *labelShadowGroundTextureSize = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowGroundTextureSize = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowGroundTextureSize = nullptr;
     QLabel *labelShadowGroundBumpMap = nullptr;
-    Gui::PrefFileChooser *fileChooserShadowGroundBumpMap = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowGroundShading = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowUpdateGround = nullptr;
+    Gui::PrefFileChooser *ShadowGroundBumpMap = nullptr;
+    Gui::PrefCheckBox *ShadowGroundShading = nullptr;
+    Gui::PrefCheckBox *ShadowUpdateGround = nullptr;
     QLabel *labelShadowDisplayMode = nullptr;
-    Gui::PrefComboBox *comboBoxShadowDisplayMode = nullptr;
+    Gui::PrefComboBox *ShadowDisplayMode = nullptr;
     QLabel *labelShadowPrecision = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowPrecision = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowPrecision = nullptr;
     QLabel *labelShadowSmoothBorder = nullptr;
-    Gui::PrefSpinBox *spinBoxShadowSmoothBorder = nullptr;
+    Gui::PrefSpinBox *ShadowSmoothBorder = nullptr;
     QLabel *labelShadowSpreadSize = nullptr;
-    Gui::PrefSpinBox *spinBoxShadowSpreadSize = nullptr;
+    Gui::PrefSpinBox *ShadowSpreadSize = nullptr;
     QLabel *labelShadowSpreadSampleSize = nullptr;
-    Gui::PrefSpinBox *spinBoxShadowSpreadSampleSize = nullptr;
+    Gui::PrefSpinBox *ShadowSpreadSampleSize = nullptr;
     QLabel *labelShadowEpsilon = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowEpsilon = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowEpsilon = nullptr;
     QLabel *labelShadowThreshold = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowThreshold = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowThreshold = nullptr;
     QLabel *labelShadowBoundBoxScale = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowBoundBoxScale = nullptr;
+    Gui::PrefDoubleSpinBox *ShadowBoundBoxScale = nullptr;
     QLabel *labelShadowMaxDistance = nullptr;
-    Gui::PrefDoubleSpinBox *spinBoxShadowMaxDistance = nullptr;
-    Gui::PrefCheckBox *checkBoxShadowTransparentShadow = nullptr;
-// Auto generated code (Tools/params_utils.py:447)
+    Gui::PrefDoubleSpinBox *ShadowMaxDistance = nullptr;
+    Gui::PrefCheckBox *ShadowTransparentShadow = nullptr;
+// Auto generated code (Tools/params_utils.py:449)
 };
-} // namespace {dialog_namespace}
-} // namespace {namespace}
+} // namespace Dialog
+} // namespace Gui
 //[[[end]]]
 
 #endif // GUI_DIALOG_DLGSETTINGSDRAWSTYLES_H

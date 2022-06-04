@@ -786,6 +786,50 @@ void PrefLineEdit::savePreferences()
 
 // --------------------------------------------------------------------
 
+PrefAccelLineEdit::PrefAccelLineEdit ( QWidget * parent )
+  : AccelLineEdit(parent), PrefWidget()
+{
+    LineEditStyle::setup(this);
+    setAutoSave(PrefParam::AutoSave());
+}
+
+PrefAccelLineEdit::~PrefAccelLineEdit()
+{
+}
+
+void PrefAccelLineEdit::setAutoSave(bool enable)
+{
+    autoSave(enable, this, &PrefAccelLineEdit::textChanged);
+}
+
+void PrefAccelLineEdit::restorePreferences()
+{
+  if (getWindowParameter().isNull())
+  {
+    failedToRestore(objectName());
+    return;
+  }
+
+  if (!m_Restored)
+    m_Default = this->text();
+
+  setText(QString::fromUtf8(getWindowParameter()->GetASCII(
+          entryName(), m_Default.toUtf8()).c_str()));
+}
+
+void PrefAccelLineEdit::savePreferences()
+{
+  if (getWindowParameter().isNull())
+  {
+    failedToSave(objectName());
+    return;
+  }
+
+  getWindowParameter()->SetASCII(entryName(), text().toUtf8());
+}
+
+// --------------------------------------------------------------------
+
 PrefFileChooser::PrefFileChooser ( QWidget * parent )
   : FileChooser(parent), PrefWidget()
 {

@@ -27,7 +27,7 @@ import DlgSettingsObjects
 DlgSettingsObjects.define()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:469)
+// Auto generated code (Tools/params_utils.py:472)
 #ifndef _PreComp_
 #   include <QApplication>
 #   include <QLabel>
@@ -38,12 +38,12 @@ DlgSettingsObjects.define()
 #endif
 #include <Gui/PrefWidgets.h>
 #include <App/GroupParams.h>
-// Auto generated code (Tools/params_utils.py:487)
+// Auto generated code (Tools/params_utils.py:490)
 #include "DlgSettingsObjects.h"
 using namespace Gui::Dialog;
 /* TRANSLATOR Gui::Dialog::DlgSettingsObjects */
 
-// Auto generated code (Tools/params_utils.py:494)
+// Auto generated code (Tools/params_utils.py:497)
 DlgSettingsObjects::DlgSettingsObjects(QWidget* parent)
     : PreferencePage( parent )
 {
@@ -51,105 +51,108 @@ DlgSettingsObjects::DlgSettingsObjects(QWidget* parent)
     auto layout = new QVBoxLayout(this);
 
 
-    // Auto generated code (Tools/params_utils.py:336)
-    groupGroupObjects = new QGroupBox(this);
-    layout->addWidget(groupGroupObjects);
-    auto layoutHorizGroupObjects = new QHBoxLayout(groupGroupObjects);
-    auto layoutGroupObjects = new QGridLayout();
-    layoutHorizGroupObjects->addLayout(layoutGroupObjects);
-    layoutHorizGroupObjects->addStretch();
+    // Auto generated code (Tools/params_utils.py:338)
+    groupGroupobjects = new QGroupBox(this);
+    layout->addWidget(groupGroupobjects);
+    auto layoutHorizGroupobjects = new QHBoxLayout(groupGroupobjects);
+    auto layoutGroupobjects = new QGridLayout();
+    layoutHorizGroupobjects->addLayout(layoutGroupobjects);
+    layoutHorizGroupobjects->addStretch();
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxClaimAllChildren = new Gui::PrefCheckBox(this);
-    layoutGroupObjects->addWidget(checkBoxClaimAllChildren, 0, 0);
-    checkBoxClaimAllChildren->setChecked(App::GroupParams::defaultClaimAllChildren());
-    checkBoxClaimAllChildren->setEntryName("ClaimAllChildren");
-    checkBoxClaimAllChildren->setParamGrpPath("Group");
+    // Auto generated code (Tools/params_utils.py:349)
+    ClaimAllChildren = new Gui::PrefCheckBox(this);
+    layoutGroupobjects->addWidget(ClaimAllChildren, 0, 0);
+    ClaimAllChildren->setChecked(App::GroupParams::defaultClaimAllChildren());
+    ClaimAllChildren->setEntryName("ClaimAllChildren");
+    ClaimAllChildren->setParamGrpPath("Group");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxKeepHiddenChildren = new Gui::PrefCheckBox(this);
-    layoutGroupObjects->addWidget(checkBoxKeepHiddenChildren, 1, 0);
-    checkBoxKeepHiddenChildren->setChecked(App::GroupParams::defaultKeepHiddenChildren());
-    checkBoxKeepHiddenChildren->setEntryName("KeepHiddenChildren");
-    checkBoxKeepHiddenChildren->setParamGrpPath("Group");
+    // Auto generated code (Tools/params_utils.py:349)
+    KeepHiddenChildren = new Gui::PrefCheckBox(this);
+    layoutGroupobjects->addWidget(KeepHiddenChildren, 1, 0);
+    KeepHiddenChildren->setChecked(App::GroupParams::defaultKeepHiddenChildren());
+    KeepHiddenChildren->setEntryName("KeepHiddenChildren");
+    KeepHiddenChildren->setParamGrpPath("Group");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxExportChildren = new Gui::PrefCheckBox(this);
-    layoutGroupObjects->addWidget(checkBoxExportChildren, 2, 0);
-    checkBoxExportChildren->setChecked(App::GroupParams::defaultExportChildren());
-    checkBoxExportChildren->setEntryName("ExportChildren");
-    checkBoxExportChildren->setParamGrpPath("Group");
+    // Auto generated code (Tools/params_utils.py:349)
+    ExportChildren = new Gui::PrefCheckBox(this);
+    layoutGroupobjects->addWidget(ExportChildren, 2, 0);
+    ExportChildren->setChecked(App::GroupParams::defaultExportChildren());
+    ExportChildren->setEntryName("ExportChildren");
+    ExportChildren->setParamGrpPath("Group");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxCreateOrigin = new Gui::PrefCheckBox(this);
-    layoutGroupObjects->addWidget(checkBoxCreateOrigin, 3, 0);
-    checkBoxCreateOrigin->setChecked(App::GroupParams::defaultCreateOrigin());
-    checkBoxCreateOrigin->setEntryName("CreateOrigin");
-    checkBoxCreateOrigin->setParamGrpPath("Group");
+    // Auto generated code (Tools/params_utils.py:349)
+    CreateOrigin = new Gui::PrefCheckBox(this);
+    layoutGroupobjects->addWidget(CreateOrigin, 3, 0);
+    CreateOrigin->setChecked(App::GroupParams::defaultCreateOrigin());
+    CreateOrigin->setEntryName("CreateOrigin");
+    CreateOrigin->setParamGrpPath("Group");
 
-    // Auto generated code (Tools/params_utils.py:347)
-    checkBoxGeoGroupAllowCrossLink = new Gui::PrefCheckBox(this);
-    layoutGroupObjects->addWidget(checkBoxGeoGroupAllowCrossLink, 4, 0);
-    checkBoxGeoGroupAllowCrossLink->setChecked(App::GroupParams::defaultGeoGroupAllowCrossLink());
-    checkBoxGeoGroupAllowCrossLink->setEntryName("GeoGroupAllowCrossLink");
-    checkBoxGeoGroupAllowCrossLink->setParamGrpPath("Group");
+    // Auto generated code (Tools/params_utils.py:349)
+    GeoGroupAllowCrossLink = new Gui::PrefCheckBox(this);
+    layoutGroupobjects->addWidget(GeoGroupAllowCrossLink, 4, 0);
+    GeoGroupAllowCrossLink->setChecked(App::GroupParams::defaultGeoGroupAllowCrossLink());
+    GeoGroupAllowCrossLink->setEntryName("GeoGroupAllowCrossLink");
+    GeoGroupAllowCrossLink->setParamGrpPath("Group");
     layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Fixed, QSizePolicy::Expanding));
     retranslateUi();
+    // Auto generated code (Tools/params_utils.py:504)
+    
 }
 
-// Auto generated code (Tools/params_utils.py:504)
 #include "DlgSettingsObjects.h"
+// Auto generated code (Tools/params_utils.py:510)
 DlgSettingsObjects::~DlgSettingsObjects()
 {
 }
 
+// Auto generated code (Tools/params_utils.py:516)
 void DlgSettingsObjects::saveSettings()
 {
-    // Auto generated code (Tools/params_utils.py:513)
-    // Auto generated code (Tools/params_utils.py:379)
-    checkBoxClaimAllChildren->onSave();
-    checkBoxKeepHiddenChildren->onSave();
-    checkBoxExportChildren->onSave();
-    checkBoxCreateOrigin->onSave();
-    checkBoxGeoGroupAllowCrossLink->onSave();
+    // Auto generated code (Tools/params_utils.py:381)
+    ClaimAllChildren->onSave();
+    KeepHiddenChildren->onSave();
+    ExportChildren->onSave();
+    CreateOrigin->onSave();
+    GeoGroupAllowCrossLink->onSave();
 }
 
+// Auto generated code (Tools/params_utils.py:523)
 void DlgSettingsObjects::loadSettings()
 {
-    // Auto generated code (Tools/params_utils.py:520)
-    // Auto generated code (Tools/params_utils.py:369)
-    checkBoxClaimAllChildren->onRestore();
-    checkBoxKeepHiddenChildren->onRestore();
-    checkBoxExportChildren->onRestore();
-    checkBoxCreateOrigin->onRestore();
-    checkBoxGeoGroupAllowCrossLink->onRestore();
+    // Auto generated code (Tools/params_utils.py:371)
+    ClaimAllChildren->onRestore();
+    KeepHiddenChildren->onRestore();
+    ExportChildren->onRestore();
+    CreateOrigin->onRestore();
+    GeoGroupAllowCrossLink->onRestore();
 }
 
+// Auto generated code (Tools/params_utils.py:530)
 void DlgSettingsObjects::retranslateUi()
 {
-    // Auto generated code (Tools/params_utils.py:527)
     setWindowTitle(QObject::tr("Objects"));
-    groupGroupObjects->setTitle(QObject::tr("Group objects"));
-    checkBoxClaimAllChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docClaimAllChildren()));
-    checkBoxClaimAllChildren->setText(QObject::tr("Claim all children"));
-    checkBoxKeepHiddenChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docKeepHiddenChildren()));
-    checkBoxKeepHiddenChildren->setText(QObject::tr("Remember hidden children"));
-    checkBoxExportChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docExportChildren()));
-    checkBoxExportChildren->setText(QObject::tr("Export children by visibility"));
-    checkBoxCreateOrigin->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docCreateOrigin()));
-    checkBoxCreateOrigin->setText(QObject::tr("Always create origin features in origin group"));
-    checkBoxGeoGroupAllowCrossLink->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docGeoGroupAllowCrossLink()));
-    checkBoxGeoGroupAllowCrossLink->setText(QObject::tr("Allow cross coordinate links in GeoFeatureGroup (App::Part)"));
+    groupGroupobjects->setTitle(QObject::tr("Group objects"));
+    ClaimAllChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docClaimAllChildren()));
+    ClaimAllChildren->setText(QObject::tr("Claim all children"));
+    KeepHiddenChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docKeepHiddenChildren()));
+    KeepHiddenChildren->setText(QObject::tr("Remember hidden children"));
+    ExportChildren->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docExportChildren()));
+    ExportChildren->setText(QObject::tr("Export children by visibility"));
+    CreateOrigin->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docCreateOrigin()));
+    CreateOrigin->setText(QObject::tr("Always create origin features in origin group"));
+    GeoGroupAllowCrossLink->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docGeoGroupAllowCrossLink()));
+    GeoGroupAllowCrossLink->setText(QObject::tr("Allow cross coordinate links in GeoFeatureGroup (App::Part)"));
 }
 
+// Auto generated code (Tools/params_utils.py:543)
 void DlgSettingsObjects::changeEvent(QEvent *e)
 {
-    // Auto generated code (Tools/params_utils.py:539)
     if (e->type() == QEvent::LanguageChange) {
         retranslateUi();
     }
     QWidget::changeEvent(e);
 }
 
+// Auto generated code (Tools/params_utils.py:554)
 #include "moc_DlgSettingsObjects.cpp"
 //[[[end]]]

@@ -28,7 +28,8 @@ from os import sys, path
 sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Tools'))
 import params_utils
 
-from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat
+from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, \
+                         ParamFloat, ParamSpinBox, ParamShortcutEdit
 
 NameSpace = 'Gui'
 ClassName = 'ExprParams'
@@ -42,11 +43,11 @@ Params = [
         doc="Expression completer match exact"),
     ParamBool('CompleterUnfiltered', False,
         doc="Expression completer unfiltered completion mode"),
-    ParamBool('NoSystemBackground', False,
+    ParamBool('NoSystemBackground', False, title="In place editing",
         doc="Enable in place expressiong editing"),
-    ParamString('EditorTrigger', "=",
+    ParamString('EditorTrigger', "=", title="Editor trigger shortcut", proxy=ParamShortcutEdit(),
         doc="Expression editor trigger character"),
-    ParamBool('AutoHideEditorIcon', True,
+    ParamBool('AutoHideEditorIcon', True, title="Auto hide editor icon",
         doc="Only show editor icon on mouse over"),
     ParamBool('AllowReturn', False,
         doc="Allow return key in expression edit box"),
@@ -55,7 +56,7 @@ Params = [
     ParamInt('EditDialogWidth',0),
     ParamInt('EditDialogHeight',0),
     ParamInt('EditDialogTextHeight',0),
-    ParamInt('EditDialogBGAlpha','FC_EXPR_PARAM_EDIT_BG_ALPHA',
+    ParamInt('EditDialogBGAlpha','FC_EXPR_PARAM_EDIT_BG_ALPHA', title="Background opacity", proxy=ParamSpinBox(0, 255, 1),
         doc="Expression editor background opacity value when using in place editing"),
 ]
 
@@ -78,3 +79,4 @@ def define():
 ''')
     params_utils.define(sys.modules[__name__])
 
+params_utils.init_params(Params, NameSpace, ClassName, ParamPath)

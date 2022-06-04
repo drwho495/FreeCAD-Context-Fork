@@ -28,7 +28,8 @@ from os import sys, path
 sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Tools'))
 import params_utils
 
-from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat
+from params_utils import ParamBool, ParamInt, ParamString, ParamUInt,\
+                         ParamFloat, ParamSpinBox, ParamColor, ParamHex
 
 NameSpace = 'Gui'
 ClassName = 'TreeParams'
@@ -38,7 +39,7 @@ SourceFile = 'Tree.cpp'
 
 Params = [
     ParamBool('SyncSelection', True, on_change=True),
-    ParamBool('CheckBoxesSelection',False, on_change=True),
+    ParamBool('CheckBoxesSelection',False, on_change=True, title="Show item checkbox"),
     ParamBool('SyncView', True),
     ParamBool('PreSelection', True),
     ParamBool('SyncPlacement', False),
@@ -64,17 +65,17 @@ Params = [
     ParamInt('IconSize', 0, on_change=True),
     ParamInt('FontSize', 0, on_change=True),
     ParamInt('ItemSpacing', 0, on_change=True),
-    ParamUInt('ItemBackground', 0, on_change=True,
+    ParamHex('ItemBackground', 0, on_change=True, title='Item background color', proxy=ParamColor(),
         doc = "Tree view item background. Only effecitve in overlay."),
-    ParamInt('ItemBackgroundPadding', 10, on_change=True,
+    ParamInt('ItemBackgroundPadding', 10, on_change=True, title="Item background padding", proxy=ParamSpinBox(0, 100, 1),
         doc = "Tree view item background padding."),
-    ParamBool('HideColumn', False, on_change=True,
+    ParamBool('HideColumn', False, on_change=True, title="Hide extra column",
         doc = "Hide extra tree view column for item description."),
-    ParamBool('HideScrollBar', True,
+    ParamBool('HideScrollBar', True, title="Hide scroll bar",
         doc = "Hide tree view scroll bar in dock overlay"),
-    ParamBool('HideHeaderView', True,
+    ParamBool('HideHeaderView', True, title="Hide header",
         doc = "Hide tree view header view in dock overlay"),
-    ParamBool('ResizableColumn', False, on_change=True,
+    ParamBool('ResizableColumn', False, on_change=True, title="Resizable columns",
         doc = "Allow tree view columns to be manually resized"),
     ParamInt('ColumnSize1', 0),
     ParamInt('ColumnSize2', 0),
@@ -88,3 +89,5 @@ def declare_end():
 
 def define():
     params_utils.define(sys.modules[__name__])
+
+params_utils.init_params(Params, NameSpace, ClassName, ParamPath)

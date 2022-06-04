@@ -28,8 +28,6 @@ from os import sys, path
 sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Tools'))
 import params_utils
 
-from params_utils import ParamBool, ParamInt, ParamString, ParamUInt, ParamFloat
-
 sys.path.append(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'Gui'))
 import ViewParams
 
@@ -41,11 +39,11 @@ ClassDoc = 'Preference dialog for various draw styles related settings'
 _ViewParams = { param.name : param for param in ViewParams.Params }
 
 ParamGroup = (
-    ('Document', 'Document', [_ViewParams[name] for name in (
+    ('Document', [_ViewParams[name] for name in (
         'DefaultDrawStyle',
     )]),
 
-    ('Selection', 'Selection', [_ViewParams[name] for name in (
+    ('Selection', [_ViewParams[name] for name in (
         'TransparencyOnTop',
         'SelectionLineThicken',
         'SelectionLineMaxWidth',
@@ -56,7 +54,7 @@ ParamGroup = (
         'SelectionHiddenLineWidth',
     )]),
 
-    ('HiddenLines', 'Hidden Lines', [_ViewParams[name] for name in (
+    ('Hidden Lines', [_ViewParams[name] for name in (
         'HiddenLineFaceColor',
         'HiddenLineColor',
         'HiddenLineBackground',
@@ -71,7 +69,7 @@ ParamGroup = (
         'HiddenLinePointSize',
     )]),
 
-    ('Shadow', 'Shadow', [_ViewParams[name] for name in (
+    ('Shadow', [_ViewParams[name] for name in (
         'ShadowSpotLight',
         'ShadowLightColor',
         'ShadowLightIntensity',
