@@ -38,7 +38,6 @@ DlgSettingsDrawStyles.define()
 #   include <QVBoxLayout>
 #   include <QHBoxLayout>
 #endif
-#include <Gui/PrefWidgets.h>
 #include <Gui/ViewParams.h>
 // Auto generated code (Tools/params_utils.py:490)
 #include "DlgSettingsDrawStyles.h"
@@ -66,7 +65,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutDocument->addWidget(labelDefaultDrawStyle, 0, 0);
     DefaultDrawStyle = new Gui::PrefComboBox(this);
     layoutDocument->addWidget(DefaultDrawStyle, 0, 1);
-    for (int i=0; i<9; ++i) // Auto generated code (Tools/params_utils.py:840)
+    for (int i=0; i<9; ++i) // Auto generated code (Tools/params_utils.py:839)
         DefaultDrawStyle->addItem(QString());
     DefaultDrawStyle->setCurrentIndex(Gui::ViewParams::defaultDefaultDrawStyle());
     DefaultDrawStyle->setEntryName("DefaultDrawStyle");
@@ -131,7 +130,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutSelection->addWidget(labelSelectionLinePattern, 5, 0);
     SelectionLinePattern = new Gui::PrefLinePattern(this);
     layoutSelection->addWidget(SelectionLinePattern, 5, 1);
-    // Auto generated code (Tools/params_utils.py:875)
+    // Auto generated code (Tools/params_utils.py:874)
     for (int i=1; i<SelectionLinePattern->count(); ++i) {
         if (SelectionLinePattern->itemData(i).toInt() == 0)
             SelectionLinePattern->setCurrentIndex(i);
@@ -395,7 +394,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     layoutShadow->addWidget(labelShadowDisplayMode, 13, 0);
     ShadowDisplayMode = new Gui::PrefComboBox(this);
     layoutShadow->addWidget(ShadowDisplayMode, 13, 1);
-    for (int i=0; i<3; ++i) // Auto generated code (Tools/params_utils.py:840)
+    for (int i=0; i<3; ++i) // Auto generated code (Tools/params_utils.py:839)
         ShadowDisplayMode->addItem(QString());
     ShadowDisplayMode->setCurrentIndex(Gui::ViewParams::defaultShadowDisplayMode());
     ShadowDisplayMode->setEntryName("ShadowDisplayMode");
@@ -485,13 +484,12 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     
 }
 
-#include "DlgSettingsDrawStyles.h"
-// Auto generated code (Tools/params_utils.py:510)
+// Auto generated code (Tools/params_utils.py:509)
 DlgSettingsDrawStyles::~DlgSettingsDrawStyles()
 {
 }
 
-// Auto generated code (Tools/params_utils.py:516)
+// Auto generated code (Tools/params_utils.py:515)
 void DlgSettingsDrawStyles::saveSettings()
 {
     // Auto generated code (Tools/params_utils.py:381)
@@ -541,7 +539,7 @@ void DlgSettingsDrawStyles::saveSettings()
     ShadowTransparentShadow->onSave();
 }
 
-// Auto generated code (Tools/params_utils.py:523)
+// Auto generated code (Tools/params_utils.py:522)
 void DlgSettingsDrawStyles::loadSettings()
 {
     // Auto generated code (Tools/params_utils.py:371)
@@ -591,7 +589,7 @@ void DlgSettingsDrawStyles::loadSettings()
     ShadowTransparentShadow->onRestore();
 }
 
-// Auto generated code (Tools/params_utils.py:530)
+// Auto generated code (Tools/params_utils.py:529)
 void DlgSettingsDrawStyles::retranslateUi()
 {
     setWindowTitle(QObject::tr("Draw styles"));
@@ -599,7 +597,7 @@ void DlgSettingsDrawStyles::retranslateUi()
     DefaultDrawStyle->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docDefaultDrawStyle()));
     labelDefaultDrawStyle->setText(QObject::tr("Default draw style"));
     labelDefaultDrawStyle->setToolTip(DefaultDrawStyle->toolTip());
-    // Auto generated code (Tools/params_utils.py:857)
+    // Auto generated code (Tools/params_utils.py:856)
     DefaultDrawStyle->setItemText(0, QObject::tr("As Is"));
     DefaultDrawStyle->setItemData(0, QObject::tr("Draw style, normal display mode"), Qt::ToolTipRole);
     DefaultDrawStyle->setItemText(1, QObject::tr("Points"));
@@ -712,7 +710,7 @@ void DlgSettingsDrawStyles::retranslateUi()
     ShadowDisplayMode->setToolTip(QApplication::translate("ViewParams", Gui::ViewParams::docShadowDisplayMode()));
     labelShadowDisplayMode->setText(QObject::tr("Override display mode"));
     labelShadowDisplayMode->setToolTip(ShadowDisplayMode->toolTip());
-    // Auto generated code (Tools/params_utils.py:857)
+    // Auto generated code (Tools/params_utils.py:856)
     ShadowDisplayMode->setItemText(0, QObject::tr("Flat Lines"));
     ShadowDisplayMode->setItemText(1, QObject::tr("Shaded"));
     ShadowDisplayMode->setItemText(2, QObject::tr("As Is"));
@@ -744,7 +742,7 @@ void DlgSettingsDrawStyles::retranslateUi()
     ShadowTransparentShadow->setText(QObject::tr("Transparent shadow"));
 }
 
-// Auto generated code (Tools/params_utils.py:543)
+// Auto generated code (Tools/params_utils.py:542)
 void DlgSettingsDrawStyles::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange) {
@@ -753,6 +751,6 @@ void DlgSettingsDrawStyles::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
 }
 
-// Auto generated code (Tools/params_utils.py:554)
+// Auto generated code (Tools/params_utils.py:553)
 #include "moc_DlgSettingsDrawStyles.cpp"
 //[[[end]]]
