@@ -9456,8 +9456,13 @@ std::vector<std::string> SketchObject::checkSubNames(const std::vector<std::stri
 std::string SketchObject::checkSubName(const char *sub) const{
     if(!sub) return std::string();
     const char *subname = Data::ComplexGeoData::isMappedElement(sub);
-    if(!subname)
+    if(!subname)  {
+        if (boost::starts_with(sub, "edge"))
+            return std::string("Edge") + &sub[4];
+        else if (boost::starts_with(sub, "vertex"))
+            return std::string("Vertex") + &sub[5];
         return sub;
+    }
     if(!subname[0]) {
         FC_ERR("invalid subname " << sub);
         return sub;
