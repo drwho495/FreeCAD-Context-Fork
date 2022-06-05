@@ -33,8 +33,8 @@ def init_params(params, namespace, class_name, param_path, header_file=None):
     for param in params:
         param.path = param_path
         if not header_file:
-            header_file = f'{namespace}/{class_name}.h'
-        param.header_file = header_file
+            header_file = [f'{namespace}/{class_name}.h']
+        param.header_file = header_file + getattr(param.proxy, 'header_file', [])
         param.namespace = namespace
         param.class_name = class_name
     return params
@@ -372,7 +372,7 @@ def widgets_restore(param_set):
     for _,params in param_group:
         for param in params:
             cog.out(f'''
-    {param.widget_prefix}{param.name}->onRestore();''')
+    {param.widget_name}->onRestore();''')
 
 def widgets_save(param_set):
     param_group = param_set.ParamGroup
@@ -382,7 +382,7 @@ def widgets_save(param_set):
     for _,params in param_group:
         for param in params:
             cog.out(f'''
-    {param.widget_prefix}{param.name}->onSave();''')
+    {param.widget_name}->onSave();''')
 
 def preference_dialog_declare_begin(param_set, header=True):
     namespace = param_set.NameSpace
@@ -477,14 +477,14 @@ def preference_dialog_define(param_set, header=True):
 #   include <QGridLayout>
 #   include <QVBoxLayout>
 #   include <QHBoxLayout>
-#endif
-#include <Gui/PrefWidgets.h>''')
+#endif''')
         for _,params in param_group:
             for param in params:
-                if param.header_file not in headers:
-                    headers.add(param.header_file)
-                    cog.out(f'''
-#include <{param.header_file}>''')
+                for header in param.header_file:
+                    if header not in headers:
+                        headers.add(header)
+                        cog.out(f'''
+#include <{header}>''')
 
     cog.out(f'''
 {trace_comment()}
@@ -506,7 +506,6 @@ using namespace {namespace};
 }}
 ''')
     cog.out(f'''
-#include "{header_file}"
 {trace_comment()}
 {class_name}::~{class_name}()
 {{
@@ -590,7 +589,7 @@ class Param:
     def _declare_widget(self):
         self.declare_label()
         cog.out(f'''
-    {self.widget_type} *{self.widget_prefix}{self.name} = nullptr;''')
+    {self.widget_type} *{self.widget_name} = nullptr;''')
 
     def declare_widget(self):
         if self.proxy:
