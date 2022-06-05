@@ -74,6 +74,8 @@ private:
     Gui::PrefCheckBox *KeepHiddenChildren = nullptr;
     Gui::PrefCheckBox *ExportChildren = nullptr;
     Gui::PrefCheckBox *CreateOrigin = nullptr;
+    // Auto generated code (Gui/DlgSettingsObjects.py:55)
+    QPushButton *buttonCreateOrigin = nullptr;
     Gui::PrefCheckBox *GeoGroupAllowCrossLink = nullptr;
 // Auto generated code (Tools/params_utils.py:449)
 };

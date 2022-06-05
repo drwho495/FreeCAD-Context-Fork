@@ -36,8 +36,11 @@ DlgSettingsObjects.define()
 #   include <QVBoxLayout>
 #   include <QHBoxLayout>
 #endif
-#include <Gui/PrefWidgets.h>
 #include <App/GroupParams.h>
+#include <App/Application.h>
+#include <App/Document.h>
+#include <App/Origin.h>
+#include <App/AutoTransaction.h>
 // Auto generated code (Tools/params_utils.py:490)
 #include "DlgSettingsObjects.h"
 using namespace Gui::Dialog;
@@ -81,9 +84,35 @@ DlgSettingsObjects::DlgSettingsObjects(QWidget* parent)
     ExportChildren->setParamGrpPath("Group");
 
     // Auto generated code (Tools/params_utils.py:349)
+    // Auto generated code (Gui/DlgSettingsObjects.py:60)
     CreateOrigin = new Gui::PrefCheckBox(this);
-    layoutGroupobjects->addWidget(CreateOrigin, 3, 0);
-    CreateOrigin->setChecked(App::GroupParams::defaultCreateOrigin());
+    buttonCreateOrigin = new QPushButton(this);
+    {
+        auto layoutHoriz = new QHBoxLayout();
+        layoutHoriz->addWidget(CreateOrigin);
+        layoutHoriz->addWidget(buttonCreateOrigin);
+        layoutGroupobjects->addLayout(layoutHoriz, 3, 0);
+    }
+    buttonCreateOrigin->setEnabled(CreateOrigin->isChecked());
+    connect(CreateOrigin, SIGNAL(toggled(bool)), buttonCreateOrigin, SLOT(setEnabled(bool)));
+
+    // Auto generated code (Gui/DlgSettingsObjects.py:73)
+    QObject::connect(buttonCreateOrigin, &QPushButton::clicked, []() {
+        for (auto doc : App::GetApplication().getDocuments()) {
+            if (doc->testStatus(App::Document::TempDoc)
+                || doc->testStatus(App::Document::PartialDoc))
+                continue;
+            App::GetApplication().setActiveDocument(doc);
+            App::AutoTransaction guard("Init origins");
+            // getObjects() below returns a const reference, so we must copy
+            // objects here in order to iterate it safely while adding objects
+            auto objs = doc->getObjects();
+            for (auto obj : objs) {
+                if (auto origin = Base::freecad_dynamic_cast<App::Origin>(obj))
+                    origin->getX(); // make sure all origin features are created
+            }
+        }
+    });
     CreateOrigin->setEntryName("CreateOrigin");
     CreateOrigin->setParamGrpPath("Group");
 
@@ -99,13 +128,12 @@ DlgSettingsObjects::DlgSettingsObjects(QWidget* parent)
     
 }
 
-#include "DlgSettingsObjects.h"
-// Auto generated code (Tools/params_utils.py:510)
+// Auto generated code (Tools/params_utils.py:509)
 DlgSettingsObjects::~DlgSettingsObjects()
 {
 }
 
-// Auto generated code (Tools/params_utils.py:516)
+// Auto generated code (Tools/params_utils.py:515)
 void DlgSettingsObjects::saveSettings()
 {
     // Auto generated code (Tools/params_utils.py:381)
@@ -116,7 +144,7 @@ void DlgSettingsObjects::saveSettings()
     GeoGroupAllowCrossLink->onSave();
 }
 
-// Auto generated code (Tools/params_utils.py:523)
+// Auto generated code (Tools/params_utils.py:522)
 void DlgSettingsObjects::loadSettings()
 {
     // Auto generated code (Tools/params_utils.py:371)
@@ -127,7 +155,7 @@ void DlgSettingsObjects::loadSettings()
     GeoGroupAllowCrossLink->onRestore();
 }
 
-// Auto generated code (Tools/params_utils.py:530)
+// Auto generated code (Tools/params_utils.py:529)
 void DlgSettingsObjects::retranslateUi()
 {
     setWindowTitle(QObject::tr("Objects"));
@@ -140,11 +168,13 @@ void DlgSettingsObjects::retranslateUi()
     ExportChildren->setText(QObject::tr("Export children by visibility"));
     CreateOrigin->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docCreateOrigin()));
     CreateOrigin->setText(QObject::tr("Always create origin features in origin group"));
+    // Auto generated code (Gui/DlgSettingsObjects.py:94)
+    buttonCreateOrigin->setText(tr("Apply to existing objects"));
     GeoGroupAllowCrossLink->setToolTip(QApplication::translate("GroupParams", App::GroupParams::docGeoGroupAllowCrossLink()));
     GeoGroupAllowCrossLink->setText(QObject::tr("Allow cross coordinate links in GeoFeatureGroup (App::Part)"));
 }
 
-// Auto generated code (Tools/params_utils.py:543)
+// Auto generated code (Tools/params_utils.py:542)
 void DlgSettingsObjects::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange) {
@@ -153,6 +183,6 @@ void DlgSettingsObjects::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
 }
 
-// Auto generated code (Tools/params_utils.py:554)
+// Auto generated code (Tools/params_utils.py:553)
 #include "moc_DlgSettingsObjects.cpp"
 //[[[end]]]
