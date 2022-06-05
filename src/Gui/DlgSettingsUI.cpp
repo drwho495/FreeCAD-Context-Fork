@@ -69,7 +69,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     TextCursorWidth = new Gui::PrefSpinBox(this);
     layoutGeneral->addWidget(TextCursorWidth, 0, 1);
     TextCursorWidth->setValue(Gui::ViewParams::defaultTextCursorWidth());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     TextCursorWidth->setMaximum(1);
     TextCursorWidth->setMaximum(100);
     TextCursorWidth->setSingleStep(1);
@@ -91,6 +91,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     ItemBackground = new Gui::PrefColorButton(this);
     layoutTreeview->addWidget(ItemBackground, 0, 1);
     ItemBackground->setPackedColor(Gui::TreeParams::defaultItemBackground());
+    ItemBackground->setAllowTransparency(true);
     ItemBackground->setEntryName("ItemBackground");
     ItemBackground->setParamGrpPath("TreeView");
 
@@ -100,7 +101,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     ItemBackgroundPadding = new Gui::PrefSpinBox(this);
     layoutTreeview->addWidget(ItemBackgroundPadding, 1, 1);
     ItemBackgroundPadding->setValue(Gui::TreeParams::defaultItemBackgroundPadding());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     ItemBackgroundPadding->setMaximum(0);
     ItemBackgroundPadding->setMaximum(100);
     ItemBackgroundPadding->setSingleStep(1);
@@ -180,7 +181,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     EditDialogBGAlpha = new Gui::PrefSpinBox(this);
     layoutExpression->addWidget(EditDialogBGAlpha, 3, 1);
     EditDialogBGAlpha->setValue(Gui::ExprParams::defaultEditDialogBGAlpha());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     EditDialogBGAlpha->setMaximum(0);
     EditDialogBGAlpha->setMaximum(255);
     EditDialogBGAlpha->setSingleStep(1);
@@ -202,7 +203,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuIconSize = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuIconSize, 0, 1);
     PieMenuIconSize->setValue(Gui::ViewParams::defaultPieMenuIconSize());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuIconSize->setMaximum(0);
     PieMenuIconSize->setMaximum(64);
     PieMenuIconSize->setSingleStep(1);
@@ -215,7 +216,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuRadius = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuRadius, 1, 1);
     PieMenuRadius->setValue(Gui::ViewParams::defaultPieMenuRadius());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuRadius->setMaximum(10);
     PieMenuRadius->setMaximum(500);
     PieMenuRadius->setSingleStep(10);
@@ -228,7 +229,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuTriggerRadius = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuTriggerRadius, 2, 1);
     PieMenuTriggerRadius->setValue(Gui::ViewParams::defaultPieMenuTriggerRadius());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuTriggerRadius->setMaximum(10);
     PieMenuTriggerRadius->setMaximum(500);
     PieMenuTriggerRadius->setSingleStep(10);
@@ -241,7 +242,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuCenterRadius = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuCenterRadius, 3, 1);
     PieMenuCenterRadius->setValue(Gui::ViewParams::defaultPieMenuCenterRadius());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuCenterRadius->setMaximum(0);
     PieMenuCenterRadius->setMaximum(250);
     PieMenuCenterRadius->setSingleStep(1);
@@ -254,7 +255,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuFontSize = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuFontSize, 4, 1);
     PieMenuFontSize->setValue(Gui::ViewParams::defaultPieMenuFontSize());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuFontSize->setMaximum(0);
     PieMenuFontSize->setMaximum(32);
     PieMenuFontSize->setSingleStep(1);
@@ -267,7 +268,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuTriggerDelay = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuTriggerDelay, 5, 1);
     PieMenuTriggerDelay->setValue(Gui::ViewParams::defaultPieMenuTriggerDelay());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuTriggerDelay->setMaximum(0);
     PieMenuTriggerDelay->setMaximum(10000);
     PieMenuTriggerDelay->setSingleStep(100);
@@ -287,7 +288,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     PieMenuAnimationDuration = new Gui::PrefSpinBox(this);
     layoutPiemenu->addWidget(PieMenuAnimationDuration, 7, 1);
     PieMenuAnimationDuration->setValue(Gui::ViewParams::defaultPieMenuAnimationDuration());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     PieMenuAnimationDuration->setMaximum(0);
     PieMenuAnimationDuration->setMaximum(5000);
     PieMenuAnimationDuration->setSingleStep(100);
@@ -363,7 +364,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayWheelDelay = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayWheelDelay, 5, 1);
     DockOverlayWheelDelay->setValue(Gui::ViewParams::defaultDockOverlayWheelDelay());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayWheelDelay->setMaximum(0);
     DockOverlayWheelDelay->setMaximum(99999);
     DockOverlayWheelDelay->setSingleStep(1);
@@ -376,7 +377,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayAlphaRadius = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayAlphaRadius, 6, 1);
     DockOverlayAlphaRadius->setValue(Gui::ViewParams::defaultDockOverlayAlphaRadius());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayAlphaRadius->setMaximum(1);
     DockOverlayAlphaRadius->setMaximum(100);
     DockOverlayAlphaRadius->setSingleStep(1);
@@ -396,7 +397,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayHintTriggerSize = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayHintTriggerSize, 8, 1);
     DockOverlayHintTriggerSize->setValue(Gui::ViewParams::defaultDockOverlayHintTriggerSize());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayHintTriggerSize->setMaximum(1);
     DockOverlayHintTriggerSize->setMaximum(100);
     DockOverlayHintTriggerSize->setSingleStep(1);
@@ -409,7 +410,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayHintSize = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayHintSize, 9, 1);
     DockOverlayHintSize->setValue(Gui::ViewParams::defaultDockOverlayHintSize());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayHintSize->setMaximum(1);
     DockOverlayHintSize->setMaximum(100);
     DockOverlayHintSize->setSingleStep(1);
@@ -429,7 +430,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayHintDelay = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayHintDelay, 11, 1);
     DockOverlayHintDelay->setValue(Gui::ViewParams::defaultDockOverlayHintDelay());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayHintDelay->setMaximum(0);
     DockOverlayHintDelay->setMaximum(1000);
     DockOverlayHintDelay->setSingleStep(100);
@@ -442,7 +443,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlaySplitterHandleTimeout = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlaySplitterHandleTimeout, 12, 1);
     DockOverlaySplitterHandleTimeout->setValue(Gui::ViewParams::defaultDockOverlaySplitterHandleTimeout());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlaySplitterHandleTimeout->setMaximum(0);
     DockOverlaySplitterHandleTimeout->setMaximum(99999);
     DockOverlaySplitterHandleTimeout->setSingleStep(100);
@@ -462,7 +463,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayDelay = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayDelay, 14, 1);
     DockOverlayDelay->setValue(Gui::ViewParams::defaultDockOverlayDelay());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayDelay->setMaximum(0);
     DockOverlayDelay->setMaximum(5000);
     DockOverlayDelay->setSingleStep(100);
@@ -475,7 +476,7 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     DockOverlayAnimationDuration = new Gui::PrefSpinBox(this);
     layoutOverlay->addWidget(DockOverlayAnimationDuration, 15, 1);
     DockOverlayAnimationDuration->setValue(Gui::ViewParams::defaultDockOverlayAnimationDuration());
-    // Auto generated code (Tools/params_utils.py:898)
+    // Auto generated code (Tools/params_utils.py:908)
     DockOverlayAnimationDuration->setMaximum(0);
     DockOverlayAnimationDuration->setMaximum(5000);
     DockOverlayAnimationDuration->setSingleStep(100);

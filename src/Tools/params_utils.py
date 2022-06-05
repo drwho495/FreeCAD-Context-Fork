@@ -881,6 +881,16 @@ class ParamColor(ParamProxy):
     WidgetType = 'Gui::PrefColorButton'
     WidgetSetter = 'setPackedColor'
 
+    def __init__(self, param_bool=None, transparency=True):
+        super().__init__(param_bool)
+        self.transparency = transparency
+
+    def init_widget(self, param, row, group_name):
+        super().init_widget(param, row, group_name)
+        if self.transparency:
+            cog.out(f'''
+    {param.widget_name}->setAllowTransparency(true);''')
+
 class ParamFile(ParamProxy):
     WidgetType = 'Gui::PrefFileChooser'
     WidgetSetter = 'setFileNameStd'

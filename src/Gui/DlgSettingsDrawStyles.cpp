@@ -174,6 +174,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     HiddenLineOverrideFaceColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideFaceColor());
     HiddenLineFaceColor->setEnabled(HiddenLineOverrideFaceColor->isChecked());
     connect(HiddenLineOverrideFaceColor, SIGNAL(toggled(bool)), HiddenLineFaceColor, SLOT(setEnabled(bool)));
+    HiddenLineFaceColor->setAllowTransparency(true);
     HiddenLineFaceColor->setEntryName("HiddenLineFaceColor");
     HiddenLineFaceColor->setParamGrpPath("View");
 
@@ -186,6 +187,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     HiddenLineOverrideColor->setChecked(Gui::ViewParams::defaultHiddenLineOverrideColor());
     HiddenLineColor->setEnabled(HiddenLineOverrideColor->isChecked());
     connect(HiddenLineOverrideColor, SIGNAL(toggled(bool)), HiddenLineColor, SLOT(setEnabled(bool)));
+    HiddenLineColor->setAllowTransparency(true);
     HiddenLineColor->setEntryName("HiddenLineColor");
     HiddenLineColor->setParamGrpPath("View");
 
@@ -198,6 +200,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     HiddenLineOverrideBackground->setChecked(Gui::ViewParams::defaultHiddenLineOverrideBackground());
     HiddenLineBackground->setEnabled(HiddenLineOverrideBackground->isChecked());
     connect(HiddenLineOverrideBackground, SIGNAL(toggled(bool)), HiddenLineBackground, SLOT(setEnabled(bool)));
+    HiddenLineBackground->setAllowTransparency(true);
     HiddenLineBackground->setEntryName("HiddenLineBackground");
     HiddenLineBackground->setParamGrpPath("View");
 
@@ -295,6 +298,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowLightColor = new Gui::PrefColorButton(this);
     layoutShadow->addWidget(ShadowLightColor, 1, 1);
     ShadowLightColor->setPackedColor(Gui::ViewParams::defaultShadowLightColor());
+    ShadowLightColor->setAllowTransparency(true);
     ShadowLightColor->setEntryName("ShadowLightColor");
     ShadowLightColor->setParamGrpPath("View");
 
@@ -327,6 +331,7 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowGroundColor = new Gui::PrefColorButton(this);
     layoutShadow->addWidget(ShadowGroundColor, 5, 1);
     ShadowGroundColor->setPackedColor(Gui::ViewParams::defaultShadowGroundColor());
+    ShadowGroundColor->setAllowTransparency(true);
     ShadowGroundColor->setEntryName("ShadowGroundColor");
     ShadowGroundColor->setParamGrpPath("View");
 
