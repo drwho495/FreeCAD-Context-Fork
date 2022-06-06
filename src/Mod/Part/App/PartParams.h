@@ -72,6 +72,7 @@ public:
     FC_APP_PART_PARAM(AutoCorrectLink,bool,Bool,false) \
     FC_APP_PART_PARAM(RefineModel,bool,Bool,false) \
     FC_APP_PART_PARAM(AuxGroupUniqueLabel,bool,Bool,false) \
+    FC_APP_PART_PARAM(ParallelRunThreshold,int,Int,100) \
 
 #undef FC_APP_PART_PARAM
 #define FC_APP_PART_PARAM(_name,_ctype,_type,_def) \
@@ -85,8 +86,11 @@ public:
     static void set_##_name(_ctype _v) { instance()->handle->Set##_type(#_name,_v); instance()->_##_name=_v; }\
     void on##_name##Changed();\
     static void update##_name(PartParams *self) { \
-        self->_##_name = self->handle->Get##_type(#_name,_def); \
-        self->on##_name##Changed();\
+        auto _v = self->handle->Get##_type(#_name,_def); \
+        if (self->_##_name != _v) {\
+            self->_##_name = _v;\
+            self->on##_name##Changed();\
+        }\
     }\
 
     FC_APP_PART_PARAMS
