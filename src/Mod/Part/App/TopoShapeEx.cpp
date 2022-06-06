@@ -4281,7 +4281,7 @@ TopoShape & TopoShape::makEBSplineFace(const TopoShape & shape,
                                        const char *op)
 {
     std::vector<TopoShape> input(1, shape);
-    return makEBSplineFace(input, style, op);
+    return makEBSplineFace(input, style, keepBezier, op);
 }
 
 TopoShape & TopoShape::makEBSplineFace(const std::vector<TopoShape> &input,
