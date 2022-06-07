@@ -122,10 +122,6 @@ public:
             this->notAllowedReason = QT_TR_NOOP("Pipe feature not found.");
             return false;
         }
-        if (prop->getValue() && pObj != prop->getValue()) {
-            this->notAllowedReason = QT_TR_NOOP("Not from pipe spine object.");
-            return false;
-        }
         if (inList.count(pObj)) {
             this->notAllowedReason = QT_TR_NOOP("Selecting this will cause circular dependency.");
             return false;
@@ -438,8 +434,6 @@ void TaskPipeParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
 
     switch(selectionMode) {
     case refProfile: {
-        if (obj == pipe->Profile.getValue())
-            break;
         App::SubObjectT ref(msg.pOriginalMsg ? msg.pOriginalMsg->Object : msg.Object);
         ref = PartDesignGui::importExternalElement(ref);
         auto refObj = ref.getSubObject();
@@ -462,7 +456,7 @@ void TaskPipeParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
             if (obj == pipe->Spine.getValue())
                 break;
             App::SubObjectT ref(msg.pOriginalMsg ? msg.pOriginalMsg->Object : msg.Object);
-            ref = PartDesignGui::importExternalElement(ref);
+            ref = PartDesignGui::importExternalObject(ref);
             auto refObj = ref.getSubObject();
             if (!refObj)
                 break;

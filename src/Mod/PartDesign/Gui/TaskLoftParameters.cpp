@@ -298,8 +298,6 @@ void TaskLoftParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
 
     switch(selectionMode) {
     case refProfile: {
-        if (obj == loft->Profile.getValue())
-            break;
         App::SubObjectT ref(msg.pOriginalMsg ? msg.pOriginalMsg->Object : msg.Object);
         ref = PartDesignGui::importExternalElement(ref);
         auto refObj = ref.getSubObject();
