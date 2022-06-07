@@ -1291,7 +1291,6 @@ void LinkView::setChildren(const std::vector<App::DocumentObject*> &children,
                 if (nidx >= 0)
                     pcLinkRoot->removeChild(nidx);
                 nodeArray.erase(nodeArray.begin() + nidx);
-                nameMap.erase(info.linkInfo->getLinkedName());
             }
         }
         else if (children.size() == nodeArray.size() + 1) {
