@@ -1066,6 +1066,18 @@ public:
                                             false));
             wrap->Label.setValue(object.Label.getValue());
             wrap->WrapFeature.setValue(const_cast<App::DocumentObject*>(&object));
+
+            Gui::Selection().clearSelection();
+            auto it = conns.find(App::GetApplication().getActiveDocument());
+            if (it != conns.end()) {
+                auto body = Base::freecad_dynamic_cast<PartDesign::Body>(
+                        it->second.activeBodyT.getSubObject());
+                if (body == activeBody) {
+                    Gui::Selection().addSelection(it->second.activeBodyT.getChild(wrap));
+                    return;
+                }
+            }
+            Gui::Selection().addSelection(App::SubObjectT(wrap, ""));
         } catch (Base::Exception &e) {
             e.ReportException();
         }
