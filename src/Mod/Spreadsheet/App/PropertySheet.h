@@ -200,7 +200,9 @@ public:
         BindingHiddenRef,
     };
     BindingType getBinding(const App::Range &range,
-            App::ExpressionPtr *pStart=0, App::ExpressionPtr *pEnd=0) const;
+                           App::ExpressionPtr *pStart=nullptr,
+                           App::ExpressionPtr *pEnd=nullptr,
+                           App::ObjectIdentifier *pTarget=nullptr) const;
 
 protected:
     virtual void hasSetValue() override;

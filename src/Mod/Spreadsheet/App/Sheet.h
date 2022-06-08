@@ -115,7 +115,9 @@ public:
     unsigned getCellBindingBorder(App::CellAddress address) const;
 
     PropertySheet::BindingType getCellBinding(App::Range &range,
-            App::ExpressionPtr *pStart=0, App::ExpressionPtr *pEnd=0) const;
+                                              App::ExpressionPtr *pStart=nullptr,
+                                              App::ExpressionPtr *pEnd=nullptr,
+                                              App::ObjectIdentifier *pTarget=nullptr) const;
 
     void setCell(const char *address, const char *value);
 
