@@ -66,6 +66,7 @@
 # include <TopExp.hxx>
 # include <TopTools_IndexedMapOfShape.hxx>
 # include <ElCLib.hxx>
+# include <GC_MakeArcOfCircle.hxx>
 # include <boost_bind_bind.hpp>
 //# include <QtGlobal>
 #endif
@@ -141,6 +142,9 @@ SketchObject::SketchObject()
     ADD_PROPERTY_TYPE(ExternalGeo,    (0)  ,"Sketch",
             (App::PropertyType)(App::Prop_Hidden),"Sketch external geometry");
     ADD_PROPERTY_TYPE(FullyConstrained, (false),"Sketch",(App::PropertyType)(App::Prop_Output|App::Prop_ReadOnly |App::Prop_Hidden),"Sketch is fully constrained");
+    ADD_PROPERTY_TYPE(ArcFitTolerance, (0.0),"Sketch",(App::PropertyType)(App::Prop_None),
+            "Tolerance for fitting arcs of projected external geometry");
+
 
     geoLastId = 0;
 
@@ -182,6 +186,12 @@ SketchObject::SketchObject()
 SketchObject::~SketchObject()
 {
     delete analyser;
+}
+
+void SketchObject::setupObject()
+{
+    ArcFitTolerance.setValue(Precision::Confusion()*10.0);
+    inherited::setupObject();
 }
 
 void SketchObject::initExternalGeo() {
@@ -7474,6 +7484,62 @@ void SketchObject::rebuildExternalGeometry(bool defining)
                                 geos.emplace_back(arc);
                             }
                         } else if (projCurve.GetType() == GeomAbs_BSplineCurve) {
+                            bool done = false;
+                            if (ArcFitTolerance.getValue() >= Precision::Confusion()) {
+                                std::unique_ptr<Part::GeomBSplineCurve> bspline(new Part::GeomBSplineCurve(projCurve.BSpline()));
+                                auto arcs = bspline->toBiArcs(ArcFitTolerance.getValue());
+                                double radius = 0.0;
+                                double m;
+                                Base::Vector3d center;
+                                for (auto geo : arcs) {
+                                    if (auto arc = Base::freecad_dynamic_cast<Part::GeomArcOfCircle>(geo)) {
+                                        if (radius == 0.0) {
+                                            radius = arc->getRadius();
+                                            center = arc->getCenter();
+                                            double f = arc->getFirstParameter();
+                                            double l = arc->getLastParameter();
+                                            m = (l-f)*0.5 + f; // middle parameter
+                                        } else if (std::abs(radius - arc->getRadius()) > ArcFitTolerance.getValue()) {
+                                            radius = 0.0;
+                                            break;
+                                        }
+                                    }
+                                    else {
+                                        radius = 0.0;
+                                        break;
+                                    }
+                                }
+                                if (radius != 0.0) {
+                                    if (firstPoint.SquareDistance(lastPoint) < Precision::Confusion()) {
+                                        Part::GeomCircle* circle = new Part::GeomCircle();
+                                        circle->setCenter(center);
+                                        circle->setRadius(radius);
+                                        geos.emplace_back(circle);
+                                        done = true;
+                                    }
+                                    else if (arcs.size() == 1) {
+                                        geos.emplace_back(arcs.front());
+                                        arcs.clear();
+                                        done = true;
+                                    }
+                                    else {
+                                        GeomLProp_CLProps prop(Handle(Geom_Curve)::DownCast(arcs.front()->handle()),m,0,Precision::Confusion());
+                                        gp_Pnt midPoint = prop.Value();
+                                        GC_MakeArcOfCircle arc(P1, midPoint, P2);
+                                        auto geo = new Part::GeomArcOfCircle();
+                                        geo->setHandle(arc.Value());
+                                        geos.emplace_back(geo);
+                                        done = true;
+                                    }
+                                }
+                                for (auto geo : arcs)
+                                    delete geo;
+                                if (done) {
+                                    GeometryFacade::setConstruction(geos.back().get(), true);
+                                    continue;
+                                }
+                            }
+
                             // Unfortunately, a normal projection of a circle can also give a Bspline
                             // Split the spline into arcs
                             GeomConvert_BSplineCurveKnotSplitting bSplineSplitter(projCurve.BSpline(), 2);

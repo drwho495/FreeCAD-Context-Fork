@@ -58,6 +58,7 @@ class SketchAnalysis;
 
 class SketcherExport SketchObject : public Part::Part2DObject
 {
+    typedef Part::Part2DObject inherited;
     PROPERTY_HEADER_WITH_OVERRIDE(Sketcher::SketchObject);
 
 public:
@@ -79,6 +80,7 @@ public:
     App     ::PropertyLinkListHidden Exports;
     Part    ::PropertyGeometryList   ExternalGeo;
     App     ::PropertyBool           FullyConstrained;
+    App     ::PropertyPrecision      ArcFitTolerance;
     /** @name methods override Feature */
     //@{
     short mustExecute() const override;
@@ -89,6 +91,7 @@ public:
     const char* getViewProviderName(void) const override {
         return "SketcherGui::ViewProviderSketch";
     }
+    void setupObject() override;
     //@}
 
     /** SketchObject can work in two modes: Recompute Mode and noRecomputes Mode
