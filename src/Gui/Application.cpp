@@ -1624,7 +1624,7 @@ bool Application::activateWorkbench(const char* name)
     return ok;
 }
 
-QPixmap Application::workbenchIcon(const QString& wb) const
+QPixmap Application::workbenchIcon(const QString& wb, QString *iconPath) const
 {
     Base::PyGILStateLocker lock;
     // get the python workbench object from the dictionary
@@ -1636,8 +1636,16 @@ QPixmap Application::workbenchIcon(const QString& wb) const
         str << "Icon_" << wb.toLatin1().constData();
         std::string iconName = str.str();
         QPixmap icon;
-        if (BitmapFactory().findPixmapInCache(iconName.c_str(), icon))
+        std::string path;
+        if (BitmapFactory().findPixmapInCache(iconName.c_str(),
+                                              icon,
+                                              nullptr,
+                                              iconPath ? &path : nullptr))
+        {
+            if (iconPath)
+                *iconPath = QString::fromUtf8(path.c_str());
             return icon;
+        }
 
         // get its Icon member if possible
         try {
@@ -1646,14 +1654,11 @@ QPixmap Application::workbenchIcon(const QString& wb) const
                 Py::Object member = handler.getAttr(std::string("Icon"));
                 Py::String data(member);
                 std::string content = data.as_std_string("utf-8");
+                std::string path;
 
                 // test if in XPM format
-                QByteArray ary;
-                int strlen = (int)content.size();
-                ary.resize(strlen);
-                for (int j=0; j<strlen; j++)
-                    ary[j]=content[j];
-                if (ary.indexOf("/* XPM */") > 0) {
+                if (strstr(content.c_str(), "/* XPM */") != nullptr) {
+                    QByteArray ary(content.c_str());
                     // Make sure to remove crap around the XPM data
                     QList<QByteArray> lines = ary.split('\n');
                     QByteArray buffer;
@@ -1673,12 +1678,15 @@ QPixmap Application::workbenchIcon(const QString& wb) const
                     icon.load(file);
                     if (icon.isNull()) {
                         // ... or the name of another icon?
-                        icon = BitmapFactory().pixmap(file.toUtf8());
-                    }
+                        icon = BitmapFactory().pixmap(file.toUtf8(), false, nullptr, &path);
+                    } else
+                        path = content;
                 }
 
                 if (!icon.isNull()) {
-                    BitmapFactory().addPixmapToCache(iconName.c_str(), icon);
+                    BitmapFactory().addPixmapToCache(iconName.c_str(), icon, path.c_str());
+                    if (iconPath)
+                        *iconPath = QString::fromUtf8(path.c_str());
                 }
 
                 return icon;

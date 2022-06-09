@@ -40,11 +40,18 @@
 # include <QToolTip>
 # include <QDebug>
 # include <QTextEdit>
+# include <QToolBar>
+# include <QHBoxLayout>
+# include <QUrl>
 #endif
+
+#include <QCache>
+#include <QMovie>
 
 #include <Base/Tools.h>
 #include <Base/Exception.h>
 #include <Base/Interpreter.h>
+#include <Base/Console.h>
 #include <App/ExpressionParser.h>
 #include <App/Material.h>
 
@@ -59,6 +66,8 @@
 #include "Tools.h"
 #include "MainWindow.h"
 #include "ViewParams.h"
+
+FC_LOG_LEVEL_INIT("Gui", true, true, true);
 
 using namespace Gui;
 using namespace App;
@@ -1039,26 +1048,84 @@ void LabelButton::browse()
 
 // ----------------------------------------------------------------------
 
-TipLabel::TipLabel(QWidget *parent)
-    : QLabel(parent)
+namespace {
+
+std::unordered_map<QLabel *, QPointer<QLabel>> _QtTipLabels;
+QPointer<TipLabel> _TipLabel;
+QPointer<TipLabel> _OverlayTipLabel;
+struct TipIconEntry {
+    QPixmap pixmap;
+    QMovie animation;
+};
+QCache<QString, TipIconEntry> _TipIconCache(1024);
+int _TipIconSize;
+
+class TipLabelEventFilter : public QObject
 {
+public:
+    TipLabelEventFilter(QObject *parent)
+        :QObject(parent)
+    {
+    }
+
+};
+
+void hideQtToolTips()
+{
+    // QToolTips actually uses multiple instances of a private class QTipLabel.
+    // In some rare condition (e.g. calling QToolTip::hideText() too frequent),
+    // previous shown TipLabel instance is somehow abandoned, and left visible.
+    // As a work around, I'll collect all shown QTipLabel instances and hide
+    // them.
+    decltype(_QtTipLabels) labels = std::move(_QtTipLabels);
+    _QtTipLabels.clear();
+    for (const auto &v : labels) {
+        if (v.second)
+            v.second->setVisible(false);
+    }
+}
+
+int getTipScreen(const QPoint &pos, QWidget *w)
+{
+    if (QApplication::desktop()->isVirtualDesktop())
+        return QApplication::desktop()->screenNumber(pos);
+    else
+        return QApplication::desktop()->screenNumber(w);
+}
+
+} // anonymous event filter
+
+TipLabel::TipLabel(QWidget *parent, Qt::WindowFlags flags)
+    : QLabel(parent, flags)
+{
+    textLabel = new QLabel(this);
+
     // setAttribute(Qt::WA_NoSystemBackground, true);
     // setAttribute(Qt::WA_TranslucentBackground, true);
+    setWindowFlag(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TransparentForMouseEvents, true);
     setForegroundRole(QPalette::ToolTipText);
     setBackgroundRole(QPalette::ToolTipBase);
     setPalette(QToolTip::palette());
     ensurePolished();
     setMargin(1 + style()->pixelMetric(QStyle::PM_ToolTipLabelFrameWidth, 0, this));
-    setFrameStyle(QFrame::NoFrame);
-    setAlignment(Qt::AlignLeft);
+    setFrameShape(QFrame::NoFrame);
+    setAlignment(Qt::AlignRight);
     setIndent(1);
+    textLabel->setMargin(margin());
+    textLabel->setIndent(indent());
 }
 
-static QPointer<TipLabel> _TipLabel;
-TipLabel *TipLabel::instance(QWidget *parent)
+TipLabel *TipLabel::instance(QWidget *parent, const QPoint &pos, bool overlay)
 {
-    static QPointer<QWidget> _parent;
+    if (!overlay) {
+        if (!_TipLabel) {
+            _TipLabel = new TipLabel(
+                    QApplication::desktop()->screen(getTipScreen(pos, parent)),
+                    Qt::ToolTip | Qt::BypassGraphicsProxyWidget);
+        }
+        return _TipLabel;
+    }
 
     auto findParent = [&](QWidget *widget) -> QWidget* {
         if (!widget)
@@ -1070,34 +1137,49 @@ TipLabel *TipLabel::instance(QWidget *parent)
         return widget;
     };
 
-    if (!_TipLabel) {
-        _TipLabel = new TipLabel(findParent(parent));
-        _parent = parent;
+    static QPointer<QWidget> _parent;
+    if (!_OverlayTipLabel) {
+        _OverlayTipLabel = new TipLabel(findParent(parent));
+        _OverlayTipLabel->setObjectName(QStringLiteral("fc_overlay_tiplabel"));
     } else if (_parent != parent) {
-        _TipLabel->setParent(findParent(parent));
+        _OverlayTipLabel->setParent(findParent(parent));
         _parent = parent;
     }
-    return _TipLabel;
+    return _OverlayTipLabel;
 }
 
 void TipLabel::hideLabel()
 {
-    if (_TipLabel)
-        _TipLabel->hide();
+    auto doHide = [](TipLabel *label) {
+        if (label) {
+            label->setVisible(false);
+            if (label->movie()) {
+                label->movie()->stop();
+                label->setMovie(nullptr);
+            }
+        }
+    };
+    doHide(_TipLabel);
+    doHide(_OverlayTipLabel);
 }
 
-void TipLabel::set(const QString &text)
+void TipLabel::refreshIcons()
 {
-    setWordWrap(Qt::mightBeRichText(text));
-    setText(text);
+    _TipIconCache.clear();
+}
+
+void TipLabel::set(const QString &text, const QString &iconPath)
+{
+    textLabel->setWordWrap(Qt::mightBeRichText(text));
+    textLabel->setText(text);
     if (fontSize != ViewParams::getPreselectionToolTipFontSize()) {
         fontSize = ViewParams::getPreselectionToolTipFontSize();
         if (!fontSize)
-            setFont(QFont());
+            textLabel->setFont(QFont());
         else {
             QFont font = this->font();
             font.setPointSize(fontSize);
-            setFont(font);
+            textLabel->setFont(font);
         }
     }
             
@@ -1106,7 +1188,68 @@ void TipLabel::set(const QString &text)
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
-    resize(sizeHint() + extra);
+
+    textLabel->resize(textLabel->sizeHint());
+    QSize s(textLabel->sizeHint() + extra);
+    resize(s);
+
+    if (iconPath.isEmpty()) {
+        setMovie(nullptr);
+        return;
+    }
+    if (_TipIconSize != ViewParams::getToolTipIconSize()) {
+        _TipIconSize = ViewParams::getToolTipIconSize();
+        _TipIconCache.clear();
+    }
+    auto entry = _TipIconCache.object(iconPath);
+    if (!entry) {
+        QFileInfo finfo(iconPath + QStringLiteral(".gif"));
+        if (finfo.exists()) {
+            entry = new TipIconEntry;
+            entry->animation.setFileName(finfo.filePath());
+            _TipIconCache.insert(iconPath, entry, std::min(128, entry->animation.frameCount()));
+        }
+        else {
+            QPixmap pixmap;
+            QByteArray path(iconPath.toUtf8());
+            BitmapFactory().findPixmapInCache(path.constData(), pixmap);
+            if (pixmap.height() != _TipIconSize) {
+                QSize size(_TipIconSize, _TipIconSize);
+                if (pixmap.width() && pixmap.height())
+                    size.setWidth(_TipIconSize / pixmap.height() * pixmap.width());
+                if (iconPath.endsWith(QStringLiteral(".svg"), Qt::CaseInsensitive))
+                    pixmap = BitmapFactory().pixmapFromSvg(path.constData(), size);
+                else
+                    pixmap = pixmap.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            }
+            if (!pixmap.isNull()) {
+                entry = new TipIconEntry;
+                entry->pixmap = pixmap;
+                _TipIconCache.insert(iconPath, entry, 1);
+            }
+        }
+    }
+
+    QSize iconSize;
+    if (entry && !entry->pixmap.isNull()) {
+        this->setPixmap(entry->pixmap);
+        iconSize = entry->pixmap.size();
+    } else if (entry && entry->animation.isValid()) {
+        this->setMovie(&entry->animation);
+        entry->animation.start();
+        iconSize = entry->animation.currentImage().size();
+    } else {
+        this->setMovie(nullptr);
+        return;
+    }
+
+    iconSize.setHeight(std::max(iconSize.height(), _TipIconSize));
+    if (s.height() < iconSize.height())
+        s.setHeight(iconSize.height());
+    else
+        iconSize.setHeight(s.height());
+    s.setWidth(s.width() + iconSize.width());
+    this->resize(s);
 }
 
 void TipLabel::paintEvent(QPaintEvent *ev)
@@ -1143,28 +1286,17 @@ ToolTip* ToolTip::instance()
     return inst;
 }
 
-ToolTip::ToolTip() : installed(false), hidden(true)
+ToolTip::ToolTip() : hidden(true)
 {
+    tooltipTimer.setSingleShot(true);
+    hideTimer.setSingleShot(true);
+    connect(&tooltipTimer, &QTimer::timeout, [this]() {onShowTimer();});
+    connect(&hideTimer, &QTimer::timeout, [this]() {onHideTimer();});
+    qApp->installEventFilter(this);
 }
 
 ToolTip::~ToolTip()
 {
-}
-
-void ToolTip::installEventFilter()
-{
-    if (this->installed)
-        return;
-    qApp->installEventFilter(this);
-    this->installed = true;
-}
-
-void ToolTip::removeEventFilter()
-{
-    if (!this->installed)
-        return;
-    qApp->removeEventFilter(this);
-    this->installed = false;
 }
 
 void ToolTip::showText(const QPoint & pos,
@@ -1175,84 +1307,177 @@ void ToolTip::showText(const QPoint & pos,
 {
     ToolTip* tip = instance();
     if (!text.isEmpty()) {
-        // install this object to filter timer events for the tooltip label
-        tip->installEventFilter();
         tip->pos = pos;
         tip->text = text;
+        tip->iconPath.clear();
         tip->w = w;
         tip->corner = corner;
         tip->overlay = overlay;
         // show text with a short delay
-        tip->tooltipTimer.start(80, tip);
+        tip->tooltipTimer.start(80);
         tip->displayTime.start();
+        tip->hideTimer.stop();
     }
     else {
         hideText();
     }
 }
 
-void ToolTip::hideText()
+void ToolTip::showText(const QPoint & pos,
+                       const QString & text,
+                       const QString & iconPath,
+                       QWidget * w)
 {
-    instance()->removeEventFilter();
-    instance()->tooltipTimer.stop();
-    TipLabel::hideLabel();
-    QToolTip::hideText();
+    ToolTip* tip = instance();
+    if (!text.isEmpty() || !iconPath.isEmpty()) {
+        tip->pos = pos;
+        tip->text = text;
+        tip->iconPath = iconPath;
+        tip->corner = NoCorner;
+        tip->w = w;
+        tip->overlay = false;
+        // show text with a short delay
+        tip->tooltipTimer.start(80);
+        tip->displayTime.start();
+        tip->hideTimer.stop();
+    }
+    else {
+        hideText();
+    }
 }
 
-void ToolTip::timerEvent(QTimerEvent *e)
+void ToolTip::hideText(int delay)
 {
-    if (e->timerId() == tooltipTimer.timerId()) {
-        if (overlay) {
-            QToolTip::hideText();
-            auto tipLabel = TipLabel::instance(this->w);
-            QWidget *parent = tipLabel->parentWidget();
-            if (!parent)
-                return;
-            tipLabel->move(parent->mapFromGlobal(pos));
-            tipLabel->set(text);
-            QPoint pos;
-            if (!this->w)
-                pos = parent->mapFromGlobal(this->pos);
-            else {
-                pos = parent->mapFromGlobal(this->w->mapToGlobal(QPoint()));
-                auto size = this->w->size();
-                switch(this->corner) {
-                case TopLeft:
-                    pos += this->pos;
-                    break;
-                case TopRight:
-                    pos.setX(pos.x() + size.width() - tipLabel->width() - this->pos.x());
-                    pos.setY(pos.y() + this->pos.y());
-                    break;
-                case BottomLeft:
-                    pos.setX(pos.x() + this->pos.x());
-                    pos.setY(pos.y() + size.height() - tipLabel->height() - this->pos.y());
-                    break;
-                case BottomRight:
-                    pos.setX(pos.x() + size.width() - tipLabel->width() - this->pos.x());
-                    pos.setY(pos.y() + size.height() - tipLabel->height() - this->pos.y());
-                    break;
-                default:
-                    pos = parent->mapFromGlobal(this->pos);
-                }
-                tipLabel->move(pos);
-            }
-            tipLabel->show();
-            tipLabel->raise();
-        } else {
-            TipLabel::hideLabel();
-            QToolTip::showText(pos, text, w);
-        }
-        tooltipTimer.stop();
-        displayTime.restart();
+    if (delay > 0) {
+        instance()->tooltipTimer.stop();
+        instance()->hideTimer.start(delay);
+        return;
     }
+    instance()->tooltipTimer.stop();
+    TipLabel::hideLabel();
+    hideQtToolTips();
+}
+
+void ToolTip::onShowTimer()
+{
+    if (ViewParams::getToolTipIconSize() > 0) {
+        auto tipLabel = TipLabel::instance(w, pos, overlay);
+        QWidget *parent = tipLabel->parentWidget();
+        tipLabel->set(text, iconPath);
+        if (!this->w || this->corner == NoCorner) {
+            QRect screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
+            pos += QPoint(2, 16);
+            if (pos.x() + tipLabel->width() > screen.x() + screen.width())
+                pos.rx() -= 4 + tipLabel->width();
+            if (pos.y() + tipLabel->height() > screen.y() + screen.height())
+                pos.ry() -= 24 + tipLabel->height();
+            if (pos.y() < screen.y())
+                pos.setY(screen.y());
+            if (pos.x() + tipLabel->width() > screen.x() + screen.width())
+                pos.setX(screen.x() + screen.width() - tipLabel->width());
+            if (pos.x() < screen.x())
+                pos.setX(screen.x());
+            if (pos.y() + tipLabel->height() > screen.y() + screen.height())
+                pos.setY(screen.y() + screen.height() - tipLabel->height());
+            if (parent)
+                pos = parent->mapFromGlobal(pos);
+            tipLabel->move(pos);
+        } else if (!parent)
+            return;
+        else {
+            pos = parent->mapFromGlobal(this->w->mapToGlobal(QPoint()));
+            auto size = this->w->size();
+            switch(this->corner) {
+            case TopLeft:
+                pos += this->pos;
+                break;
+            case TopRight:
+                pos.setX(pos.x() + size.width() - tipLabel->width() - this->pos.x());
+                pos.setY(pos.y() + this->pos.y());
+                break;
+            case BottomLeft:
+                pos.setX(pos.x() + this->pos.x());
+                pos.setY(pos.y() + size.height() - tipLabel->height() - this->pos.y());
+                break;
+            case BottomRight:
+                pos.setX(pos.x() + size.width() - tipLabel->width() - this->pos.x());
+                pos.setY(pos.y() + size.height() - tipLabel->height() - this->pos.y());
+                break;
+            default:
+                break;
+            }
+            tipLabel->move(pos);
+        }
+        hideQtToolTips();
+        if (_TipLabel && _TipLabel != tipLabel)
+            _TipLabel->hide();
+        else if (_OverlayTipLabel && _OverlayTipLabel != tipLabel)
+            _OverlayTipLabel->hide();
+        tipLabel->show();
+        tipLabel->raise();
+    } else {
+        TipLabel::hideLabel();
+        QToolTip::showText(pos, text, w);
+    }
+    hideTimer.stop();
+    tooltipTimer.stop();
+    displayTime.restart();
+}
+
+void ToolTip::onHideTimer()
+{
+    hideTimer.stop();
+    tooltipTimer.stop();
+    TipLabel::hideLabel();
+}
+
+bool ToolTip::checkToolTip(QWidget *w, QHelpEvent *helpEvent) {
+    if (ViewParams::getToolTipIconSize() <= 0)
+        return false;
+    QString tooltip;
+    if (auto menu = qobject_cast<QMenu*>(w)) {
+        if (const QAction *action = menu->actionAt(helpEvent->pos()))
+            tooltip = action->toolTip();
+    }
+    else if (auto tabbar = qobject_cast<QTabBar*>(w)) {
+        int index = tabbar->tabAt(helpEvent->pos());
+        if (index >= 0)
+            tooltip = tabbar->tabToolTip(index);
+    }
+    else if (qobject_cast<QAbstractItemView*>(w))
+        return false;
+    else
+        tooltip = w->toolTip();
+
+    if (tooltip.isEmpty()) {
+        ToolTip::hideText(100);
+        return false;
+    }
+
+    QString key = QStringLiteral("<img src='");
+    int index = tooltip.indexOf(key);
+    QString iconPath;
+    if (index >= 0) {
+        int end = tooltip.indexOf(QLatin1Char('\''), index + key.size());
+        if (end >= 0) {
+            iconPath = tooltip.mid(index+key.size(), end-index-key.size());
+            iconPath = QUrl::fromPercentEncoding(iconPath.toUtf8());
+            end = tooltip.indexOf(QLatin1Char('>'), end+1);
+            if (end < 0)
+                iconPath.clear();
+            else
+                tooltip = tooltip.left(index) + tooltip.right(tooltip.size() - end - 1);
+        }
+    }
+    ToolTip::showText(helpEvent->globalPos(), tooltip, iconPath, w);
+    return true;
 }
 
 bool ToolTip::eventFilter(QObject* o, QEvent*e)
 {
     if (!o->isWidgetType())
         return false;
-
+    auto w = static_cast<QWidget*>(o);
     switch(e->type()) {
     case QEvent::MouseButtonPress:
         hideText();
@@ -1261,21 +1486,31 @@ bool ToolTip::eventFilter(QObject* o, QEvent*e)
         if (static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape)
             hideText();
         break;
+    case QEvent::ToolTip:
+        return checkToolTip(w, static_cast<QHelpEvent*>(e));
+    case QEvent::Leave:
+        if (!hideTimer.isActive())
+            hideTimer.start(300);
+        break;
+    case QEvent::Timer:
+        if (static_cast<QTimerEvent*>(e)->timerId() == hideTimer.timerId())
+            break;
+        // fall through
     case QEvent::Show:
     case QEvent::Hide:
-    case QEvent::Timer:
         if (auto label = qobject_cast<QLabel*>(o)) {
-            // This is a trick to circumvent that the tooltip gets hidden immediately
-            // after it gets visible. We just filter out all timer events to keep the
-            // label visible.
+            if (label->objectName() == QStringLiteral("qtooltip_label")) {
+                // This is a trick to circumvent that the tooltip gets hidden immediately
+                // after it gets visible. We just filter out all timer events to keep the
+                // label visible.
 
-            // Ignore the timer events to prevent from being closed
-            if ((label->windowFlags() & Qt::ToolTip) || o == _TipLabel) {
+                // Ignore the timer events to prevent from being closed
                 if (e->type() == QEvent::Show) {
+                    TipLabel::hideLabel();
+                    _QtTipLabels.insert(std::make_pair(label, label));
                     this->hidden = false;
                 }
                 else if (e->type() == QEvent::Hide) {
-                    removeEventFilter();
                     this->hidden = true;
                 }
                 else if (e->type() == QEvent::Timer &&

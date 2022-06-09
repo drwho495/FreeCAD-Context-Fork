@@ -31,7 +31,7 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QPlainTextEdit>
-#include <QBasicTimer>
+#include <QTimer>
 #include <QElapsedTimer>
 #include <QToolButton>
 #include <QModelIndex>
@@ -39,6 +39,7 @@
 #include "ExpressionBinding.h"
 
 class QTextEdit;
+class QHelpEvent;
 
 namespace Gui {
 class PrefCheckBox;
@@ -394,15 +395,17 @@ class GuiExport TipLabel: public QLabel
 {
     Q_OBJECT
 public:
-    TipLabel(QWidget *parent);
-    static TipLabel * instance(QWidget *parent);
+    TipLabel(QWidget *parent, Qt::WindowFlags flags = Qt::WindowFlags());
+    static TipLabel *instance(QWidget *parent, const QPoint &pos, bool overlay);
     static void hideLabel();
-    void set(const QString &);
+    static void refreshIcons();
+    void set(const QString &, const QString &iconPath = QString());
 protected:
     void paintEvent(QPaintEvent *e);
     void resizeEvent(QResizeEvent *e);
 private:
     int fontSize = 0;
+    QLabel *textLabel = nullptr;
 };
 
 // ----------------------------------------------------------------------
@@ -429,29 +432,34 @@ public:
                          QWidget * w = 0,
                          bool overlay = false,
                          Corner corner = NoCorner);
-    static void hideText();
+    static void showText(const QPoint & pos,
+                         const QString & text,
+                         const QString & iconPath,
+                         QWidget * w = 0);
+    static void hideText(int delay=0);
 
-protected:
     static ToolTip* instance();
 
+protected:
     ToolTip();
     virtual ~ToolTip();
 
-    void timerEvent(QTimerEvent *e);
+    void onShowTimer();
+    void onHideTimer();
     bool eventFilter(QObject* o, QEvent*e);
-
-    void installEventFilter();
-    void removeEventFilter();
+    static bool checkToolTip(QWidget *w, QHelpEvent *e);
 
 private:
-    bool installed, hidden;
+    bool hidden;
     static ToolTip* inst;
     bool overlay = false;
     QString text;
+    QString iconPath;
     QPoint pos;
     Corner corner;
     QPointer<QWidget> w; // need guard in case widget gets destroyed
-    QBasicTimer tooltipTimer;
+    QTimer tooltipTimer;
+    QTimer hideTimer;
     QElapsedTimer displayTime;
 };
 

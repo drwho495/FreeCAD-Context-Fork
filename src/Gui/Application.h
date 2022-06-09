@@ -209,7 +209,7 @@ public:
     bool activateWorkbench(const char* name);
     bool initializeWorkbench(const char *name);
     const char *initializingWorkbench() const;
-    QPixmap workbenchIcon(const QString&) const;
+    QPixmap workbenchIcon(const QString&, QString *iconPath=nullptr) const;
     QString workbenchToolTip(const QString&) const;
     QString workbenchMenuText(const QString&) const;
     QStringList workbenches(void) const;

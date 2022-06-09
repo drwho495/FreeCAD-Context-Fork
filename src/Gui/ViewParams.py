@@ -437,6 +437,12 @@ Params = [
     ParamInt('DefaultDrawStyle', 0, 'Default draw style of a new document',
         title='Default draw style',
         proxy=ParamComboBox(items=[(item[0], item[1]) for item in DrawStyles])),
+    ParamInt('ToolTipIconSize', 64,
+        title="Tool tip icon size",
+        doc='Specifies the size of static icon image in tooltip. GIF animation\n'
+            'will be shown in its original size. You can disable all images in\n'
+            'the tooltip by setting this option to zero.',
+        proxy=ParamSpinBox(0, 512, 10)),
 ]
 
 def declare_begin():

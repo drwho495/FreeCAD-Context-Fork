@@ -116,7 +116,8 @@ public:
                                  const QString &title,
                                  const QFont &font,
                                  const QString &shortcut,
-                                 const Command *cmd = nullptr);
+                                 const Command *cmd = nullptr,
+                                 QString iconPath = QString());
 
     /** Obtain tool tip of a given command
      * @param cmd: input command
@@ -184,7 +185,6 @@ public Q_SLOTS:
     void onActivated ();
     void onToggled(bool);
     void onActivated (QAction*);
-    void onHovered   (QAction*);
 
 protected:
     QActionGroup* _group;

@@ -28,6 +28,7 @@
 #include <memory>
 
 class QTabWidget;
+class QComboBox;
 
 namespace Gui {
 
@@ -61,9 +62,11 @@ public:
 
 protected:
     void changeEvent(QEvent *e);
+    void updateLanguage();
 
 private:
     void setRecentFileSize();
+    void setupToolBarIconSize(QComboBox *comboBox);
 
 private:
     std::unique_ptr<Ui_DlgGeneral> ui;

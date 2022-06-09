@@ -207,6 +207,7 @@ void Action::setIcon (const QIcon & icon)
     _action->setIcon(icon);
     if (!icon.isNull())
         ToolBarManager::getInstance()->checkToolbarIconSize(_action);
+    setToolTip(_tooltip, _title);
 }
 
 QIcon Action::icon () const
@@ -317,7 +318,8 @@ QString Action::createToolTip(QString _tooltip,
                               const QString & title,
                               const QFont &font,
                               const QString &sc,
-                              const Command *pcCmd)
+                              const Command *pcCmd,
+                              QString iconPath)
 {
     QString text = cleanTitle(title);
 
@@ -344,34 +346,54 @@ QString Action::createToolTip(QString _tooltip,
 
     QString cmdName;
     if (pcCmd && pcCmd->getName()) {
-        cmdName = QString::fromLatin1(pcCmd->getName());
+        auto pCmd = pcCmd;
+        cmdName = QString::fromUtf8(pcCmd->getName());
         if (auto groupcmd = dynamic_cast<const GroupCommand*>(pcCmd)) {
             if (auto act = pcCmd->getAction()) {
                 int idx = act->property("defaultAction").toInt();
                 auto cmd = groupcmd->getCommand(idx);
-                if (cmd && cmd->getName())
+                if (cmd && cmd->getName()) {
                     cmdName = QStringLiteral("%1 (%2:%3)")
                         .arg(QString::fromLatin1(cmd->getName()))
                         .arg(cmdName)
                         .arg(idx);
+                    pCmd = cmd;
+                }
+            }
+        }
+        if (iconPath.isEmpty() && ViewParams::getToolTipIconSize() > 0) {
+            if (auto pixmap = pCmd->getPixmap()) {
+                auto path = BitmapFactory().getIconPath(pixmap);
+                if (path)
+                    iconPath = QString::fromUtf8(path);
             }
         }
         cmdName = QStringLiteral("<p style='white-space:pre; margin-top:0.5em;'><i>%1</i></p>")
             .arg(cmdName.toHtmlEscaped());
     }
 
+    QString img;
+    if (!iconPath.isEmpty() && ViewParams::getToolTipIconSize() > 0) {
+        img = QStringLiteral("<img src='%1' style='float:right'/>")
+            .arg(iconPath.toHtmlEscaped());
+        if (cmdName.size() > title.size() + shortcut.size()) {
+            tooltip = img + tooltip;
+            img.clear();
+        }
+    }
+
     if (shortcut.size() && _tooltip.endsWith(shortcut))
         _tooltip.resize(_tooltip.size() - shortcut.size());
 
     if (_tooltip.isEmpty()
-            || _tooltip == text
-            || _tooltip == title)
+            || _tooltip.compare(text, Qt::CaseInsensitive)==0
+            || _tooltip.compare(title, Qt::CaseInsensitive)==0)
     {
-        return tooltip + cmdName;
+        return tooltip + cmdName + img;
     }
     if (Qt::mightBeRichText(_tooltip)) {
         // already rich text, so let it be to avoid duplicated unwrapping
-        return tooltip + _tooltip + cmdName;
+        return img + tooltip + _tooltip + cmdName;
     }
 
     tooltip += QString::fromLatin1(
@@ -400,7 +422,9 @@ QString Action::createToolTip(QString _tooltip,
                 + _tooltip.right(_tooltip.size()-index).trimmed().toHtmlEscaped();
         }
     }
-    return tooltip + cmdName;
+    if (img.size() && _tooltip.size() < text.size() + shortcut.size())
+        return tooltip + cmdName + img;
+    return img + tooltip + cmdName;
 }
 
 QString Action::toolTip() const
@@ -520,7 +544,6 @@ ActionGroup::ActionGroup ( Command* pcCmd,QObject * parent)
 {
     _group = new QActionGroup(this);
     connect(_group, SIGNAL(triggered(QAction*)), this, SLOT(onActivated (QAction*)));
-    connect(_group, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
 }
 
 ActionGroup::~ActionGroup()
@@ -561,7 +584,6 @@ void ActionGroup::addTo(QWidget *w)
             QMenu* menu = new QMenu(w);
             menu->addActions(actions());
             tb->setMenu(menu);
-            //tb->addActions(_group->actions());
             ToolBarManager::getInstance()->checkToolbarIconSize(static_cast<QToolBar*>(w));
         }
         else {
@@ -700,11 +722,6 @@ void ActionGroup::onActivated (QAction* a)
 #endif
 
     _pcCmd->invoke(index, Command::TriggerChildAction);
-}
-
-void ActionGroup::onHovered (QAction *a)
-{
-    Gui::ToolTip::showText(QCursor::pos(), a->toolTip());
 }
 
 
@@ -1078,17 +1095,17 @@ void WorkbenchTabWidget::updateWorkbenches()
         if (!action->isVisible())
             continue;
         bool changed = true;
+        QString wb = action->objectName();
         if (i >= this->count())
             this->addTab(new QWidget(), action->icon(), QString());
         else if (tab->tabData(i).toString() == action->objectName())
             changed = false;
 
+        QString iconPath; 
+        QPixmap px = Application::Instance->workbenchIcon(wb, &iconPath);
+
         tab->setTabIcon(i, action->icon());
-        tab->setTabToolTip(i, 
-                Action::createToolTip(action->toolTip(),
-                                        action->text(),
-                                        action->font(),
-                                        action->shortcut().toString(QKeySequence::NativeText)));
+        tab->setTabToolTip(i, action->toolTip());
         if (changed) {
             tab->setTabData(i, action->objectName());
         }
@@ -1312,17 +1329,21 @@ void WorkbenchGroup::setWorkbenchData(int i, const QString& wb)
 {
     QList<QAction*> workbenches = _group->actions();
     QString name = Application::Instance->workbenchMenuText(wb);
-    QPixmap px = Application::Instance->workbenchIcon(wb);
+    QString iconPath;
+    QPixmap px = Application::Instance->workbenchIcon(wb, &iconPath);
     QString tip = Application::Instance->workbenchToolTip(wb);
-
     workbenches[i]->setObjectName(wb);
     workbenches[i]->setIcon(px);
     workbenches[i]->setText(name);
-    workbenches[i]->setToolTip(tip);
     workbenches[i]->setStatusTip(tr("Select the '%1' workbench").arg(name));
     workbenches[i]->setVisible(true);
-    if (i < 9)
-        workbenches[i]->setShortcut(QKeySequence(QString::fromUtf8("W,%1").arg(i+1)));
+    QString shortcut;
+    if (i < 9) {
+        shortcut = QString::fromUtf8("W,%1").arg(i+1);
+        workbenches[i]->setShortcut(QKeySequence(shortcut));
+    }
+    workbenches[i]->setToolTip(Action::createToolTip(
+                tip, name, workbenches[i]->font(), shortcut, nullptr, iconPath));
 }
 
 void WorkbenchGroup::refreshWorkbenchList()
@@ -1394,32 +1415,20 @@ void WorkbenchGroup::slotActivateWorkbench(const char* /*name*/)
 
 void WorkbenchGroup::slotAddWorkbench(const char* name)
 {
-    QList<QAction*> workbenches = _group->actions();
-    QAction* action = nullptr;
-    for (QList<QAction*>::Iterator it = workbenches.begin(); it != workbenches.end(); ++it) {
-        if (!(*it)->isVisible()) {
-            action = *it;
-            break;
+    QString wb = QString::fromUtf8(name);
+    int index = 0;
+    for (QAction *action : _group->actions()) {
+        if (!action->isVisible()) {
+            setWorkbenchData(index, wb);
+            return;
         }
+        ++index;
     }
 
-    if (!action) {
-        int index = workbenches.size();
-        action = _group->addAction(QLatin1String(""));
-        action->setCheckable(true);
-        action->setData(QVariant(index)); // set the index
-    }
-
-    QString wb = QString::fromLatin1(name);
-    QPixmap px = Application::Instance->workbenchIcon(wb);
-    QString text = Application::Instance->workbenchMenuText(wb);
-    QString tip = Application::Instance->workbenchToolTip(wb);
-    action->setIcon(px);
-    action->setObjectName(wb);
-    action->setText(text);
-    action->setToolTip(tip);
-    action->setStatusTip(tr("Select the '%1' workbench").arg(wb));
-    action->setVisible(true); // do this at last
+    auto action = _group->addAction(QStringLiteral(""));
+    action->setCheckable(true);
+    action->setData(QVariant(index)); // set the index
+    setWorkbenchData(index, wb);
 }
 
 void WorkbenchGroup::slotRemoveWorkbench(const char* name)
