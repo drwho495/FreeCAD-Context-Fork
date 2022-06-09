@@ -440,6 +440,9 @@ Params = [
     ParamInt('DefaultDrawStyle', 0, 'Default draw style of a new document',
         title='Default draw style',
         proxy=ParamComboBox(items=[(item[0], item[1]) for item in DrawStyles])),
+    ParamInt('ToolTipIconSize', 64,
+        title="Tool tip icon size",
+        proxy=ParamSpinBox(0, 512, 10)),
 ]
 
 def declare_begin():

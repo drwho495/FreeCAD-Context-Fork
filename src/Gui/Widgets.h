@@ -478,7 +478,8 @@ public:
     TipLabel(QWidget *parent);
     static TipLabel * instance(QWidget *parent);
     static void hideLabel();
-    void set(const QString &);
+    static void refreshIcons();
+    void set(const QString &, const char *iconName = nullptr);
 protected:
     void paintEvent(QPaintEvent *e);
     void resizeEvent(QResizeEvent *e);

@@ -231,6 +231,7 @@ public:
     bool OverrideSelectability;
     unsigned long SelectionStackSize;
     long DefaultDrawStyle;
+    long ToolTipIconSize;
 
     // Auto generated code (Tools/params_utils.py:199)
     ViewParamsP() {
@@ -587,6 +588,8 @@ public:
         funcs["SelectionStackSize"] = &ViewParamsP::updateSelectionStackSize;
         DefaultDrawStyle = handle->GetInt("DefaultDrawStyle", 0);
         funcs["DefaultDrawStyle"] = &ViewParamsP::updateDefaultDrawStyle;
+        ToolTipIconSize = handle->GetInt("ToolTipIconSize", 64);
+        funcs["ToolTipIconSize"] = &ViewParamsP::updateToolTipIconSize;
     }
 
     // Auto generated code (Tools/params_utils.py:213)
@@ -1352,6 +1355,10 @@ public:
     // Auto generated code (Tools/params_utils.py:234)
     static void updateDefaultDrawStyle(ViewParamsP *self) {
         self->DefaultDrawStyle = self->handle->GetInt("DefaultDrawStyle", 0);
+    }
+    // Auto generated code (Tools/params_utils.py:234)
+    static void updateToolTipIconSize(ViewParamsP *self) {
+        self->ToolTipIconSize = self->handle->GetInt("ToolTipIconSize", 64);
     }
 };
 
@@ -6242,7 +6249,34 @@ void ViewParams::removeDefaultDrawStyle() {
     instance()->handle->RemoveInt("DefaultDrawStyle");
 }
 
-// Auto generated code (Gui/ViewParams.py:475)
+// Auto generated code (Tools/params_utils.py:284)
+const char *ViewParams::docToolTipIconSize() {
+    return "";
+}
+
+// Auto generated code (Tools/params_utils.py:290)
+const long & ViewParams::getToolTipIconSize() {
+    return instance()->ToolTipIconSize;
+}
+
+// Auto generated code (Tools/params_utils.py:296)
+const long & ViewParams::defaultToolTipIconSize() {
+    const static long def = 64;
+    return def;
+}
+
+// Auto generated code (Tools/params_utils.py:303)
+void ViewParams::setToolTipIconSize(const long &v) {
+    instance()->handle->SetInt("ToolTipIconSize",v);
+    instance()->ToolTipIconSize = v;
+}
+
+// Auto generated code (Tools/params_utils.py:310)
+void ViewParams::removeToolTipIconSize() {
+    instance()->handle->RemoveInt("ToolTipIconSize");
+}
+
+// Auto generated code (Gui/ViewParams.py:478)
 const std::vector<QString> ViewParams::AnimationCurveTypes = {
     QStringLiteral("Linear"),
     QStringLiteral("InQuad"),
@@ -6287,7 +6321,7 @@ const std::vector<QString> ViewParams::AnimationCurveTypes = {
     QStringLiteral("OutInBounce"),
 };
 
-// Auto generated code (Gui/ViewParams.py:483)
+// Auto generated code (Gui/ViewParams.py:486)
 static const char *DrawStyleNames[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "As Is"),
     QT_TRANSLATE_NOOP("DrawStyle", "Points"),
@@ -6300,7 +6334,7 @@ static const char *DrawStyleNames[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "Shadow"),
 };
 
-// Auto generated code (Gui/ViewParams.py:492)
+// Auto generated code (Gui/ViewParams.py:495)
 static const char *DrawStyleDocs[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "Draw style, normal display mode"),
     QT_TRANSLATE_NOOP("DrawStyle", "Draw style, show points only"),
@@ -6314,7 +6348,7 @@ static const char *DrawStyleDocs[] = {
 };
 
 namespace Gui {
-// Auto generated code (Gui/ViewParams.py:501)
+// Auto generated code (Gui/ViewParams.py:504)
 const char *drawStyleNameFromIndex(int i)
 {
     if (i < 0 || i>= 9)
@@ -6322,7 +6356,7 @@ const char *drawStyleNameFromIndex(int i)
     return DrawStyleNames[i];
 }
 
-// Auto generated code (Gui/ViewParams.py:510)
+// Auto generated code (Gui/ViewParams.py:513)
 int drawStyleIndexFromName(const char *name)
 {
     if (!name)
@@ -6334,7 +6368,7 @@ int drawStyleIndexFromName(const char *name)
     return -1;
 }
 
-// Auto generated code (Gui/ViewParams.py:523)
+// Auto generated code (Gui/ViewParams.py:526)
 const char *drawStyleDocumentation(int i)
 {
     if (i < 0 || i>= 9)

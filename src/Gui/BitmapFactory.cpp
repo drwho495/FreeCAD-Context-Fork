@@ -104,7 +104,9 @@ public:
     struct XpmInfo {
         QPixmap xpm;
         QPixmap pixmap;
+        std::string pixmapPath;
         QPixmap styledPixmap;
+        std::string styledPath;
         bool styled = false;
         std::set<std::string> context;
 
@@ -220,18 +222,36 @@ void BitmapFactoryInst::addXPM(const char* name, const char** pXPM)
     d->xpmCache[name].xpm = QPixmap(pXPM);
 }
 
-void BitmapFactoryInst::addPixmapToCache(const char* name, const QPixmap& icon, bool styled, const char *ctx)
+void BitmapFactoryInst::addPixmapToCache(const char* name,
+                                         const QPixmap& icon,
+                                         const char *path,
+                                         bool styled,
+                                         const char *ctx)
 {
     auto &info = d->xpmCache[name];
     info.checkContext(ctx);
     if (styled) {
         info.styled = styled;
         info.styledPixmap = icon;
-    } else
+        info.styledPath = path ? path : "";
+    } else {
         info.pixmap = icon;
+        info.pixmapPath = path ? path : "";
+    }
 }
 
-bool BitmapFactoryInst::findPixmapInCache(const char* name, QPixmap& px, QPixmap *original) const
+const char *BitmapFactoryInst::getIconPath(const char *name) const
+{
+    auto it = d->xpmCache.find(name);
+    if (it == d->xpmCache.end())
+        return "";
+    return it->styledPath.size() ? it->styledPath.c_str() : it->pixmapPath.c_str();
+}
+
+bool BitmapFactoryInst::findPixmapInCache(const char* name,
+                                          QPixmap& px,
+                                          QPixmap *original,
+                                          std::string *path) const
 {
     auto it = d->xpmCache.find(name);
     if (it != d->xpmCache.end()) {
@@ -244,10 +264,14 @@ bool BitmapFactoryInst::findPixmapInCache(const char* name, QPixmap& px, QPixmap
                     *original = it->xpm;
             }
             px = it->styledPixmap;
+            if (path)
+                *path = it->styledPath;
         } else if (!it->pixmap.isNull())
             px = it->pixmap;
         else
             px = it->xpm;
+        if (path && path->empty())
+            *path = it->pixmapPath;
         return !px.isNull();
     }
     return false;
@@ -326,7 +350,10 @@ bool BitmapFactoryInst::loadPixmap(const QString& filename, QPixmap& icon) const
     return !icon.isNull();
 }
 
-QPixmap BitmapFactoryInst::pixmap(const char* name, bool silent, QPixmap *original) const
+QPixmap BitmapFactoryInst::pixmap(const char* name,
+                                  bool silent,
+                                  QPixmap *original,
+                                  std::string *iconpath) const
 {
     if (!name || *name == '\0')
         return QPixmap();
@@ -344,7 +371,7 @@ QPixmap BitmapFactoryInst::pixmap(const char* name, bool silent, QPixmap *origin
         name = _name.c_str();
     }
     QPixmap icon;
-    if (findPixmapInCache(name, icon, original))
+    if (findPixmapInCache(name, icon, original, iconpath))
         return icon;
 
     QString path;
@@ -377,7 +404,12 @@ QPixmap BitmapFactoryInst::pixmap(const char* name, bool silent, QPixmap *origin
     if (!icon.isNull()) {
         // "-|" is a marker used to identify path in context, used in
         // DlgIconBrowser
-        const_cast<BitmapFactoryInst*>(this)->addPixmapToCache(name, icon, false, 
+        std::string _iconpath;
+        if (!iconpath)
+            iconpath = &_iconpath;
+        *iconpath = path.toUtf8().constData();
+        const_cast<BitmapFactoryInst*>(this)->addPixmapToCache(
+                name, icon, iconpath->c_str(), false, 
                 (path+QStringLiteral("-|")).toUtf8().constData());
         return icon;
     }

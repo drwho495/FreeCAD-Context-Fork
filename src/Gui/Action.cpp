@@ -340,20 +340,41 @@ QString Action::createToolTip(QString _tooltip,
             "<p style='white-space:pre; margin-bottom:0.5em;'><b>%1</b>%2</p>").arg(
             text.toHtmlEscaped(), shortcut.toHtmlEscaped());
 
+    QString img;
     QString cmdName;
     if (pcCmd && pcCmd->getName()) {
+        auto pCmd = pcCmd;
         cmdName = QString::fromUtf8(pcCmd->getName());
         if (auto groupcmd = dynamic_cast<const GroupCommand*>(pcCmd)) {
             if (auto act = pcCmd->getAction()) {
                 int idx = act->property("defaultAction").toInt();
                 auto cmd = groupcmd->getCommand(idx);
-                if (cmd && cmd->getName())
+                if (cmd && cmd->getName()) {
                     cmdName = QStringLiteral("%1 (%2:%3)")
                         .arg(QString::fromUtf8(cmd->getName()))
                         .arg(cmdName)
                         .arg(idx);
+                    pCmd = cmd;
+                }
             }
         }
+        if (ViewParams::getToolTipIconSize() > 0) {
+            if (auto pixmap = pCmd->getPixmap()) {
+                auto path = BitmapFactory().getIconPath(pixmap);
+                if (path && path[0]) {
+                    QString width;
+                    if (boost::iends_with(path, ".svg"))
+                        width = QStringLiteral("width='%1'").arg(ViewParams::getToolTipIconSize());
+                    img = QStringLiteral("<img src='%1' %2 style='float:right'/>")
+                        .arg(QString::fromUtf8(path)).arg(width);
+                    if (cmdName.size() > title.size() + shortcut.size()) {
+                        tooltip = img + tooltip;
+                        img.clear();
+                    }
+                }
+            }
+        }
+
         cmdName = QStringLiteral("<p style='white-space:pre; margin-top:0.5em;'><i>%1</i></p>")
             .arg(cmdName.toHtmlEscaped());
     }
@@ -362,14 +383,14 @@ QString Action::createToolTip(QString _tooltip,
         _tooltip.resize(_tooltip.size() - shortcut.size());
 
     if (_tooltip.isEmpty()
-            || _tooltip == text
-            || _tooltip == title)
+            || _tooltip.compare(text, Qt::CaseInsensitive)==0
+            || _tooltip.compare(title, Qt::CaseInsensitive)==0)
     {
-        return tooltip + cmdName;
+        return tooltip + cmdName + img;
     }
     if (Qt::mightBeRichText(_tooltip)) {
         // already rich text, so let it be to avoid duplicated unwrapping
-        return tooltip + _tooltip + cmdName;
+        return img + tooltip + _tooltip + cmdName;
     }
 
     tooltip += QStringLiteral(
@@ -398,7 +419,9 @@ QString Action::createToolTip(QString _tooltip,
                 + _tooltip.right(_tooltip.size()-index).trimmed().toHtmlEscaped();
         }
     }
-    return tooltip + cmdName;
+    if (img.size() && _tooltip.size() < text.size() + shortcut.size())
+        return tooltip + cmdName + img;
+    return img + tooltip + cmdName;
 }
 
 QString Action::toolTip() const

@@ -250,6 +250,7 @@ void MenuManager::setup(MenuItem* menuItems) const
                 std::string menuName = (*it)->command();
                 QMenu* menu = menuBar->addMenu(
                     QApplication::translate("Workbench", menuName.c_str()));
+                menu->setToolTipsVisible(true);
                 action = menu->menuAction();
                 menu->setObjectName(QString::fromUtf8(menuName.c_str()));
                 action->setObjectName(QString::fromUtf8(menuName.c_str()));
@@ -303,6 +304,7 @@ void MenuManager::setup(MenuItem* item, QMenu* menu) const
                     std::string menuName = (*it)->command();
                     QMenu* submenu = menu->addMenu(
                         QApplication::translate("Workbench", menuName.c_str()));
+                    submenu->setToolTipsVisible(true);
                     QAction* action = submenu->menuAction();
                     submenu->setObjectName(QString::fromUtf8((*it)->command().c_str()));
                     action->setObjectName(QString::fromUtf8((*it)->command().c_str()));

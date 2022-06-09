@@ -1641,6 +1641,7 @@ QPixmap Application::workbenchIcon(const QString& wb) const
                 Py::Object member = handler.getAttr(std::string("Icon"));
                 Py::String data(member);
                 std::string content = data.as_std_string("utf-8");
+                std::string path;
 
                 // test if in XPM format
                 QByteArray ary;
@@ -1668,12 +1669,12 @@ QPixmap Application::workbenchIcon(const QString& wb) const
                     icon.load(file);
                     if (icon.isNull()) {
                         // ... or the name of another icon?
-                        icon = BitmapFactory().pixmap(file.toUtf8());
+                        icon = BitmapFactory().pixmap(file.toUtf8(), false, nullptr, &path);
                     }
                 }
 
                 if (!icon.isNull()) {
-                    BitmapFactory().addPixmapToCache(iconName.c_str(), icon);
+                    BitmapFactory().addPixmapToCache(iconName.c_str(), icon, path.c_str());
                 }
 
                 return icon;

@@ -43,6 +43,9 @@
 # include <QTextEdit>
 #endif
 
+#include <QCache>
+#include <QMovie>
+
 #include <Base/Tools.h>
 #include <Base/Exception.h>
 #include <Base/Interpreter.h>
@@ -1194,6 +1197,15 @@ TipLabel::TipLabel(QWidget *parent)
 }
 
 static QPointer<TipLabel> _TipLabel;
+static QPointer<TipLabel> _TipIcon;
+static QPointer<QWidget> _TipWidget;
+struct TipIconEntry {
+    QPixmap icon;
+    QMovie animation;
+};
+static QCache<QString, TipIconEntry> _TipIconCache(10*1024*1024);
+static int _TipIconSize;
+
 TipLabel *TipLabel::instance(QWidget *parent)
 {
     static QPointer<QWidget> _parent;
@@ -1208,11 +1220,17 @@ TipLabel *TipLabel::instance(QWidget *parent)
         return widget;
     };
 
-    if (!_TipLabel) {
-        _TipLabel = new TipLabel(findParent(parent));
+    if (!_TipWidget || !_TipParent) {
+        _TipWidget = new QWidget(findParent(parent));
+        auto layout = new QHBoxLayout(_TipWidget);
+        _TipLabel = new TipLabel(_TipWidget);
+        layout->addWidget(_TipLabel);
+        _TipIcon = new TipLabel(_TipWidget);
+        layout->addWidget(_TipIcon);
+        _TipIcon->setVisible(false);
         _parent = parent;
     } else if (_parent != parent) {
-        _TipLabel->setParent(findParent(parent));
+        _TipWidget->setParent(findParent(parent));
         _parent = parent;
     }
     return _TipLabel;
@@ -1220,11 +1238,16 @@ TipLabel *TipLabel::instance(QWidget *parent)
 
 void TipLabel::hideLabel()
 {
-    if (_TipLabel)
-        _TipLabel->hide();
+    if (_TipWidget)
+        _TipWidget->hide();
 }
 
-void TipLabel::set(const QString &text)
+void TipLabel::refreshIcons()
+{
+    _TipIconCache.clear();
+}
+
+void TipLabel::set(const QString &text, const char *iconName)
 {
     setWordWrap(Qt::mightBeRichText(text));
     setText(text);
@@ -1245,6 +1268,62 @@ void TipLabel::set(const QString &text)
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
     resize(sizeHint() + extra);
+
+    if (!_TipIcon)
+        return;
+    if (!iconName) {
+        _TipIcon->setVisible(false);
+        return;
+    }
+    if (_TipIconSize != ViewParams::getToolTipIconSize()) {
+        _TipIconSize = ViewParams::getToolTipIconSize();
+        _TipIconCache.clear();
+    }
+    auto entry = _TipIconCache.object(*iconPath);
+    if (!entry) {
+        QPixmap pixmap;
+        QMovie animation;
+        QString path;
+        auto iconPath = BitmapFactory().getIconPath(iconName);
+        if (iconPath && iconPath[0]) {
+            path = QString::fromUtf8(iconPath);
+            QFieInfo finfo(path + QStringLiteral(".gif"));
+            if (finfo.exists()) {
+                animation = QMovie(finfo.filePath());
+                animation.setScaledSize(QSize(_TipIconSize, _TipIconSize));
+            }
+        }
+        if (animation.isNull()) {
+            BitmapFactory().findPixmapInCache(iconName, pixmap);
+            if (pixmap.height() != _TipIconSize) {
+                QSize size(_TipIconSize, _TipIconSize);
+                if (pixmap.width() && pixmap.hight())
+                    size.setWidth(_TipIconSize / pixmap.height() * pixmap.width());
+                if (path.endsWith(QStringLiteral(".svg"), Qt::CaseInsensitive))
+                    pixmap = BitmapFactory().pixmapFromSvg(*iconPath, size);
+                else
+                    pixmap = pixmap.scaled(size.width(), size.height()
+                        Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            }
+            if (!pixmap.isNull()) {
+                entry = new TipIconEntry;
+                entry->pixmap = pixmap;
+                _TipIconCache->insert(entry, pixmap.width() * pixmap.height());
+            }
+        }
+        else {
+            entry = new TipIconEntry;
+            entry->animation = animation;
+            _TipIconCache->insert(entry, animation.frameCount() * _TipIconSize * _TipIconSize);
+        }
+    }
+    if (entry && !entry->pixmap.isNull())
+        _TipIcon->setPixmap(entry->pixmap);
+    else if (entry && !entry->animation.isNull())
+        _TipIcon->setMovie(entry->animation);
+    else
+        return;
+    _TipIcon->setVisible(true);
 }
 
 void TipLabel::paintEvent(QPaintEvent *ev)

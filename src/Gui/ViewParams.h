@@ -34,7 +34,7 @@ import ViewParams
 ViewParams.declare_begin()
 ]]]*/
 
-// Auto generated code (Gui/ViewParams.py:447)
+// Auto generated code (Gui/ViewParams.py:450)
 #include <QString>
 
 // Auto generated code (Tools/params_utils.py:68)
@@ -2100,7 +2100,17 @@ public:
     static const char *docDefaultDrawStyle();
     //@}
 
-    // Auto generated code (Gui/ViewParams.py:453)
+    // Auto generated code (Tools/params_utils.py:118)
+    //@{
+    /// Accessor for parameter ToolTipIconSize
+    static const long & getToolTipIconSize();
+    static const long & defaultToolTipIconSize();
+    static void removeToolTipIconSize();
+    static void setToolTipIconSize(const long &v);
+    static const char *docToolTipIconSize();
+    //@}
+
+    // Auto generated code (Gui/ViewParams.py:456)
     static const std::vector<QString> AnimationCurveTypes;
 //[[[end]]]
 
@@ -2125,7 +2135,7 @@ ViewParams.declare_end()
 }; // class ViewParams
 } // namespace Gui
 
-// Auto generated code (Gui/ViewParams.py:461)
+// Auto generated code (Gui/ViewParams.py:464)
 namespace Gui {
 /// Obtain draw style name from index. Returns nullptr if out of range.
 GuiExport const char *drawStyleNameFromIndex(int index);
