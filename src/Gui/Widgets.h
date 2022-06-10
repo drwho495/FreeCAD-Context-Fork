@@ -471,7 +471,7 @@ private:
 /** Implements a transparent tool tip label that is a child widget of the main
  * window
  */
-class GuiExport TipLabel: public QLabel
+class GuiExport TipLabel: public QWidget
 {
     Q_OBJECT
 public:
@@ -479,7 +479,8 @@ public:
     static TipLabel * instance(QWidget *parent);
     static void hideLabel();
     static void refreshIcons();
-    void set(const QString &, const char *iconName = nullptr);
+    static void installFilter(QWidget *widget);
+    void set(const QString &, const QString &iconPath = QString());
 protected:
     void paintEvent(QPaintEvent *e);
     void resizeEvent(QResizeEvent *e);
@@ -511,6 +512,10 @@ public:
                          QWidget * w = 0,
                          bool overlay = false,
                          Corner corner = NoCorner);
+    static void showText(const QPoint & pos,
+                         const QString & text,
+                         const QString & iconPath,
+                         QWidget * w = 0);
     static void hideText();
 
 protected:
@@ -530,6 +535,7 @@ private:
     static ToolTip* inst;
     bool overlay = false;
     QString text;
+    QString iconPath;
     QPoint pos;
     Corner corner;
     QPointer<QWidget> w; // need guard in case widget gets destroyed
