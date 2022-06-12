@@ -1148,10 +1148,10 @@ TipLabel *TipLabel::instance(QWidget *parent, const QPoint &pos, bool overlay)
     return _OverlayTipLabel;
 }
 
-void TipLabel::hideLabel()
+void TipLabel::hideLabel(bool hideOverlay)
 {
     auto doHide = [](TipLabel *label) {
-        if (label) {
+        if (label && label->isVisible()) {
             label->setVisible(false);
             if (label->movie()) {
                 label->movie()->stop();
@@ -1160,7 +1160,8 @@ void TipLabel::hideLabel()
         }
     };
     doHide(_TipLabel);
-    doHide(_OverlayTipLabel);
+    if (hideOverlay)
+        doHide(_OverlayTipLabel);
 }
 
 void TipLabel::refreshIcons()
@@ -1290,8 +1291,10 @@ ToolTip::ToolTip() : hidden(true)
 {
     tooltipTimer.setSingleShot(true);
     hideTimer.setSingleShot(true);
+    hideTimerNoOverlay.setSingleShot(true);
     connect(&tooltipTimer, &QTimer::timeout, [this]() {onShowTimer();});
-    connect(&hideTimer, &QTimer::timeout, [this]() {onHideTimer();});
+    connect(&hideTimer, &QTimer::timeout, [this]() {onHideTimer(true);});
+    connect(&hideTimerNoOverlay, &QTimer::timeout, [this]() {onHideTimer(false);});
     qApp->installEventFilter(this);
 }
 
@@ -1424,11 +1427,11 @@ void ToolTip::onShowTimer()
     displayTime.restart();
 }
 
-void ToolTip::onHideTimer()
+void ToolTip::onHideTimer(bool hideOverlay)
 {
     hideTimer.stop();
     tooltipTimer.stop();
-    TipLabel::hideLabel();
+    TipLabel::hideLabel(hideOverlay);
 }
 
 bool ToolTip::checkToolTip(QWidget *w, QHelpEvent *helpEvent) {
@@ -1450,7 +1453,7 @@ bool ToolTip::checkToolTip(QWidget *w, QHelpEvent *helpEvent) {
         tooltip = w->toolTip();
 
     if (tooltip.isEmpty()) {
-        ToolTip::hideText(100);
+        instance()->hideTimerNoOverlay.start(300);
         return false;
     }
 
