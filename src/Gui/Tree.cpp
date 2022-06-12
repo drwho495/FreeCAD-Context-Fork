@@ -4053,10 +4053,17 @@ void TreeWidget::onToolTipTimer()
         internalName = QStringLiteral("\nInternal name: %1").arg(
                 QString::fromUtf8(Obj->getNameInDocument()));
 
+    if (Obj->isError())
+        internalName = QStringLiteral("%1 <span style='color:red'>(%2!)</span>")
+            .arg(internalName.toHtmlEscaped(), tr("Error"));
+
     if (QApplication::queryKeyboardModifiers() == Qt::ControlModifier) {
-        if (Obj->getDocument() != item->getOwnerDocument()->document()->getDocument())
-            internalName += QStringLiteral("\nDocument: %1").arg(
-                QString::fromUtf8(Obj->getDocument()->Label.getValue()));
+        if (Obj->getDocument() != item->getOwnerDocument()->document()->getDocument()) {
+            QString label = QString::fromUtf8(Obj->getDocument()->Label.getValue());
+            if (Obj->isError())
+                label = label.toHtmlEscaped();
+            internalName += QStringLiteral("\nDocument: %1").arg(label);
+        }
         typeName = QStringLiteral("\nType: %1").arg(
                 QString::fromUtf8(Obj->getTypeId().getName()));
         QByteArray proxyType;
@@ -4074,13 +4081,21 @@ void TreeWidget::onToolTipTimer()
         }
     }
 
-    QString tooltip = QStringLiteral("%1%2%3%4%5").arg(
-            QString::fromUtf8(Obj->Label.getValue()),
-            internalName,
-            typeName,
-            info.size() ? QStringLiteral("\n\n") : QString(),
-            info);
 
+    if (info.size())
+        info = QStringLiteral("\n\n") + info;
+
+    QString label = QString::fromUtf8(Obj->Label.getValue());
+    if (Obj->isError()) {
+        label = label.toHtmlEscaped();
+        typeName = typeName.toHtmlEscaped();
+        info = info.toHtmlEscaped();
+        typeName.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+        internalName.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+        info.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+    }
+
+    QString tooltip = label + internalName + typeName + info;
     QPoint pos = this->visualItemRect(item).topLeft();
 
     // Add some margin so that the newly showup tooltop widget won't
