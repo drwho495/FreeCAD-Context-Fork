@@ -155,6 +155,8 @@ public:
 
     void getSpans(App::CellAddress address, int &rows, int &cols) const;
 
+    bool hasSpan() const;
+
     bool isMergedCell(App::CellAddress address) const;
 
     bool isHidden(App::CellAddress address) const;
