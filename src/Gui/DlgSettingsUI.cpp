@@ -143,6 +143,13 @@ DlgSettingsUI::DlgSettingsUI(QWidget* parent)
     HideHeaderView->setEntryName("HideHeaderView");
     HideHeaderView->setParamGrpPath("TreeView");
 
+    // Auto generated code (Tools/params_utils.py:349)
+    TreeToolTipIcon = new Gui::PrefCheckBox(this);
+    layoutTreeview->addWidget(TreeToolTipIcon, 7, 0);
+    TreeToolTipIcon->setChecked(Gui::TreeParams::defaultTreeToolTipIcon());
+    TreeToolTipIcon->setEntryName("TreeToolTipIcon");
+    TreeToolTipIcon->setParamGrpPath("TreeView");
+
 
     // Auto generated code (Tools/params_utils.py:338)
     groupExpression = new QGroupBox(this);
@@ -517,6 +524,7 @@ void DlgSettingsUI::saveSettings()
     HideColumn->onSave();
     HideScrollBar->onSave();
     HideHeaderView->onSave();
+    TreeToolTipIcon->onSave();
     AutoHideEditorIcon->onSave();
     EditorTrigger->onSave();
     NoSystemBackground->onSave();
@@ -562,6 +570,7 @@ void DlgSettingsUI::loadSettings()
     HideColumn->onRestore();
     HideScrollBar->onRestore();
     HideHeaderView->onRestore();
+    TreeToolTipIcon->onRestore();
     AutoHideEditorIcon->onRestore();
     EditorTrigger->onRestore();
     NoSystemBackground->onRestore();
@@ -620,6 +629,8 @@ void DlgSettingsUI::retranslateUi()
     HideScrollBar->setText(QObject::tr("Hide scroll bar"));
     HideHeaderView->setToolTip(QApplication::translate("TreeParams", Gui::TreeParams::docHideHeaderView()));
     HideHeaderView->setText(QObject::tr("Hide header"));
+    TreeToolTipIcon->setToolTip(QApplication::translate("TreeParams", Gui::TreeParams::docTreeToolTipIcon()));
+    TreeToolTipIcon->setText(QObject::tr("Show icon in tool tip"));
     groupExpression->setTitle(QObject::tr("Expression"));
     AutoHideEditorIcon->setToolTip(QApplication::translate("ExprParams", Gui::ExprParams::docAutoHideEditorIcon()));
     AutoHideEditorIcon->setText(QObject::tr("Auto hide editor icon"));

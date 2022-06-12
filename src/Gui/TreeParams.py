@@ -79,6 +79,7 @@ Params = [
         doc = "Allow tree view columns to be manually resized"),
     ParamInt('ColumnSize1', 0),
     ParamInt('ColumnSize2', 0),
+    ParamBool('TreeToolTipIcon', False, title='Show icon in tool tip'),
 ]
 
 def declare_begin():

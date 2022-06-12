@@ -55,6 +55,7 @@ ParamGroup = (
         'HideColumn',
         'HideScrollBar',
         'HideHeaderView',
+        'TreeToolTipIcon',
     )]),
 
     ('Expression', [_ExprParams[name] for name in (

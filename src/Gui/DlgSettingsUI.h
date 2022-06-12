@@ -87,6 +87,7 @@ private:
     Gui::PrefCheckBox *HideColumn = nullptr;
     Gui::PrefCheckBox *HideScrollBar = nullptr;
     Gui::PrefCheckBox *HideHeaderView = nullptr;
+    Gui::PrefCheckBox *TreeToolTipIcon = nullptr;
 
     // Auto generated code (Tools/params_utils.py:323)
     QGroupBox * groupExpression = nullptr;

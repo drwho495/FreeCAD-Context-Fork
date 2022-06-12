@@ -1169,11 +1169,12 @@ void TipLabel::refreshIcons()
     _TipIconCache.clear();
 }
 
-void TipLabel::set(const QString &text, const QString &iconPath)
+void TipLabel::set(const QString &text)
 {
     textLabel->setWordWrap(Qt::mightBeRichText(text));
     textLabel->setText(text);
-    if (fontSize != ViewParams::getPreselectionToolTipFontSize()) {
+    if (_OverlayTipLabel == this
+            && fontSize != ViewParams::getPreselectionToolTipFontSize()) {
         fontSize = ViewParams::getPreselectionToolTipFontSize();
         if (!fontSize)
             textLabel->setFont(QFont());
@@ -1193,7 +1194,38 @@ void TipLabel::set(const QString &text, const QString &iconPath)
     textLabel->resize(textLabel->sizeHint());
     QSize s(textLabel->sizeHint() + extra);
     resize(s);
+}
 
+void TipLabel::set(const QString &text, QPixmap pixmap)
+{
+    set(text);
+    if (pixmap.isNull()) {
+        setPixmap(pixmap);
+        return;
+    }
+    int tipIconSize = ViewParams::getToolTipIconSize();
+    if (pixmap.height() != tipIconSize) {
+        QSize size(tipIconSize, tipIconSize);
+        if (pixmap.width() && pixmap.height())
+            size.setWidth(tipIconSize / pixmap.height() * pixmap.width());
+        pixmap = pixmap.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }
+
+    this->setPixmap(pixmap);
+    QSize iconSize = pixmap.size();
+    iconSize.setHeight(std::max(iconSize.height(), tipIconSize));
+    QSize s(this->size());
+    if (s.height() < iconSize.height())
+        s.setHeight(iconSize.height());
+    else
+        iconSize.setHeight(s.height());
+    s.setWidth(s.width() + iconSize.width());
+    this->resize(s);
+}
+
+void TipLabel::set(const QString &text, const QString &iconPath)
+{
+    set(text);
     if (iconPath.isEmpty()) {
         setMovie(nullptr);
         return;
@@ -1245,6 +1277,7 @@ void TipLabel::set(const QString &text, const QString &iconPath)
     }
 
     iconSize.setHeight(std::max(iconSize.height(), _TipIconSize));
+    QSize s(this->size());
     if (s.height() < iconSize.height())
         s.setHeight(iconSize.height());
     else
@@ -1312,11 +1345,11 @@ void ToolTip::showText(const QPoint & pos,
     if (!text.isEmpty()) {
         tip->pos = pos;
         tip->text = text;
+        tip->iconPixmap = QPixmap();
         tip->iconPath.clear();
         tip->w = w;
         tip->corner = corner;
         tip->overlay = overlay;
-        // show text with a short delay
         tip->tooltipTimer.start(80);
         tip->displayTime.start();
         tip->hideTimer.stop();
@@ -1337,10 +1370,34 @@ void ToolTip::showText(const QPoint & pos,
         tip->pos = pos;
         tip->text = text;
         tip->iconPath = iconPath;
+        tip->iconPixmap = QPixmap();
         tip->corner = NoCorner;
         tip->w = w;
         tip->overlay = false;
-        // show text with a short delay
+        tip->tooltipTimer.start(80);
+        tip->displayTime.start();
+        tip->hideTimer.stop();
+        tip->hideTimerNoOverlay.stop();
+    }
+    else {
+        hideText();
+    }
+}
+
+void ToolTip::showText(const QPoint & pos,
+                       const QString & text,
+                       const QPixmap & pixmap,
+                       QWidget * w)
+{
+    ToolTip* tip = instance();
+    if (!text.isEmpty() || !pixmap.isNull()) {
+        tip->pos = pos;
+        tip->text = text;
+        tip->iconPath.clear();
+        tip->iconPixmap = pixmap;
+        tip->corner = NoCorner;
+        tip->w = w;
+        tip->overlay = false;
         tip->tooltipTimer.start(80);
         tip->displayTime.start();
         tip->hideTimer.stop();
@@ -1373,7 +1430,10 @@ void ToolTip::onShowTimer()
             || this->corner != NoCorner) {
         auto tipLabel = TipLabel::instance(w, pos, overlay);
         QWidget *parent = tipLabel->parentWidget();
-        tipLabel->set(text, iconPath);
+        if(this->iconPixmap.isNull())
+            tipLabel->set(text, iconPath);
+        else
+            tipLabel->set(text, this->iconPixmap);
         if (!this->w || this->corner == NoCorner) {
             QRect screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
             pos += QPoint(2, 16);

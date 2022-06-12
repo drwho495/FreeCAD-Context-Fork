@@ -447,6 +447,16 @@ public:
     static void setColumnSize2(const long &v);
     static const char *docColumnSize2();
     //@}
+
+    // Auto generated code (Tools/params_utils.py:118)
+    //@{
+    /// Accessor for parameter TreeToolTipIcon
+    static const bool & getTreeToolTipIcon();
+    static const bool & defaultTreeToolTipIcon();
+    static void removeTreeToolTipIcon();
+    static void setTreeToolTipIcon(const bool &v);
+    static const char *docTreeToolTipIcon();
+    //@}
 //[[[end]]]
 
     static void refreshTreeViews();
