@@ -1320,6 +1320,7 @@ void ToolTip::showText(const QPoint & pos,
         tip->tooltipTimer.start(80);
         tip->displayTime.start();
         tip->hideTimer.stop();
+        tip->hideTimerNoOverlay.stop();
     }
     else {
         hideText();
@@ -1343,27 +1344,33 @@ void ToolTip::showText(const QPoint & pos,
         tip->tooltipTimer.start(80);
         tip->displayTime.start();
         tip->hideTimer.stop();
+        tip->hideTimerNoOverlay.stop();
     }
     else {
         hideText();
     }
 }
 
-void ToolTip::hideText(int delay)
+void ToolTip::hideText(int delay, bool hideOverlay)
 {
     if (delay > 0) {
-        instance()->tooltipTimer.stop();
-        instance()->hideTimer.start(delay);
+        auto &timer = hideOverlay ? instance()->hideTimer : instance()->hideTimerNoOverlay;
+        if (!timer.isActive()) {
+            instance()->tooltipTimer.stop();
+            timer.start(delay);
+        }
         return;
     }
     instance()->tooltipTimer.stop();
-    TipLabel::hideLabel();
+    TipLabel::hideLabel(hideOverlay);
     hideQtToolTips();
 }
 
 void ToolTip::onShowTimer()
 {
-    if (ViewParams::getToolTipIconSize() > 0) {
+    if (ViewParams::getToolTipIconSize() > 0
+            || this->overlay
+            || this->corner != NoCorner) {
         auto tipLabel = TipLabel::instance(w, pos, overlay);
         QWidget *parent = tipLabel->parentWidget();
         tipLabel->set(text, iconPath);
@@ -1423,6 +1430,7 @@ void ToolTip::onShowTimer()
         QToolTip::showText(pos, text, w);
     }
     hideTimer.stop();
+    hideTimerNoOverlay.stop();
     tooltipTimer.stop();
     displayTime.restart();
 }
@@ -1430,6 +1438,7 @@ void ToolTip::onShowTimer()
 void ToolTip::onHideTimer(bool hideOverlay)
 {
     hideTimer.stop();
+    hideTimerNoOverlay.stop();
     tooltipTimer.stop();
     TipLabel::hideLabel(hideOverlay);
 }
@@ -1452,10 +1461,8 @@ bool ToolTip::checkToolTip(QWidget *w, QHelpEvent *helpEvent) {
     else
         tooltip = w->toolTip();
 
-    if (tooltip.isEmpty()) {
-        instance()->hideTimerNoOverlay.start(300);
+    if (tooltip.isEmpty())
         return false;
-    }
 
     QString key = QStringLiteral("<img src='");
     int index = tooltip.indexOf(key);
@@ -1492,11 +1499,11 @@ bool ToolTip::eventFilter(QObject* o, QEvent*e)
     case QEvent::ToolTip:
         return checkToolTip(w, static_cast<QHelpEvent*>(e));
     case QEvent::Leave:
-        if (!hideTimer.isActive())
-            hideTimer.start(300);
+        hideText(300, false);
         break;
     case QEvent::Timer:
-        if (static_cast<QTimerEvent*>(e)->timerId() == hideTimer.timerId())
+        if (static_cast<QTimerEvent*>(e)->timerId() == hideTimer.timerId()
+            || static_cast<QTimerEvent*>(e)->timerId() == hideTimerNoOverlay.timerId())
             break;
         // fall through
     case QEvent::Show:

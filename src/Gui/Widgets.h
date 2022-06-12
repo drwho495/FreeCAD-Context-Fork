@@ -436,7 +436,7 @@ public:
                          const QString & text,
                          const QString & iconPath,
                          QWidget * w = 0);
-    static void hideText(int delay=0);
+    static void hideText(int delay=0, bool hideOverlay=true);
 
     static ToolTip* instance();
 
