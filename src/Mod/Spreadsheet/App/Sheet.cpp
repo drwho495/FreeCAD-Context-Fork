@@ -846,7 +846,7 @@ const char* Sheet::getPropertyName(const App::Property* prop) const
                 return iter->second.c_str();
         }
     }
-    return prop->getName();
+    return App::DocumentObject::getPropertyName(prop);
 }
 
 void Sheet::touchCells(Range range) {
