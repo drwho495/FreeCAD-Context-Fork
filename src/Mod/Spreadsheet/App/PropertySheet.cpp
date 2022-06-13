@@ -1916,9 +1916,10 @@ void PropertySheet::setPathValue(const ObjectIdentifier &path, const App::any &v
                     Cell *dst = other->getValue(target);
                     Cell *src = getValue(source);
                     if(!dst || !dst->getExpression()) {
-                        if(src && !VariableExpression::isDoubleBinding(src->getExpression())) {
+                        if(src && src->getExpression()
+                               && !VariableExpression::isDoubleBinding(src->getExpression())) {
                             signaller.aboutToChange();
-                            owner->clear(source);
+                            src->setExpression(nullptr);
                             owner->cellUpdated(source);
                         }
                         continue;
