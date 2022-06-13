@@ -306,6 +306,9 @@ void PropertySheet::Paste(const Property &from)
     }
 
     mergedCells = froms.mergedCells;
+
+    if (owner)
+        owner->tableRefresh();
     signaller.tryInvoke();
 }
 

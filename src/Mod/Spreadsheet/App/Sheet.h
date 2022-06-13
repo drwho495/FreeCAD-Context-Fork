@@ -225,6 +225,8 @@ public:
 
     boost::signals2::signal<void (int, int)> rowHeightChanged;
 
+    boost::signals2::signal<void ()> tableRefresh;
+
     void observeDocument(App::Document *document);
 
     virtual void renameObjectIdentifiers(const std::map<App::ObjectIdentifier, App::ObjectIdentifier> & paths);
