@@ -37,6 +37,7 @@
 # include <Inventor/nodes/SoIndexedLineSet.h>
 # include <Inventor/nodes/SoPointSet.h>
 # include <Inventor/nodes/SoShapeHints.h>
+# include <Inventor/nodes/SoPickStyle.h>
 # include <Inventor/details/SoLineDetail.h>
 # include <Inventor/nodes/SoSwitch.h>
 # include <Inventor/nodes/SoAnnotation.h>
@@ -215,6 +216,12 @@ ViewProviderPath::ViewProviderPath()
 
     auto pArrowGroup = new SoFCPathAnnotation;
     pArrowGroup->priority = 2;
+
+    auto pickStyle = new SoPickStyle;
+    pickStyle->style = SoPickStyle::UNPICKABLE;
+    pickStyle->setOverride(true);
+    pArrowGroup->addChild(pickStyle);
+
     pcArrowTransform = new SoTransform();
     pArrowGroup->addChild(pcArrowTransform);
 
