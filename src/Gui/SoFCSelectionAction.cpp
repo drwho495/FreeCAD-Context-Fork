@@ -89,6 +89,7 @@
 #include <Inventor/nodes/SoSphere.h>
 #include <Inventor/nodes/SoTransformation.h>
 
+#include "InventorBase.h"
 #include "SoFCUnifiedSelection.h"
 #include "SoFCSelectionAction.h"
 #include "SoFCSelection.h"
@@ -1106,7 +1107,7 @@ SoBoxSelectionRenderActionP::updateBbox(const SoPath * path)
 
     SbXfBox3f & box = this->bboxaction->getXfBoundingBox();
 
-    if (!box.isEmpty()) {
+    if (isValidBBox(box)) {
         // set cube size
         float x, y, z;
         box.getSize(x, y, z);

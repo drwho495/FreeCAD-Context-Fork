@@ -1259,7 +1259,7 @@ void SoBrepFaceSet::getBoundingBox(SoGetBoundingBoxAction * action) {
         int id = v.first;
         if (id<0 || id >= numparts)
             break;
-        if(!partBBoxes[id].isEmpty())
+        if(isValidBBox(partBBoxes[id]))
             action->extendBy(partBBoxes[id]);
     }
 }
@@ -2723,7 +2723,7 @@ void SoBrepFaceSet::rayPick(SoRayPickAction *action) {
 
     if (getBoundingBoxCache() && getBoundingBoxCache()->isValid(state)) {
         SbBox3f box = getBoundingBoxCache()->getProjectedBox();
-        if(box.isEmpty() || !action->intersect(box,TRUE))
+        if(!isValidBBox(box) || !action->intersect(box,TRUE))
             return;
     }
 
@@ -2763,14 +2763,14 @@ void SoBrepFaceSet::rayPick(SoRayPickAction *action) {
             if(id<0 || id>=numparts)
                 continue;
             auto &box = partBBoxes[id];
-            if(box.isEmpty() || !action->intersect(box,TRUE))
+            if(!isValidBBox(box) || !action->intersect(box,TRUE))
                 continue;
             pick(id);
         }
     } else {
         for(int id=0;id<numparts;++id) {
             auto &box = partBBoxes[id];
-            if(box.isEmpty() || !action->intersect(box,TRUE))
+            if(!isValidBBox(box) || !action->intersect(box,TRUE))
                 continue;
             pick(id);
         }

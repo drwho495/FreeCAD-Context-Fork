@@ -109,6 +109,7 @@
 #include <Gui/SoFCUnifiedSelection.h>
 #include <Gui/Inventor/MarkerBitmaps.h>
 #include <Gui/Inventor/SmSwitchboard.h>
+#include <Gui/InventorBase.h>
 #include <Gui/PieMenu.h>
 
 #include <Mod/Part/App/Geometry.h>
@@ -2499,7 +2500,7 @@ void ViewProviderSketch::centerSelection()
     group->unref();
 
     SbBox3f box = action.getBoundingBox();
-    if (!box.isEmpty()) {
+    if (Gui::isValidBBox(box)) {
         SoCamera* camera = viewer->getSoRenderManager()->getCamera();
         SbVec3f direction;
         camera->orientation.getValue().multVec(SbVec3f(0, 0, 1), direction);

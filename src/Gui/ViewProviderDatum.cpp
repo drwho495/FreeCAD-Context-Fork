@@ -56,6 +56,7 @@
 #include <Gui/View3DInventor.h>
 #include <Gui/View3DInventorViewer.h>
 #include <Gui/BitmapFactory.h>
+#include <Gui/InventorBase.h>
 
 #include "ViewProviderDatum.h"
 
@@ -211,7 +212,7 @@ void ViewProviderDatum::updateExtents () {
 }
 
 void ViewProviderDatum::setExtents (const SbBox3f &bbox) {
-    if(bbox.isEmpty())
+    if(!Gui::isValidBBox(bbox))
         return;
     const SbVec3f & min = bbox.getMin ();
     const SbVec3f & max = bbox.getMax ();

@@ -289,7 +289,7 @@ void SoBrepPointSet::getBoundingBox(SoGetBoundingBoxAction * action) {
             bbox.extendBy(coords3d[idx]);
     }
 
-    if(!bbox.isEmpty())
+    if(isValidBBox(bbox))
         action->extendBy(bbox);
 }
 

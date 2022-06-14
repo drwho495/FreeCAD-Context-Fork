@@ -2092,7 +2092,7 @@ void View3DInventorViewer::Private::activate()
         light = pcShadowSpotLight;
         pcShadowSpotLight->direction = dir;
         Base::Vector3d initPos;
-        if(!bbox.isEmpty()) {
+        if(isValidBBox(bbox)) {
             SbVec3f center = bbox.getCenter();
             initPos.x = center[0];
             initPos.y = center[1];
@@ -2177,7 +2177,7 @@ void View3DInventorViewer::Private::activate()
     else
         pcShadowGroundSwitch->whichChild = -1;
 
-    if(!bbox.isEmpty())
+    if(isValidBBox(bbox))
         updateShadowGround(bbox);
 
     pcShadowGroundTexture->filename = _shadowParam<App::PropertyFileIncluded>(doc, "GroundTexture",
@@ -3718,7 +3718,7 @@ void View3DInventorViewer::toggleClippingPlane(int toggle, bool beforeEditing,
         action.apply(this->getSoRenderManager()->getSceneGraph());
         SbBox3f box = action.getBoundingBox();
 
-        if (!box.isEmpty()) {
+        if (isValidBBox(box)) {
             // adjust to overall bounding box of the scene
             clip->setValue(box, SbVec3f(dir.x,dir.y,dir.z), 1.0f);
         }
@@ -3903,12 +3903,11 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
             if(!vp) {
                 action.apply(node);
                 auto bbox = action.getBoundingBox();
-                if(!bbox.isEmpty()) {
+                if(isValidBBox(bbox)) {
                     float minx,miny,minz,maxx,maxy,maxz;
                     bbox.getBounds(minx,miny,minz,maxx,maxy,maxz);
                     box.Add(Base::BoundBox3d(minx,miny,minz,maxx,maxy,maxz));
                 }
-                continue;
             }
             if(!vp->isVisible())
                 continue;
@@ -3919,7 +3918,7 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
     } else {
         action.apply(pcViewProviderRoot);
         auto bbox = action.getBoundingBox();
-        if(!bbox.isEmpty()) {
+        if(isValidBBox(bbox)) {
             float minx,miny,minz,maxx,maxy,maxz;
             bbox.getBounds(minx,miny,minz,maxx,maxy,maxz);
             box.MinX = minx;
@@ -3934,7 +3933,7 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
     if (pcGroupOnTopSwitch) {
         action.apply(pcGroupOnTopSwitch);
         auto bbox = action.getBoundingBox();
-        if(!bbox.isEmpty()) {
+        if(isValidBBox(bbox)) {
             float minx,miny,minz,maxx,maxy,maxz;
             bbox.getBounds(minx,miny,minz,maxx,maxy,maxz);
             box.Add(Base::BoundBox3d(minx,miny,minz,maxx,maxy,maxz));
@@ -3944,7 +3943,7 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
     if (pcEditingRoot) { 
         action.apply(pcEditingRoot);
         auto bbox = action.getBoundingBox();
-        if(!bbox.isEmpty()) {
+        if(isValidBBox(bbox)) {
             float minx,miny,minz,maxx,maxy,maxz;
             bbox.getBounds(minx,miny,minz,maxx,maxy,maxz);
             box.Add(Base::BoundBox3d(minx,miny,minz,maxx,maxy,maxz));
@@ -5309,7 +5308,7 @@ void View3DInventorViewer::Private::toggleDragger(int toggle)
         showDragger = TRUE;
         owner->getSceneBoundBox(bbox);
         this->getBoundingBox(bbox);
-        if (!bbox.isEmpty())
+        if (isValidBBox(bbox))
             owner->viewBoundBox(bbox);
     }
 }

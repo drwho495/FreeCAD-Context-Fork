@@ -70,6 +70,7 @@
 #include "SoBrepFaceSet.h"
 #include <Gui/SoFCUnifiedSelection.h>
 #include <Gui/SoFCSelectionAction.h>
+#include <Gui/InventorBase.h>
 #include <Gui/ViewParams.h>
 
 using namespace Gui;
@@ -373,7 +374,7 @@ void SoBrepEdgeSet::getBoundingBox(SoGetBoundingBoxAction * action) {
         }
     }
 
-    if(!bbox.isEmpty())
+    if(isValidBBox(bbox))
         action->extendBy(bbox);
 }
 
@@ -552,4 +553,3 @@ SoDetail * SoBrepEdgeSet::createLineSegmentDetail(SoRayPickAction * action,
     line_detail->setPartIndex(index);
     return detail;
 }
-
