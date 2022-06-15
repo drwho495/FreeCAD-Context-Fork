@@ -525,21 +525,23 @@ std::string SubObjectT::getNewElementName(bool fallback) const {
     return std::move(element.second);
 }
 
-std::string SubObjectT::getOldElementName(int *index) const {
+std::string SubObjectT::getOldElementName(int *index, bool fallback) const {
     std::pair<std::string, std::string> element;
     auto obj = getObject();
     if(!obj)
         return std::string();
     GeoFeature::resolveElement(obj,subname.c_str(),element);
-    if(!index)
-        return std::move(element.second);
-    std::size_t pos = element.second.find_first_of("0123456789");
-    if(pos == std::string::npos)
-        *index = -1;
-    else {
-        *index = std::atoi(element.second.c_str()+pos);
-        element.second.resize(pos);
+    if(index) {
+        std::size_t pos = element.second.find_first_of("0123456789");
+        if(pos == std::string::npos)
+            *index = -1;
+        else {
+            *index = std::atoi(element.second.c_str()+pos);
+            element.second.resize(pos);
+        }
     }
+    if (element.second.empty() && fallback)
+        return std::move(element.first);
     return std::move(element.second);
 }
 

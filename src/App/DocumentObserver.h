@@ -249,8 +249,10 @@ public:
 
     /** Return the old style sub-element name
      * @param index: if given, then return the element type, and extract the index
+     * @param fallback: if true, then fallback to new style element name if
+     * there is no old style name.
      */
-    std::string getOldElementName(int *index=0) const;
+    std::string getOldElementName(int *index=nullptr, bool fallback=true) const;
 
     /// Return the sub-object
     DocumentObject *getSubObject() const;
