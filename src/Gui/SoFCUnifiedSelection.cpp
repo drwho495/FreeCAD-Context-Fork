@@ -412,7 +412,7 @@ SoFCUnifiedSelection::getPickedList(const SbVec2s &pos, const SbViewportRegion &
     SoPickStyleElement::set(pcRayPick->getState(),
             (!pcRayPick->pickBackFace() && singlePick) ?
                 SoPickStyleElement::SHAPE_FRONTFACES : SoPickStyleElement::SHAPE);
-    SoOverrideElement::setPickStyleOverride(pcRayPick->getState(),0,true);
+    // SoOverrideElement::setPickStyleOverride(pcRayPick->getState(),0,true);
 
     SoFCDisplayModeElement::set(pcRayPick->getState(),0,SbName::empty(),false);
 
