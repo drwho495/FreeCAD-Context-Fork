@@ -904,7 +904,7 @@ static App::DocumentObject *getSelectedLink(bool finalLink, std::string *subname
                     return sobj==obj?0:sobj;
                 }
                 if(subname)
-                    *subname = std::string(dot+1) + element;
+                    *subname = std::string(dot+1);
                 return obj;
             }
         }
