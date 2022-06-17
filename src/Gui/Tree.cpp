@@ -8198,8 +8198,15 @@ App::DocumentObject *DocumentItem::getTopParent(
         return true;
     };
 
+    auto currentItem = getTree()->currentItem();
+    if (auto item = dynamic_cast<DocumentObjectItem*>(currentItem)) {
+        if (item->getOwnerDocument()->document()->getDocument() != obj->getDocument())
+            currentItem = nullptr;
+    } else
+        currentItem = nullptr;
+
     // First check the current item
-    if (!countLevel(getTree()->currentItem())) {
+    if (!countLevel(currentItem)) {
         // check the selected items, pick one that's nearest to the root
         bool found = false;
         for (auto item : getTree()->selectedItems()) {
