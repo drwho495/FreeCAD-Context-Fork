@@ -2212,6 +2212,7 @@ void SelStackAction::populate()
 
         QAction *act;
         if (sels.size() == 1) {
+            sels[0].setSubName(sels[0].getSubNameNoElement() + sels[0].getOldElementName());
             act = _menu->addAction(QString::fromUtf8(
                         sels[0].getSubObjectFullName(activeDocName).c_str()), [=](){select(idx);});
         } else {
