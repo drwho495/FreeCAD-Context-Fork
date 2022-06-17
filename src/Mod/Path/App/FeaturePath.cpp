@@ -25,13 +25,13 @@
 #include <Inventor/nodes/SoQuadMesh.h>
 
 #ifndef _PreComp_
+# include <Precision.hxx>
+# include <BRep_Builder.hxx>
+# include <BRepBuilderAPI_MakeEdge.hxx>
+# include <BRepBuilderAPI_MakeWire.hxx>
+# include <TopoDS.hxx>
+# include <TopoDS_Compound.hxx>
 #endif
-
-#include <BRep_Builder.hxx>
-#include <BRepBuilderAPI_MakeEdge.hxx>
-#include <BRepBuilderAPI_MakeWire.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Compound.hxx>
 
 #include <Base/Placement.h>
 #include <Base/Console.h>
