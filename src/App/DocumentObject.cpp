@@ -1041,19 +1041,22 @@ DocumentObject::expandSubObjectNames(const char *subname, int reason, bool check
     return res;
 }
 
-std::vector<std::pair<App::DocumentObject *,std::string> > DocumentObject::getParents(int depth) const {
+std::vector<std::pair<App::DocumentObject *,std::string> >
+DocumentObject::getParents(int depth) const {
     std::vector<std::pair<App::DocumentObject *,std::string> > ret;
     if(!getNameInDocument() || !GetApplication().checkLinkDepth(depth))
         return ret;
-    std::string name(getNameInDocument());
-    name += ".";
     for(auto parent : getInList()) {
         if(!parent || !parent->getNameInDocument())
             continue;
-        if(!parent->hasChildElement() && 
-           !parent->hasExtension(GeoFeatureGroupExtension::getExtensionClassTypeId()))
-            continue;
-        if(!parent->getSubObject(name.c_str()))
+        std::string subname;
+        for (auto &sub : parent->getSubObjects(GS_SELECT)) {
+            if (parent->getSubObject(sub.c_str()) == this) {
+                subname = std::move(sub);
+                break;
+            }
+        }
+        if (subname.empty())
             continue;
 
         auto links = GetApplication().getLinksTo(parent,
@@ -1063,8 +1066,8 @@ std::vector<std::pair<App::DocumentObject *,std::string> > DocumentObject::getPa
             auto parents = parent->getParents(depth+1);
             if(parents.empty()) 
                 parents.emplace_back(parent,std::string());
-            for(auto &v : parents) 
-                ret.emplace_back(v.first,v.second+name);
+            for(auto &v : parents)
+                ret.emplace_back(v.first,v.second+subname);
         }
     }
     return ret;
@@ -1346,6 +1349,32 @@ DocumentObject::resolveRelativeLink(std::string &subname,
 
     bool flatten = options & RelativeLinkOption::Flatten;
     bool top = options & RelativeLinkOption::TopParent;
+    if (top) {
+        // Check for top parents of both the this and linked object, and pick
+        // one common top parent to resolve relative link.
+        auto myParents = getParents();
+        if (myParents.empty())
+            myParents.emplace_back(const_cast<DocumentObject*>(this), "");
+        auto otherParents = link->getParents();
+        for (const auto &v : myParents) {
+            auto parent = v.first;
+            for (auto &other : otherParents) {
+                if (parent == other.first) {
+                    std::string newSub = v.second + subname;
+                    auto newLink = parent;
+                    auto newLinkSub = other.second + linkSub;
+                    auto res = parent->resolveRelativeLink(newSub, newLink, newLinkSub, options);
+                    if (res && newSub.size() < subname.size()
+                            && newLinkSub.size() <= linkSub.size()) {
+                        subname = newSub;
+                        link = newLink;
+                        linkSub = newLinkSub;
+                        return res;
+                    }
+                }
+            }
+        }
+    }
 
     std::vector<int> mysubs;
     std::vector<int> linksubs;
