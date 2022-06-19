@@ -568,4 +568,6 @@ private:
 
 } //namespace App
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(App::SubObjectT::NormalizeOptions);
+
 #endif // APP_DOCUMENTOBSERVER_H
