@@ -1137,7 +1137,7 @@ void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool 
                 return;
             }
             for(auto &sel : sels ) {
-                checkGroupOnTop(SelectionChanges(SelectionChanges::AddSelection,sel));
+                checkGroupOnTop(SelectionChanges(SelectionChanges::AddSelection,sel), alt);
             }
         }
         return;
@@ -1158,7 +1158,7 @@ void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool 
         return;
 
     std::string element = Reason.Object.getOldElementName();
-    auto objT = Reason.Object.normalized(App::SubObjectT::NoElement);
+    auto objT = Reason.Object.normalized(App::SubObjectT::ConvertIndex|App::SubObjectT::NoElement);
     if (alt && Reason.Type == SelectionChanges::RmvSelection) {
         _pimpl->objectsOnTop.erase(objT);
         guiDocument->signalOnTopObject(Reason.Type, objT);

@@ -7857,7 +7857,7 @@ void DocumentItem::slotOnTopObject(int reason, const App::SubObjectT &objT)
             for (auto item : it->second->items) {
                 if (item->showOnTop == objT)
                     continue;
-                if (item->getSubNameT() == objT) {
+                if (item->getSubNameT().normalized() == objT) {
                     removeItemOnTop(item);
                     item->showOnTop = objT;
                     auto &items = itemsOnTop[objT];
