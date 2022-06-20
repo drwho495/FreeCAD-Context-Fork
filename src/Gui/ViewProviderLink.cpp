@@ -281,7 +281,10 @@ public:
             if(node) {
                 coinRemoveAllChildren(node);
                 _registerLinkNode(node);
-                node.reset();
+                // Do not reset snapshoot root so that redo/undo can work with
+                // calling update()
+                //
+                // node.reset();
             }
         }
         for(auto &node : pcSwitches) {
@@ -429,15 +432,17 @@ public:
         auto &pcSnapshot = pcSnapshots[type];
         auto &pcModeSwitch = pcSwitches[type];
         auto &pcTransform = pcTransforms[type];
-        if(pcSnapshot) {
+        if(pcSnapshot && pcModeSwitch) {
             if(!update) return pcSnapshot;
         }else{
-            if(ViewParams::getUseSelectionRoot())
-                pcSnapshot = new SoFCSelectionRoot(true);
-            else {
-                pcSnapshot = new SoSeparator;
-                pcSnapshot->boundingBoxCaching = SoSeparator::OFF;
-                pcSnapshot->renderCaching = SoSeparator::OFF;
+            if (!pcSnapshot) {
+                if(ViewParams::getUseSelectionRoot())
+                    pcSnapshot = new SoFCSelectionRoot(true);
+                else {
+                    pcSnapshot = new SoSeparator;
+                    // pcSnapshot->boundingBoxCaching = SoSeparator::OFF;
+                    pcSnapshot->renderCaching = SoSeparator::OFF;
+                }
             }
             _registerLinkNode(pcSnapshot, pcLinked);
             pcModeSwitch = new SoFCSwitch;
