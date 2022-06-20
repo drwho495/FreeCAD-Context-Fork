@@ -273,7 +273,7 @@ public:
         /// Do not include sub-element reference in the output path
         NoElement    = 0x01,
         /** Do not flatten the output path. If not specified, the output path
-         * will to flatten to exclude intermediate objects that belong to the
+         * will be flatten to exclude intermediate objects that belong to the
          * same geo feature group before resolving. For example,
          *      Part.Fusion.Box. -> Part.Box.
          */
@@ -285,6 +285,8 @@ public:
          * be converted to object internal name, except for integer index.
          */
         KeepSubName  = 0x04,
+        /** Convert integer index in the path to sub-object internal name */
+        ConvertIndex = 0x08,
     };
     Q_DECLARE_FLAGS(NormalizeOptions, NormalizeOption);
 

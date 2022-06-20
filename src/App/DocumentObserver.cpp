@@ -21,6 +21,7 @@
  ***************************************************************************/
 
 
+#include "Link.h"
 #include "PreCompiled.h"
 
 #ifndef _PreComp_
@@ -435,6 +436,7 @@ bool SubObjectT::normalize(NormalizeOptions options)
     bool noElement = options & NoElement;
     bool flatten = !(options & NoFlatten);
     bool keepSub = options & KeepSubName;
+    bool convertIndex = options & ConvertIndex;
 
     std::ostringstream ss;
     std::vector<int> subs;
@@ -459,7 +461,23 @@ bool SubObjectT::normalize(NormalizeOptions options)
                 break;
             }
         }
-        if (keepSub || std::isdigit(sub[0]))
+        bool _keepSub;
+        if (!std::isdigit(sub[0]))
+            _keepSub = keepSub;
+        else if (!convertIndex)
+            _keepSub = true;
+        else {
+            _keepSub = false;
+            if (auto ext = objs[i-1]->getExtensionByType<App::LinkBaseExtension>(true)) {
+                if (ext->getElementCountValue() && !ext->getShowElementValue()) {
+                    // if the parent is a collapsed link array element, then we
+                    // have to keep the index no matter what, because there is
+                    // no sub-object corresponding to an array element.
+                    _keepSub = true;
+                }
+            }
+        }
+        if (_keepSub)
             ss << std::string(sub, end);
         else
             ss << objs[i]->getNameInDocument() << ".";
