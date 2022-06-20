@@ -922,9 +922,13 @@ bool LinkBaseExtension::extensionHasChildElement() const {
 }
 
 int LinkBaseExtension::extensionSetElementVisible(const char *element, bool visible) {
-    int index = _getShowElementValue()?getElementIndex(element):getArrayIndex(element);
-    if (index < 0 && !_getShowElementValue())
+    if (!element)
         return -1;
+    int index = std::isdigit((int)element[0]) ? getArrayIndex(element) : getElementIndex(element);
+    if (index < 0) {
+        if(_getElementListValue().size()>0 || _getElementCountValue()>0)
+            return -1;
+    }
     if(index>=0) {
         if(getSyncGroupVisibilityValue() && linkedPlainGroup()) {
             const auto &elements = _getElementListValue();
@@ -960,9 +964,13 @@ int LinkBaseExtension::extensionSetElementVisible(const char *element, bool visi
 }
 
 int LinkBaseExtension::extensionIsElementVisible(const char *element) const {
-    int index = _getShowElementValue()?getElementIndex(element):getArrayIndex(element);
-    if (index < 0 && !_getShowElementValue())
+    if (!element)
         return -1;
+    int index = std::isdigit((int)element[0]) ? getArrayIndex(element) : getElementIndex(element);
+    if (index < 0) {
+        if(_getElementListValue().size()>0 || _getElementCountValue()>0)
+            return -1;
+    }
     if (index>=0) {
         if(getSyncGroupVisibilityValue() && linkedPlainGroup()) {
             const auto &elements = _getElementListValue();
@@ -988,13 +996,17 @@ int LinkBaseExtension::extensionIsElementVisible(const char *element) const {
 }
 
 int LinkBaseExtension::extensionIsElementVisibleEx(const char *subname, int reason) const {
+    if (!subname)
+        return -1;
     auto element = Data::ComplexGeoData::findElementName(subname);
     if(subname != element && isSubnameHidden(getContainer(),subname))
         return 0;
 
-    int index = _getShowElementValue()?getElementIndex(subname):getArrayIndex(subname);
-    if (index < 0 && !_getShowElementValue())
-        return -1;
+    int index = std::isdigit((int)element[0]) ? getArrayIndex(element) : getElementIndex(element);
+    if (index < 0) {
+        if(_getElementListValue().size()>0 ||_getElementCountValue()>0)
+            return -1;
+    }
 
     if (index>=0) {
         if(getSyncGroupVisibilityValue() && linkedPlainGroup()) {

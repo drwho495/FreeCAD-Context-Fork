@@ -2373,8 +2373,7 @@ void ViewProviderLink::updateDataPrivate(App::LinkBaseExtension *ext, const App:
                 linkView->setElementVisible(i,true);
         }
     }else if(prop == ext->_getElementListProperty()) {
-        if(ext->_getShowElementValue())
-            updateElementList(ext);
+        updateElementList(ext);
     }else if(prop == ext->getSyncGroupVisibilityProperty()) {
         updateElementList(ext);
     }
