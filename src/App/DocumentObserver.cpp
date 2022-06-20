@@ -21,7 +21,6 @@
  ***************************************************************************/
 
 
-#include "Link.h"
 #include "PreCompiled.h"
 
 #ifndef _PreComp_
@@ -38,6 +37,7 @@
 #include "DocumentObserver.h"
 #include "ComplexGeoData.h"
 #include "GeoFeature.h"
+#include "Link.h"
 
 using namespace App;
 namespace bp = boost::placeholders;
