@@ -287,35 +287,50 @@ Py::Object View3DInventorPy::getattr(const char * attr)
         throw Py::RuntimeError(s_out.str());
     }
     else {
-        // see if an active object has the same name
-        App::DocumentObject *docObj = _view->getActiveObject<App::DocumentObject*>(attr);
-        if (docObj) {
-            return Py::Object(docObj->getPyObject(),true);
+        // else looking for a method with the name and call it
+        Py::Object obj;
+        bool error = false;
+        try {
+            obj = Py::PythonExtension<View3DInventorPy>::getattr(attr);
+        } catch (Py::Exception &e) {
+            error = true;
+            e.clear();
+        }
+        if (PyCFunction_Check(obj.ptr())) {
+            PyCFunctionObject* op = reinterpret_cast<PyCFunctionObject*>(obj.ptr());
+            if (op->m_ml->ml_flags == METH_VARARGS) {
+                if (!pycxx_handler)
+                    pycxx_handler = op->m_ml->ml_meth;
+                op->m_ml->ml_meth = method_varargs_ext_handler;
+            } else if (op->m_ml->ml_flags == METH_KEYWORDS) {
+                if (!pycxx_kwd_handler)
+                    pycxx_kwd_handler = reinterpret_cast<PyCFunctionWithKeywords>(reinterpret_cast<void (*) (void)>(op->m_ml->ml_meth));
+                op->m_ml->ml_meth = reinterpret_cast<PyCFunction>(reinterpret_cast<void (*) (void)>(method_keyword_ext_handler));
+            }
         }
         else if (Base::streq(attr, "Viewer"))
             return getViewer(Py::Tuple());
         else if (Base::streq(attr, "__dict__")) {
-            Py::Dict dict;
-            dict.setItem("Viewer", getViewer(Py::Tuple()));
-            return dict;
+            if (obj.isMapping()) {
+                Py::Dict dict(obj);
+                dict.setItem("Viewer", getViewer(Py::Tuple()));
+                return dict;
+            } else {
+                Py::Dict dict;
+                dict.setItem("Viewer", getViewer(Py::Tuple()));
+                return dict;
+            }
         }
         else {
-            // else looking for a method with the name and call it
-            Py::Object obj = Py::PythonExtension<View3DInventorPy>::getattr(attr);
-            if (PyCFunction_Check(obj.ptr())) {
-                PyCFunctionObject* op = reinterpret_cast<PyCFunctionObject*>(obj.ptr());
-                if (op->m_ml->ml_flags == METH_VARARGS) {
-                    if (!pycxx_handler)
-                        pycxx_handler = op->m_ml->ml_meth;
-                    op->m_ml->ml_meth = method_varargs_ext_handler;
-                } else if (op->m_ml->ml_flags == METH_KEYWORDS) {
-                    if (!pycxx_kwd_handler)
-                        pycxx_kwd_handler = reinterpret_cast<PyCFunctionWithKeywords>(reinterpret_cast<void (*) (void)>(op->m_ml->ml_meth));
-                    op->m_ml->ml_meth = reinterpret_cast<PyCFunction>(reinterpret_cast<void (*) (void)>(method_keyword_ext_handler));
-                }
+            // see if an active object has the same name
+            App::DocumentObject *docObj = _view->getActiveObject<App::DocumentObject*>(attr);
+            if (docObj) {
+                return Py::Object(docObj->getPyObject(),true);
             }
-            return obj;
         }
+        if (error)
+            throw Py::AttributeError("Attribute not found");
+        return obj;
     }
 }
 
