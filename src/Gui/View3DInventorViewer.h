@@ -157,6 +157,7 @@ public:
     /// Observer message from the Selection
     virtual void onSelectionChanged(const SelectionChanges &Reason);
     void checkGroupOnTop(const SelectionChanges &Reason, bool alt=false);
+    void refreshGroupOnTop();
     void clearGroupOnTop(bool alt=false);
 
     bool isInGroupOnTop(const App::SubObjectT &objT, bool altOnly=true) const;

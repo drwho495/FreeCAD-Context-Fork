@@ -1120,6 +1120,34 @@ bool View3DInventorViewer::isInGroupOnTop(const App::SubObjectT &_objT, bool alt
     return it!=objectsOnTopSel.end() && (!altOnly || it->second.alt);
 }
 
+void View3DInventorViewer::refreshGroupOnTop()
+{
+    std::vector<App::SubObjectT> objs;
+    for (const auto &v : objectsOnTopPreSel) {
+        if (!v.first.getSubObject())
+            objs.push_back(v.first);
+    }
+    for (const auto &objT : objs)
+        checkGroupOnTop(SelectionChanges(SelectionChanges::RmvPreselect,objT), false);
+
+    objs.clear();
+    for (const auto &v : objectsOnTopSel) {
+        if (!v.first.getSubObject())
+            objs.push_back(v.first);
+    }
+
+    for (const auto &objT : objs)
+        checkGroupOnTop(SelectionChanges(SelectionChanges::RmvSelection,objT), false);
+
+    objs.clear();
+    for (const auto &objT : _pimpl->objectsOnTop) {
+        if (!objT.getSubObject())
+            objs.push_back(objT);
+    }
+    for (const auto &objT : objs)
+        checkGroupOnTop(SelectionChanges(SelectionChanges::RmvSelection,objT), true);
+}
+
 void View3DInventorViewer::checkGroupOnTop(const SelectionChanges &Reason, bool alt) {
     bool preselect = false;
 
