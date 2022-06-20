@@ -139,6 +139,7 @@ public:
     Py::Object addObjectOnTop(const Py::Tuple &);
     Py::Object removeObjectOnTop(const Py::Tuple &);
     Py::Object isObjectOnTop(const Py::Tuple &);
+    Py::Object getObjectsOnTop(const Py::Tuple &);
 
     Py::Object bindCamera(const Py::Tuple&);
     Py::Object bindView(const Py::Tuple&);

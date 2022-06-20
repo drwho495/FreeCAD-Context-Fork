@@ -216,6 +216,9 @@ void View3DInventorPy::init_type()
     add_varargs_method("isObjectOnTop",&View3DInventorPy::isObjectOnTop,
         "isObjectOnTop(obj,subname='')\n\n"
         "Check if a given object is in group on top");
+    add_varargs_method("getObjectsOnTop",&View3DInventorPy::getObjectsOnTop,
+        "getObjectsOnTop(alt=True : Boolean) -> List[Tuple[DocumentObject, String]]\n\n"
+        "Return the list of objects on top");
     add_varargs_method("bindCamera",&View3DInventorPy::bindCamera,
         "bindCamera(node, sync=False)\n\n"
         "Bind a camera node to the camera of this view. Pass 'None' to unbind.\n"
@@ -2754,6 +2757,20 @@ Py::Object View3DInventorPy::isObjectOnTop(const Py::Tuple &args) {
             return Py::TupleN(Py::asObject(obj->getPyObject()),Py::String(subname));
     }
     return Py::None();
+}
+
+Py::Object View3DInventorPy::getObjectsOnTop(const Py::Tuple &args) {
+    if (!PyArg_ParseTuple(args.ptr(), ""))
+        throw Py::Exception();
+    Py::List list;
+    for (const auto &sobjT : _view->getViewer()->getObjectsOnTop()) {
+        auto obj = sobjT.getObject();
+        if (!obj)
+            continue;
+        list.append(Py::TupleN(Py::asObject(obj->getPyObject()),
+                               Py::String(sobjT.getSubName())));
+    }
+    return list;
 }
 
 Py::Object View3DInventorPy::bindCamera(const Py::Tuple &args) {
