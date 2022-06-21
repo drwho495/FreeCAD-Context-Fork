@@ -4047,7 +4047,7 @@ bool ViewProviderLink::reorderObjects(const std::vector<App::DocumentObject*> &o
         return 0;
     if (ext->getLinkedObjectProperty()) {
         if(hasElements(ext))
-            return -1;
+            return false;
         if(!hasSubName && linkView->isLinked()) {
             auto linked = getLinkedView(false,ext);
             if(linked)
