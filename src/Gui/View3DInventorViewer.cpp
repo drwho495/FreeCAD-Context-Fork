@@ -3954,6 +3954,7 @@ bool View3DInventorViewer::getSceneBoundBox(Base::BoundBox3d &box) const {
                     bbox.getBounds(minx,miny,minz,maxx,maxy,maxz);
                     box.Add(Base::BoundBox3d(minx,miny,minz,maxx,maxy,maxz));
                 }
+                continue;
             }
             if(!vp->isVisible())
                 continue;
