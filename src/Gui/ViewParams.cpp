@@ -5559,6 +5559,7 @@ void ViewParams::removeNoSectionOnTop() {
     instance()->handle->RemoveBool("NoSectionOnTop");
 }
 
+// Auto generated code (Tools/params_utils.py:284)
 const char *ViewParams::docSectionFillGroup() {
     return QT_TRANSLATE_NOOP("ViewParams",
 "Render cross section filling of objects with similar materials together.\n"
@@ -6202,7 +6203,7 @@ void ViewParams::removeToolTipIconSize() {
     instance()->handle->RemoveInt("ToolTipIconSize");
 }
 
-// Auto generated code (Gui/ViewParams.py:481)
+// Auto generated code (Gui/ViewParams.py:478)
 const std::vector<QString> ViewParams::AnimationCurveTypes = {
     QStringLiteral("Linear"),
     QStringLiteral("InQuad"),
@@ -6247,7 +6248,7 @@ const std::vector<QString> ViewParams::AnimationCurveTypes = {
     QStringLiteral("OutInBounce"),
 };
 
-// Auto generated code (Gui/ViewParams.py:489)
+// Auto generated code (Gui/ViewParams.py:486)
 static const char *DrawStyleNames[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "As Is"),
     QT_TRANSLATE_NOOP("DrawStyle", "Points"),
@@ -6260,7 +6261,7 @@ static const char *DrawStyleNames[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "Shadow"),
 };
 
-// Auto generated code (Gui/ViewParams.py:498)
+// Auto generated code (Gui/ViewParams.py:495)
 static const char *DrawStyleDocs[] = {
     QT_TRANSLATE_NOOP("DrawStyle", "Draw style, normal display mode"),
     QT_TRANSLATE_NOOP("DrawStyle", "Draw style, show points only"),
@@ -6274,7 +6275,7 @@ static const char *DrawStyleDocs[] = {
 };
 
 namespace Gui {
-// Auto generated code (Gui/ViewParams.py:507)
+// Auto generated code (Gui/ViewParams.py:504)
 const char *drawStyleNameFromIndex(int i)
 {
     if (i < 0 || i>= 9)
@@ -6282,7 +6283,7 @@ const char *drawStyleNameFromIndex(int i)
     return DrawStyleNames[i];
 }
 
-// Auto generated code (Gui/ViewParams.py:516)
+// Auto generated code (Gui/ViewParams.py:513)
 int drawStyleIndexFromName(const char *name)
 {
     if (!name)
@@ -6294,7 +6295,7 @@ int drawStyleIndexFromName(const char *name)
     return -1;
 }
 
-// Auto generated code (Gui/ViewParams.py:529)
+// Auto generated code (Gui/ViewParams.py:526)
 const char *drawStyleDocumentation(int i)
 {
     if (i < 0 || i>= 9)
