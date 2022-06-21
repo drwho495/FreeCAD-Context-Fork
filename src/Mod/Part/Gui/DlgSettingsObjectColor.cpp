@@ -46,9 +46,9 @@ DlgSettingsObjectColor::DlgSettingsObjectColor(QWidget* parent)
 {
     ui->setupUi(this);
     ui->DefaultShapeColor->setDisabled(ui->checkRandomColor->isChecked());
-    ui->DressUpColor->setAllowChangeAlpha(true);
-    ui->AdditiveColor->setAllowChangeAlpha(true);
-    ui->SubtractiveColor->setAllowChangeAlpha(true);
+    ui->DressUpColor->setAllowTransparency(true);
+    ui->AdditiveColor->setAllowTransparency(true);
+    ui->SubtractiveColor->setAllowTransparency(true);
 
     App::Color c;
     QColor qc;

@@ -638,6 +638,7 @@ struct ColorButtonP
     bool allowChange;
     bool autoChange;
     bool drawFrame;
+    bool allowTransparency;
     bool modal;
     bool dirty;
     bool allowAlpha;
@@ -647,6 +648,7 @@ struct ColorButtonP
         , allowChange(true)
         , autoChange(false)
         , drawFrame(true)
+        , allowTransparency(false)
         , modal(true)
         , dirty(true)
         , allowAlpha(false)
@@ -731,16 +733,6 @@ bool ColorButton::allowChangeColor() const
     return d->allowChange;
 }
 
-void ColorButton::setAllowChangeAlpha(bool ok)
-{
-    d->allowAlpha = ok;
-}
-
-bool ColorButton::allowChangeAlpha() const
-{
-    return d->allowAlpha;
-}
-
 void ColorButton::setDrawFrame(bool ok)
 {
     d->drawFrame = ok;
@@ -749,6 +741,21 @@ void ColorButton::setDrawFrame(bool ok)
 bool ColorButton::drawFrame() const
 {
     return d->drawFrame;
+}
+
+void Gui::ColorButton::setAllowTransparency(bool allow)
+{
+    d->allowTransparency = allow;
+    if (d->cd)
+        d->cd->setOption(QColorDialog::ColorDialogOption::ShowAlphaChannel, allow);
+}
+
+bool Gui::ColorButton::allowTransparency() const
+{
+    if (d->cd)
+        return d->cd->testOption(QColorDialog::ColorDialogOption::ShowAlphaChannel);
+    else
+        return d->allowTransparency;
 }
 
 void ColorButton::setModal(bool b)
@@ -826,7 +833,7 @@ void ColorButton::paintEvent (QPaintEvent * e)
         else {
             p.fillRect(0, 0, w, h, QBrush(c));
         }
-        if (allowChangeAlpha() && d->col.alpha() != 255) {
+        if (allowTransparency() && d->col.alpha() != 255) {
             p.setPen(QPen(Qt::white, 2));
             p.setBrush(QBrush());
             p.drawRect(4, 4, w-8, h-8);
@@ -848,16 +855,11 @@ void ColorButton::onChooseColor()
 {
     if (!d->allowChange)
         return;
-#if QT_VERSION >= 0x040500
     if (d->modal) {
-#endif
         QColor currentColor = d->col;
         QColorDialog cd(d->col, this);
-#if QT_VERSION >= 0x050000
         cd.setOptions(QColorDialog::DontUseNativeDialog);
-#endif
-        if (d->allowAlpha)
-            cd.setOption(QColorDialog::ShowAlphaChannel);
+        cd.setOption(QColorDialog::ColorDialogOption::ShowAlphaChannel, d->allowTransparency);
 
         if (d->autoChange) {
             connect(&cd, SIGNAL(currentColorChanged(const QColor &)),
@@ -877,17 +879,13 @@ void ColorButton::onChooseColor()
             setColor(currentColor);
             changed();
         }
-#if QT_VERSION >= 0x040500
     }
     else {
         if (d->cd.isNull()) {
             d->old = d->col;
             d->cd = new QColorDialog(d->col, this);
-#if QT_VERSION >= 0x050000
             d->cd->setOptions(QColorDialog::DontUseNativeDialog);
-#endif
-            if (d->allowAlpha)
-                d->cd->setOption(QColorDialog::ShowAlphaChannel);
+            d->cd->setOption(QColorDialog::ColorDialogOption::ShowAlphaChannel, d->allowTransparency);
             d->cd->setAttribute(Qt::WA_DeleteOnClose);
             connect(d->cd, SIGNAL(rejected()),
                     this, SLOT(onRejected()));
@@ -896,7 +894,6 @@ void ColorButton::onChooseColor()
         }
         d->cd->show();
     }
-#endif
 }
 
 void ColorButton::onColorChosen(const QColor& c)
@@ -916,7 +913,7 @@ void ColorButton::onRejected()
 TransparentColorButton::TransparentColorButton(QWidget *parent)
     :ColorButton(parent)
 {
-    setAllowChangeAlpha(true);
+    setAllowTransparency(true);
 }
 
 // ------------------------------------------------------------------------------
