@@ -1211,6 +1211,8 @@ Base::Matrix4D LinkBaseExtension::getTransform(bool transform) const {
         s.scale(getScaleVector());
         mat *= s;
     }
+    if(getMatrixProperty())
+        mat *= getMatrixValue();
     return mat;
 }
 
@@ -1279,6 +1281,8 @@ bool LinkBaseExtension::extensionGetSubObject(DocumentObject *&ret, const char *
                 s.scale(getScaleVector());
                 _mat *= s;
             }
+            if(getMatrixProperty())
+                _mat *= getMatrixValue();
             auto linked = getTrueLinkedObject(false,&_mat,depth);
             if(linked && linked!=obj) {
                 linked->getSubObject(mySubElements.empty()?0:mySubElements.front().c_str(),
@@ -1320,6 +1324,9 @@ bool LinkBaseExtension::extensionGetSubObject(DocumentObject *&ret, const char *
                 s.scale((*scaleList)[idx]);
                 *mat *= s;
             }
+            auto matrixList = getMatrixListProperty();
+            if(matrixList && matrixList->getSize()>idx)
+                *mat *= (*matrixList)[idx];
         }
     }
 
@@ -1589,14 +1596,22 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
 
             // preserve element properties in ourself
             std::vector<Base::Placement> placements;
+            std::vector<Base::Matrix4D> matrices;
             placements.reserve(objs.size());
             std::vector<Base::Vector3d> scales;
             scales.reserve(objs.size());
+            static Base::Matrix4D identity;
+            auto matrixList = getMatrixListProperty();
             for(size_t i=0;i<objs.size();++i) {
                 auto element = freecad_dynamic_cast<LinkElement>(objs[i]);
                 if(element) {
                     placements.push_back(element->Placement.getValue());
                     scales.push_back(element->getScaleVector());
+                    if (matrixList && element->getMatrixValue() != identity) {
+                        matrices.reserve(objs.size());
+                        matrices.resize(i);
+                        matrices.push_back(element->getMatrixValue());
+                    }
                 }else{
                     placements.emplace_back();
                     scales.emplace_back(1,1,1);
@@ -1620,11 +1635,18 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
                 getScaleListProperty()->setValue(scales);
                 getScaleListProperty()->setStatus(Property::User3,false);
             }
+            if (matrixList) {
+                matrixList->setStatus(Property::User3,true);
+                matrixList->setValue(matrices);
+                matrixList->setStatus(Property::User3,false);
+            }
 
             if (getScaleListProperty())
                 getScaleListProperty()->touch();
             else if (getPlacementListProperty())
                 getPlacementListProperty()->touch();
+            else if (matrixList)
+                matrixList->touch();
 
             for(auto obj : objs) {
                 if(obj && obj->getNameInDocument())
@@ -1662,19 +1684,23 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
 
         if(!_getShowElementValue()) {
             if(getScaleListProperty()) {
+                auto prop = getScaleListProperty();
                 auto scales = getScaleListValue();
                 scales.resize(elementCount,Base::Vector3d(1,1,1));
-                getScaleListProperty()->setStatus(Property::User3,true);
-                getScaleListProperty()->setValue(scales);
-                getScaleListProperty()->setStatus(Property::User3,false);
+                Base::ObjectStatusLocker<Property::Status,Property> guard(Property::User3, prop);
+                prop->setValue(scales);
             }
             if(getPlacementListProperty()) {
                 auto prop = getPlacementListProperty();
                 Base::ObjectStatusLocker<Property::Status,Property> guard(Property::User3, prop);
-                if(prop->getSize() < elementCount) {
+                if(prop->getSize() < elementCount)
                     signalNewLinkElements(*parent, prop->getSize(), elementCount, nullptr);
-                }else
-                    prop->setSize(elementCount);
+                prop->setSize(elementCount);
+            }
+            if (getMatrixListProperty()) {
+                auto prop = getMatrixListProperty();
+                Base::ObjectStatusLocker<Property::Status,Property> guard(Property::User3, prop);
+                prop->setSize(elementCount);
             }
         }else if(getElementListProperty()) {
             auto objs = getElementListValue();
@@ -1687,6 +1713,7 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
                     name += "_i";
                 auto offset = name.size();
                 auto scaleProp = getScaleListProperty();
+                auto matrixProp = getMatrixListProperty();
                 const auto &vis = getVisibilityListValue();
 
                 auto owner = getContainer();
@@ -1715,6 +1742,11 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
                     else
                         obj->Scale.setValue(1);
 
+                    if (matrixProp && matrixProp->getSize()>i)
+                        obj->Matrix.setValue(matrixProp->getValues()[i]);
+                    else
+                        obj->Matrix.setValue(Base::Matrix4D());
+
                     objs.push_back(obj);
                 }
                 signalNewLinkElements(*parent,
@@ -1725,6 +1757,8 @@ void LinkBaseExtension::update(App::DocumentObject *parent, const Property *prop
                     getPlacementListProperty()->setSize(0);
                 if(getScaleListProperty())
                     getScaleListProperty()->setSize(0);
+                if(getMatrixListProperty())
+                    getMatrixListProperty()->setSize(0);
 
                 getElementListProperty()->setValue(objs);
 
@@ -2181,8 +2215,8 @@ void LinkBaseExtension::setLink(int index, DocumentObject *obj,
 
         auto objs = getElementListValue();
         getElementListProperty()->setValue();
-        for(auto obj : objs)
-            detachElement(obj);
+        for(auto thisObj : objs)
+            detachElement(thisObj);
         return;
     }
 
