@@ -926,12 +926,25 @@ void ToolBarManager::onToggleStatusBarWidget(QWidget *w, bool visible)
 
 void ToolBarManager::onMovableChanged(bool movable)
 {
-    if (!restored)
-        return;
     auto toolbar = qobject_cast<QToolBar*>(sender());
-    if (toolbar) {
+    if (!toolbar)
+        return;
+    if (restored && !toolbar->objectName().isEmpty()) {
         Base::ConnectionBlocker block(connParam);
         hMovable->SetBool(toolbar->objectName().toUtf8(), movable);
+    }
+    QString name = QStringLiteral("_fc_toolbar_sep_");
+    auto sep = toolbar->findChild<QAction*>(name);
+    if (sep) {
+        toolbar->removeAction(sep);
+        sep->deleteLater();
+    }
+    if (!movable) {
+        auto actions = toolbar->actions();
+        if (actions.size()) {
+            sep = toolbar->insertSeparator(actions[0]);
+            sep->setObjectName(name);
+        }
     }
 }
 
