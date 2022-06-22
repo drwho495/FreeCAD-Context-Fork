@@ -1718,6 +1718,9 @@ Property *ObjectIdentifier::resolveProperty(const App::DocumentObject *obj,
             return prop;
         }
 
+        if (propertyIndex==0 &&  !this->localProperty)
+            return nullptr;
+
         sub = name;
         if(!boost::ends_with(name,"."))
             sub += ".";
