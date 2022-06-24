@@ -4022,30 +4022,34 @@ void TreeWidget::onToolTipTimer()
     }
 
     QString info;
-    if (!Obj->Label2.getStrValue().empty() && (_DraggingActive || tag == Gui::treeBranchTag()))
+    if (!Obj->Label2.getStrValue().empty() &&
+            (_DraggingActive
+             || tag == Gui::treeBranchTag()
+             || tag == Gui::treeNoIconTag()))
+    {
         info = QString::fromUtf8(Obj->Label2.getValue());
-    else if (!_DraggingActive) {
-        if (Obj->isError())
-            info = QApplication::translate(Obj->getTypeId().getName(), Obj->getStatusString());
-        else {
-            info = item->object()->getToolTip(tag);
-            if (info.isEmpty()) {
-                if (tag == treeUnselectableIconTag())
-                    info = QObject::tr("This object is unselectable. Click to re-enable selection");
-                else if (!Obj->Label2.getStrValue().empty())
-                    info = QString::fromUtf8(Obj->Label2.getValue());
-            }
+    } else {
+        info = item->object()->getToolTip(tag);
+        if (info.isEmpty()) {
+            if (tag == treeUnselectableIconTag())
+                info = QObject::tr("This object is unselectable. Click to re-enable selection");
+            else if (!Obj->Label2.getStrValue().empty())
+                info = QString::fromUtf8(Obj->Label2.getValue());
         }
     }
 
     if (_DraggingActive) {
-        if (!info.isEmpty())
-            info += QStringLiteral("\n\n");
-        info += tr("The drop action is auto selected depending on dropping site.\n\n"
-                   "You can hold Ctrl key while dropping if you want to drop without\n"
-                   "draggging object out, or make copy instead of move.\n\n"
-                   "You can hold Alt or Ctrl + Alt key to choose alternative drop action,\n"
-                   "including link, reorder, or replace depending on dropping site.");
+        static QRegularExpression regex(QStringLiteral("shift|ctrl|alt"),
+                                        QRegularExpression::CaseInsensitiveOption);
+        if (tag != Gui::treeNoIconTag() && info.indexOf(regex) < 0) {
+            if (!info.isEmpty())
+                info += QStringLiteral("\n\n");
+            info += tr("The drop action is auto selected depending on dropping site.\n\n"
+                    "You can hold Ctrl key while dropping if you want to drop without\n"
+                    "draggging object out, or make copy instead of move.\n\n"
+                    "You can hold Alt or Ctrl + Alt key to choose alternative drop action,\n"
+                    "including link, reorder, or replace depending on dropping site.");
+        }
     }
 
     QString internalName, typeName;
@@ -4053,15 +4057,9 @@ void TreeWidget::onToolTipTimer()
         internalName = QStringLiteral("\nInternal name: %1").arg(
                 QString::fromUtf8(Obj->getNameInDocument()));
 
-    if (Obj->isError())
-        internalName = QStringLiteral("%1 <span style='color:red'>(%2!)</span>")
-            .arg(internalName.toHtmlEscaped(), tr("Error"));
-
     if (QApplication::queryKeyboardModifiers() == Qt::ControlModifier) {
         if (Obj->getDocument() != item->getOwnerDocument()->document()->getDocument()) {
             QString label = QString::fromUtf8(Obj->getDocument()->Label.getValue());
-            if (Obj->isError())
-                label = label.toHtmlEscaped();
             internalName += QStringLiteral("\nDocument: %1").arg(label);
         }
         typeName = QStringLiteral("\nType: %1").arg(
@@ -4070,29 +4068,48 @@ void TreeWidget::onToolTipTimer()
         if (auto prop = Base::freecad_dynamic_cast<App::PropertyPythonObject>(
                 Obj->getPropertyByName("Proxy"))) {
             Base::PyGILStateLocker lock;
-            Py::Object proxy = prop->getValue();
-            if(!proxy.isNone() && !proxy.isString() && !proxy.isNumeric()) {
-                QString proxyType = QStringLiteral("\nProxy type: %1");
-                if (proxy.hasAttr("__class__"))
-                    typeName += proxyType.arg(QString::fromUtf8(proxy.getAttr("__class__").as_string().c_str()));
-                else 
-                    typeName += proxyType.arg(QString::fromUtf8(proxy.ptr()->ob_type->tp_name));
+            try {
+                Py::Object proxy = prop->getValue();
+                if(!proxy.isNone() && !proxy.isString() && !proxy.isNumeric()) {
+                    QString proxyType = QStringLiteral("\nProxy type: %1");
+                    if (proxy.hasAttr("__class__"))
+                        typeName += proxyType.arg(QString::fromUtf8(proxy.getAttr("__class__").as_string().c_str()));
+                    else 
+                        typeName += proxyType.arg(QString::fromUtf8(proxy.ptr()->ob_type->tp_name));
+                }
+            } catch (Py::Exception &e) {
+                e.clear();
+            } catch (Base::Exception &) {
             }
         }
     }
 
-
-    if (info.size())
-        info = QStringLiteral("\n\n") + info;
-
     QString label = QString::fromUtf8(Obj->Label.getValue());
-    if (Obj->isError()) {
-        label = label.toHtmlEscaped();
-        typeName = typeName.toHtmlEscaped();
-        info = info.toHtmlEscaped();
-        typeName.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
-        internalName.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
-        info.replace(QStringLiteral("\n"), QStringLiteral("<br>"));
+    if (!Obj->isError()) {
+        if (info.size())
+            info = QStringLiteral("\n\n") + info;
+    } else {
+        QString format = QStringLiteral("<p style='white-space:pre; margin:0;'>%1</p>");
+        if (label.size())
+            label = format.arg(label.toHtmlEscaped());
+        if (typeName.size())
+            typeName = format.arg(typeName.toHtmlEscaped());
+        if (internalName.size())
+            internalName = format.arg(internalName.toHtmlEscaped());
+
+        QString error = QApplication::translate(Obj->getTypeId().getName(), Obj->getStatusString());
+        if (error.isEmpty())
+            error = tr("Error!");
+
+        error = QStringLiteral("<span style='color:red'>%1</span>").arg(error.toHtmlEscaped());
+        
+        format = QStringLiteral("<p style='white-space:pre; margin-top:0.5em;'>%1</p>");
+        error = format.arg(error);
+
+        if (info.size())
+            info = error + format.arg(info.toHtmlEscaped());
+        else
+            info = error;
     }
 
     QString tooltip = label + internalName + typeName + info;
