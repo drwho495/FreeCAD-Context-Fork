@@ -22,6 +22,7 @@
 
 
 #include "PreCompiled.h"
+#include "PropertyGeo.h"
 
 #ifndef _PreComp_
 # include <sstream>
@@ -538,9 +539,14 @@ std::string SubObjectT::getNewElementName(bool fallback) const {
     if(!obj)
         return std::string();
     GeoFeature::resolveElement(obj,subname.c_str(),element);
-    if (element.first.size() || !fallback)
+    if (!element.first.empty())
         return std::move(element.first);
-    return std::move(element.second);
+    if (!element.second.empty() && fallback)
+        return std::move(element.second);
+    auto name = Data::ComplexGeoData::newElementName(subname.c_str());
+    if (!name.empty() || !fallback)
+        return name;
+    return Data::ComplexGeoData::oldElementName(subname.c_str());
 }
 
 std::string SubObjectT::getOldElementName(int *index, bool fallback) const {
@@ -558,9 +564,11 @@ std::string SubObjectT::getOldElementName(int *index, bool fallback) const {
             element.second.resize(pos);
         }
     }
-    if (element.second.empty() && fallback)
+    if (!element.second.empty())
+        return std::move(element.second);
+    if (!element.first.empty() && fallback)
         return std::move(element.first);
-    return std::move(element.second);
+    return Data::ComplexGeoData::oldElementName(subname.c_str());
 }
 
 App::DocumentObject *SubObjectT::getSubObject() const {
