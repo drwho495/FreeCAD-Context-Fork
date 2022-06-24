@@ -1324,10 +1324,7 @@ void LinkView::setChildren(const std::vector<App::DocumentObject*> &children,
             if (idx >= 0) {
                 auto &info = *nodeArray[idx];
                 auto node = info.getTopNode();
-                if (info.isLinked())
-                    nameMap.erase(info.linkInfo->getLinkedName());
-                else
-                    nameMap.clear();
+                nameMap.clear();
                 nodeMap.erase(node);
                 int nidx = pcLinkRoot->findChild(node);
                 if (nidx >= 0)
@@ -1777,7 +1774,7 @@ bool LinkView::linkGetDetailPath(const char *subname, SoFullPath *path, SoDetail
                         idx = it->second;
                 }
 
-                if(idx<0)
+                if(idx < 0 || idx >= (int)nodeArray.size())
                     return false;
 
                 subname = dot+1;
