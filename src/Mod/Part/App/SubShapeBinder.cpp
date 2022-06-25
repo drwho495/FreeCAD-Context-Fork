@@ -662,6 +662,11 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
 
         result.setPlacement(Placement.getValue());
         Shape.setValue(result);
+        auto res = executeExtensions();
+        if (res) {
+            FC_ERR(res->Why);
+            delete res;
+        }
     }
 
     // collect transformation matrix cache entries
