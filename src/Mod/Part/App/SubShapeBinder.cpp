@@ -1208,7 +1208,7 @@ SubShapeBinder::import(const App::SubObjectT &_feature,
         resolved = App::SubObjectT(link, linkSub.c_str());
         if (link == container
                 || Part::BodyBase::findBodyOf(link) == container
-                || App::Part::getPartOfObject(link) == container) {
+                || App::GeoFeatureGroupExtension::getGroupOfObject(link) == container) {
             if ((!noSubElement || !resolved.hasSubElement())
                     && (!noSubObject || !resolved.hasSubObject()))
                 return App::SubObjectT(sobj, feature.getElementName());
