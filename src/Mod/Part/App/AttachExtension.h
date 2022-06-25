@@ -89,7 +89,8 @@ public:
 
 
     App::PropertyString         AttacherType;
-    App::PropertyLinkSubList    Support;
+    App::PropertyLinkSubList    Support; // deprecated, leave here for backward compatibility
+    App::PropertyLinkSubList    AttachmentSupport;
     App::PropertyEnumeration    MapMode; //see AttachEngine::eMapMode
     App::PropertyBool           MapReversed; //inverts Z and X internal axes
     App::PropertyPlacement      AttachmentOffset;

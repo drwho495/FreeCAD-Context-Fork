@@ -27,6 +27,7 @@
 #include "AttachExtension.h"
 
 #include <Base/Console.h>
+#include <Base/Tools.h>
 #include <App/Application.h>
 
 #include <App/FeaturePythonPyImp.h>
@@ -44,7 +45,9 @@ AttachExtension::AttachExtension()
     EXTENSION_ADD_PROPERTY_TYPE(AttacherType, ("Attacher::AttachEngine3D"), "Attachment",(App::PropertyType)(App::Prop_None),"Class name of attach engine object driving the attachment.");
     this->AttacherType.setStatus(App::Property::Status::Hidden, true);
 
-    EXTENSION_ADD_PROPERTY_TYPE(Support, (0,0), "Attachment",(App::PropertyType)(App::Prop_None),"Support of the 2D geometry");
+    EXTENSION_ADD_PROPERTY_TYPE(Support, (0,0), "Attachment",(App::PropertyType)(App::Prop_Hidden),"Support of the 2D geometry (Deprecated! Use AttachmentSupport instead");
+
+    EXTENSION_ADD_PROPERTY_TYPE(AttachmentSupport, (0,0), "Attachment",(App::PropertyType)(App::Prop_None),"Support of the 2D geometry");
 
     EXTENSION_ADD_PROPERTY_TYPE(MapMode, (mmDeactivated), "Attachment", App::Prop_None, "Mode of attachment to other object");
     MapMode.setEditorName("PartGui::PropertyEnumAttacherItem");
@@ -129,7 +132,7 @@ bool AttachExtension::positionBySupport()
         getPlacement().setValue(_attacher->calculateAttachedPlacement(
                     getPlacement().getValue(), &subChanged));
         if(subChanged) 
-            Support.setValues(Support.getValues(),_attacher->getSubValues());
+            AttachmentSupport.setValues(AttachmentSupport.getValues(),_attacher->getSubValues());
 
         _active = 1;
         return true;
@@ -176,7 +179,14 @@ App::DocumentObjectExecReturn *AttachExtension::extensionExecute()
 void AttachExtension::extensionOnChanged(const App::Property* prop)
 {
     if(! getExtendedObject()->isRestoring()){
-        if ((prop == &Support
+        if (prop == &Support) {
+            if (!prop->testStatus(App::Property::User3)) {
+                Base::ObjectStatusLocker<App::Property::Status,App::Property>
+                    guard(App::Property::User3, &Support);
+                AttachmentSupport.Paste(Support);
+            }
+        }
+        else if ((prop == &AttachmentSupport
              || prop == &MapMode
              || prop == &MapPathParameter
              || prop == &MapReversed
@@ -184,6 +194,9 @@ void AttachExtension::extensionOnChanged(const App::Property* prop)
 
             bool bAttached = false;
             try{
+                Base::ObjectStatusLocker<App::Property::Status,App::Property>
+                    guard(App::Property::User3, &Support);
+                Support.Paste(AttachmentSupport);
                 bAttached = positionBySupport();
             } catch (Base::Exception &e) {
                 getExtendedObject()->setStatus(App::Error, true);
@@ -235,6 +248,9 @@ void AttachExtension::extHandleChangedPropertyName(Base::XMLReader &reader, cons
 void AttachExtension::onExtendedDocumentRestored()
 {
     try {
+        if (Support.getValue())
+            AttachmentSupport.Paste(Support);
+
         bool bAttached = positionBySupport();
 
         // Hide properties when not applicable to reduce user confusion
@@ -268,7 +284,7 @@ void AttachExtension::updateAttacherVals()
 {
     if (!_attacher)
         return;
-    _attacher->setUp(this->Support,
+    _attacher->setUp(this->AttachmentSupport,
                      eMapMode(this->MapMode.getValue()),
                      this->MapReversed.getValue(),
                      this->MapPathParameter.getValue(),

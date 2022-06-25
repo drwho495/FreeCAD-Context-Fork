@@ -542,7 +542,7 @@ PyObject* AttachEnginePy::readParametersFromFeature(PyObject* args)
         }
         Part::AttachExtension* feat = dobj->getExtensionByType<Part::AttachExtension>();
         AttachEngine &attacher = *(this->getAttachEnginePtr());
-        attacher.setUp(feat->Support,
+        attacher.setUp(feat->AttachmentSupport,
                        eMapMode(feat->MapMode.getValue()),
                        feat->MapReversed.getValue(),
                        feat->MapPathParameter.getValue(),

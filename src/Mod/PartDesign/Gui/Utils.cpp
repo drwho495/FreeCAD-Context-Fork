@@ -516,7 +516,7 @@ bool isFeatureMovable(App::DocumentObject* const feat)
 
     if (feat->hasExtension(Part::AttachExtension::getExtensionClassTypeId())) {
         auto attachable = feat->getExtensionByType<Part::AttachExtension>();
-        App::DocumentObject* support = attachable->Support.getValue();
+        App::DocumentObject* support = attachable->AttachmentSupport.getValue();
         if (support && !support->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId()))
             return false;
     }
@@ -575,12 +575,12 @@ void relinkToOrigin(App::DocumentObject* feat, PartDesign::Body* targetbody)
 {
     if (feat->hasExtension(Part::AttachExtension::getExtensionClassTypeId())) {
         auto attachable = feat->getExtensionByType<Part::AttachExtension>();
-        App::DocumentObject* support = attachable->Support.getValue();
+        App::DocumentObject* support = attachable->AttachmentSupport.getValue();
         if (support && support->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId())) {
             auto originfeat = static_cast<App::OriginFeature*>(support);
             App::OriginFeature* targetOriginFeature = targetbody->getOrigin()->getOriginFeature(originfeat->Role.getValue());
             if (targetOriginFeature) {
-                attachable->Support.setValue(static_cast<App::DocumentObject*>(targetOriginFeature), "");
+                attachable->AttachmentSupport.setValue(static_cast<App::DocumentObject*>(targetOriginFeature), "");
             }
         }
     }
