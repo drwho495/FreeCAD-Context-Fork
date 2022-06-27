@@ -78,6 +78,7 @@
 #include "TaskSweep.h"
 #include "TaskDimension.h"
 #include "TaskCheckGeometry.h"
+#include "TaskAttacher.h"
 #include "BoxSelection.h"
 #include "PartParams.h"
 
@@ -2778,6 +2779,60 @@ void CmdPartPreselMeasure::activated(int iMsg)
     MacroCommand::activated(iMsg);
 }
 
+//===========================================================================
+// Part_EditAttachment
+//===========================================================================
+
+DEF_STD_CMD_A(CmdPartEditAttachment)
+
+CmdPartEditAttachment::CmdPartEditAttachment()
+  :Command("Part_EditAttachment")
+{
+    sAppModule    = "Part";
+    sGroup        = QT_TR_NOOP("Part");
+    sMenuText     = QT_TRANSLATE_NOOP("AttachmentEditor", "Attachment...");
+    sToolTipText  = QT_TRANSLATE_NOOP("AttachmentEditor","Edit attachment of selected object.");
+    sWhatsThis    = "Part_EditAttachment";
+    sStatusTip    = sToolTipText;
+    sPixmap       = "Part_Attachment";
+}
+
+void CmdPartEditAttachment::activated(int)
+{
+    auto sels = Gui::Selection().getSelection("", 1, true);
+    if (sels.empty())
+        return;
+    try {
+        auto obj = sels[0].pObject;
+        auto vp = Base::freecad_dynamic_cast<Gui::ViewProviderDocumentObject>(
+                Gui::Application::Instance->getViewProvider(obj));
+        if (!vp)
+            return;
+        if (!obj->getExtensionByType<Part::AttachExtension>(true))
+            cmdAppObject(obj, "addExtension('Part::AttachExtensionPython')");
+        
+        std::unique_ptr<PartGui::TaskDlgAttacher> attacher(new PartGui::TaskDlgAttacher(vp));
+        Gui::Control().showDialog(attacher.get());
+        attacher.release();
+    } catch (Base::Exception &e) {
+        e.ReportException();
+    }
+}
+
+bool CmdPartEditAttachment::isActive(void)
+{
+    auto sels = Gui::Selection().getSelection("", 1, true);
+    if (sels.empty())
+        return false;
+    if (auto prop = Base::freecad_dynamic_cast<App::PropertyPlacement>(
+            sels[0].pObject->getPropertyByName("Placement")))
+    {
+        return !prop->testStatus(App::Property::Hidden)
+            && !prop->testStatus(App::Property::ReadOnly);
+    }
+    return false;
+}
+
 /////////////////////////////////////////////////////////////////////////
 
 void CreatePartCommands(void)
@@ -2833,6 +2888,8 @@ void CreatePartCommands(void)
     rcCmdMgr.addCommand(new CmdPartProjectionOnSurface());
     rcCmdMgr.addCommand(new CmdPartGeometryHistory());
     rcCmdMgr.addCommand(new CmdPartGeometryDerived());
+
+    rcCmdMgr.addCommand(new CmdPartEditAttachment());
 
     rcCmdMgr.addCommand(new CmdPartPreselInfo());
     rcCmdMgr.addCommand(new CmdPartPreselMeasure());
