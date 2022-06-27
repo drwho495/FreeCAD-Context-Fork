@@ -861,6 +861,8 @@ TaskPrimitiveParameters::TaskPrimitiveParameters(ViewProviderPrimitive* Primitiv
 
     parameter = new PartGui::TaskAttacher(PrimitiveView, nullptr, QString(), tr("Attachment"));
     Content.push_back(parameter);
+    if (parameter->getPartner())
+        Content.push_back(parameter->getPartner());
 }
 
 TaskPrimitiveParameters::~TaskPrimitiveParameters()
