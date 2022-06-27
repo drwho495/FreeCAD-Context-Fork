@@ -1184,9 +1184,13 @@ SubShapeBinder::import(const App::SubObjectT &_feature,
     if (!sobj)
         FC_THROWM(Base::RuntimeError,
                 "Sub object not found: " << feature.getSubObjectFullName());
-    if (sobj == editObj || editObj->getInListEx(true).count(sobj))
-        FC_THROWM(Base::RuntimeError,
-                "Cyclic reference to: " << feature.getSubObjectFullName());
+    if (sobj == editObj || editObj->getInListEx(true).count(sobj)) {
+        // Do not throw. Let caller deal with it.
+        //
+        // FC_THROWM(Base::RuntimeError,
+        //         "Cyclic reference to: " << feature.getSubObjectFullName());
+        return feature;
+    }
     auto link = feature.getObject();
 
     const char *featName = "Import";
