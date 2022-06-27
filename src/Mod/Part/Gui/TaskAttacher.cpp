@@ -123,6 +123,9 @@ const QString makeRefString(const App::DocumentObject* obj, const std::string& s
 }
 
 void TaskAttacher::makeRefStrings(std::vector<QString>& refstrings, std::vector<std::string>& refnames) {
+    if (!ViewProvider)
+        return;
+
     Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
     std::vector<App::DocumentObject*> refs;
     auto props = pcAttach->getProperties(isBase);
@@ -461,6 +464,8 @@ bool TaskAttacher::updatePreview()
 
 void TaskAttacher::updateStyle()
 {
+    if (!ViewProvider)
+        return;
     Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
     auto props = pcAttach->getProperties(isBase);
 
@@ -768,11 +773,12 @@ void TaskAttacher::onRefName(const QString& text, unsigned idx)
     QLineEdit* line = getLine(idx);
     if (line == NULL) return;
 
+    Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+
     try {
         if (text.length() == 0) {
             // Reference was removed
             // Update the reference list
-            Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
             auto props = pcAttach->getInitedProperties(isBase);
             std::vector<App::DocumentObject*> refs = props.attachment->getValues();
             std::vector<std::string> refnames = props.attachment->getSubValues();
@@ -872,7 +878,6 @@ void TaskAttacher::onRefName(const QString& text, unsigned idx)
             subElement = objT.getSubName();
         }
 
-        Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
         auto props = pcAttach->getInitedProperties(isBase);
         std::vector<App::DocumentObject*> refs = props.attachment->getValues();
         std::vector<std::string> refnames = props.attachment->getSubValues();
