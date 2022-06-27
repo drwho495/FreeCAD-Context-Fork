@@ -490,6 +490,7 @@ public:
     void addSelectionGate(Gui::SelectionGate *gate, int resolve = 1);
     /// remove the active SelectionGate
     void rmvSelectionGate(void);
+    SelectionGate *currentSelectionGate() const {return ActiveGate;}
 
     int disableCommandLog();
     int enableCommandLog(bool silent=false);
