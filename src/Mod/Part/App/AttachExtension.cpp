@@ -28,6 +28,7 @@
 
 #include <Base/Console.h>
 #include <Base/Tools.h>
+#include <Base/Exception.h>
 #include <App/Application.h>
 
 #include <App/FeaturePythonPyImp.h>
@@ -89,9 +90,11 @@ static inline bool getProp(bool force,
     prop = Base::freecad_dynamic_cast<T>(owner->getDynamicPropertyByName(name));
     if (prop || !force)
         return false;
-    prop = static_cast<T*>(owner->addDynamicProperty(type.getName(),
-                name, "Attachment", doc, /*attr*/0, /*ro*/false, /*hidden*/true));
-    prop->setStatus(App::Property::LockDynamic, true);
+    prop = static_cast<T*>(owner->addDynamicProperty(type.getName(), name, "Attachment", doc));
+    if (!prop)
+        FC_THROWM(Base::RuntimeError, "Failed to add property " << owner->getFullName() << name);
+    prop->setStatus(App::Property::Status::LockDynamic, true);
+    prop->setStatus(App::Property::Status::Hidden, true);
     return true;
 }
 
@@ -116,10 +119,12 @@ void AttachExtension::initBase(bool force)
     Properties props;
 
     if (getProp<App::PropertyString>(force, props.attacherType, obj, "BaseAttacherType", 
-            "Class name of attach engine object driving the attachmentfor base geometry."))
+            "Class name of attach engine object driving the attachment for base geometry."))
     {
         props.attacherType->setValue(_baseProps.attacher->getTypeId().getName());
     }
+    else if (!props.attacherType)
+        return;
 
     getProp<App::PropertyLinkSubList>(force, props.attachment,
             App::PropertyLinkSubListHidden::getClassTypeId(),
@@ -127,7 +132,8 @@ void AttachExtension::initBase(bool force)
 
     if (getProp<App::PropertyEnumeration>(force, props.mapMode, obj, "BaseMapMode",
             "Mode of attachment for the base geometry"))
-    {
+        props.mapMode->setStatus(App::Property::Status::Hidden, false);
+    if (props.mapMode) {
         props.mapMode->setEditorName("PartGui::PropertyEnumAttacherItem");
         props.mapMode->setEnums(AttachEngine::eMapModeStrings);
     }
@@ -274,6 +280,7 @@ void AttachExtension::extensionOnChanged(const App::Property* prop)
                     guard(App::Property::User3, &Support);
                 Support.Paste(AttachmentSupport);
             }
+            _active = -1;
             updateAttacherVals(/*base*/false);
             updatePropertyStatus(isAttacherActive());
         }
