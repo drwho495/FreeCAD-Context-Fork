@@ -293,14 +293,7 @@ TaskAttacher::TaskAttacher(Gui::ViewProviderDocumentObject *ViewProvider, QWidge
         updateAttachmentOffsetUI();
     }
 
-    if (props.mapMode)
-        selectMapMode(eMapMode(props.mapMode->getValue()));
-
-    updateReferencesUI();
-    updateListOfModes();
-    attached = pcAttach->isAttacherActive();
-    updateStyle();
-    // updatePreview();
+    refresh();
 
     // connect object deletion with slot
     auto bnd1 = boost::bind(&TaskAttacher::objectDeleted, this, bp::_1);
@@ -371,6 +364,7 @@ void TaskAttacher::refresh()
     updateListOfModes();
     if (props.mapMode)
         selectMapMode(eMapMode(props.mapMode->getValue()));
+    updateStyle();
     touched = false;
 }
 
@@ -440,16 +434,15 @@ void TaskAttacher::updateReferencesUI()
     updateRefButton(3);
 }
 
-bool TaskAttacher::updatePreview()
+void TaskAttacher::updatePreview()
 {
     if (!ViewProvider)
-        return false;
+        return;
 
     setupTransaction();
     Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
-    attached = false;
     try{
-        attached = pcAttach->positionBySupport();
+        pcAttach->positionBySupport();
         errMessage.clear();
     } catch (Base::Exception &err){
         errMessage = QString::fromUtf8(err.what());
@@ -459,7 +452,6 @@ bool TaskAttacher::updatePreview()
         errMessage = tr("unknown error");
     }
     updateStyle();
-    return attached;
 }
 
 void TaskAttacher::updateStyle()
@@ -467,6 +459,7 @@ void TaskAttacher::updateStyle()
     if (!ViewProvider)
         return;
     Part::AttachExtension* pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+    bool attached = pcAttach->isAttacherActive();
     auto props = pcAttach->getProperties(isBase);
 
     // Check if text is brighter than background, to improve legibility
@@ -1047,7 +1040,6 @@ void TaskAttacher::updateListOfModes()
     //populate list
     ui->listOfModes->blockSignals(true);
     ui->listOfModes->clear();
-    QListWidgetItem* iSelect = 0;
     if (modesInList.size()>0) {
         for (size_t i = 0  ;  i < modesInList.size()  ;  ++i){
             eMapMode mmode = modesInList[i];
@@ -1063,8 +1055,6 @@ void TaskAttacher::updateListOfModes()
             }
             item->setToolTip(tooltip);
 
-            if (mmode == curMode && curMode != mmDeactivated)
-                iSelect = ui->listOfModes->item(i);
             if (i > lastValidModeItemIndex){
                 //potential mode - can be reached by selecting more stuff
                 item->setFlags(item->flags() & ~(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable));
@@ -1082,19 +1072,18 @@ void TaskAttacher::updateListOfModes()
                 } else {
                     item->setText(tr("%1 (add more references)").arg(item->text()));
                 }
-            } else if (mmode == this->lastSuggestResult.bestFitMode){
-                //suggested mode - make bold
-                QFont fnt = item->font();
-                fnt.setBold(true);
-                item->setFont(fnt);
+            } else {
+                if (mmode == this->lastSuggestResult.bestFitMode){
+                    //suggested mode - make bold
+                    QFont fnt = item->font();
+                    fnt.setBold(true);
+                    item->setFont(fnt);
+                }
+                if (mmode == curMode && mmode != mmDeactivated)
+                    item->setSelected(true);
             }
-
         }
     }
-
-    //restore selection
-    if (iSelect)
-        iSelect->setSelected(true);
 
     ui->listOfModes->blockSignals(false);
 }
@@ -1105,6 +1094,7 @@ void TaskAttacher::selectMapMode(eMapMode mmode) {
     for (size_t i = 0;  i < modesInList.size(); ++i) {
         if (modesInList[i] == mmode) {
             ui->listOfModes->item(i)->setSelected(true);
+            break;
         }
     }
 

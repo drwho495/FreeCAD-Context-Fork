@@ -125,9 +125,8 @@ private:
 
     /**
      * @brief updatePreview: calculate attachment, update 3d view, update status message
-     * @return true if attachment calculation was successful, false otherwise
      */
-    bool updatePreview();
+    void updatePreview();
     void updateStyle();
 
     void makeRefStrings(std::vector<QString>& refstrings, std::vector<std::string>& refnames);
@@ -163,8 +162,6 @@ private:
     VisibilityFunction visibilityFunc;
     int transactionID = 0;
     QString errMessage;
-    bool attached = false;
-
     Gui::SelectionGate *selectionGate = nullptr;
 
     // TODO fix documentation here (2015-11-10, Fat-Zer)
