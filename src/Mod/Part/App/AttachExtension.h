@@ -145,12 +145,12 @@ protected:
     void initBase(bool force);
 
 public:
-    void updateAttacherVals(bool base=false);
+    void updateAttacherVals(bool base=false) const;
     void updatePropertyStatus(bool attached, bool base=false);
 
 private:
     struct _Properties : Properties {
-        std::unique_ptr<Attacher::AttachEngine> attacher;
+        mutable std::unique_ptr<Attacher::AttachEngine> attacher;
     };
     _Properties _props;
     _Properties _baseProps;

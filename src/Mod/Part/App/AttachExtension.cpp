@@ -234,6 +234,8 @@ bool AttachExtension::isAttacherActive() const {
     if(_active < 0) {
         _active = 0;
         try {
+            updateAttacherVals(/*base*/false);
+            updateAttacherVals(/*base*/true);
             _props.attacher->calculateAttachedPlacement(getPlacement().getValue());
             _active = 1;
         } catch (ExceptionCancel&) {
@@ -285,6 +287,7 @@ void AttachExtension::extensionOnChanged(const App::Property* prop)
             updatePropertyStatus(isAttacherActive());
         }
         else if (_baseProps.matchProperty(prop)) {
+            _active = -1;
             updateAttacherVals(/*base*/true);
             updatePropertyStatus(isAttacherActive(), /*base*/true);
 
@@ -317,9 +320,8 @@ void AttachExtension::onExtendedDocumentRestored()
             _baseProps.attachment->setScope(App::LinkScope::Hidden);
         if (_baseProps.attacherType)
             changeAttacherType(_baseProps.attacherType->getValue(), true);
+        _active = -1;
         updatePropertyStatus(isAttacherActive());
-        updateAttacherVals(/*base*/false);
-        updateAttacherVals(/*base*/true);
     }
     catch (Base::Exception&) {
     }
@@ -361,7 +363,7 @@ void AttachExtension::updatePropertyStatus(bool bAttached, bool base)
     }
 }
 
-void AttachExtension::updateAttacherVals(bool base)
+void AttachExtension::updateAttacherVals(bool base) const
 {
     auto &props = base ? this->_baseProps : this->_props;
     if (!props.attachment)
