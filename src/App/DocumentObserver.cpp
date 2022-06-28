@@ -556,26 +556,29 @@ std::string SubObjectT::getOldElementName(int *index, bool fallback) const {
     if (!elementName || !elementName[0])
         return std::string();
     std::string name = Data::ComplexGeoData::oldElementName(elementName);
-    if (name.size())
-        return name;
-
-    std::pair<std::string, std::string> element;
-    auto obj = getObject();
-    if(!obj)
-        return std::string();
-    GeoFeature::resolveElement(obj,subname.c_str(),element);
+    if (name.empty()) {
+        std::pair<std::string, std::string> element;
+        auto obj = getObject();
+        if(!obj)
+            return std::string();
+        GeoFeature::resolveElement(obj,subname.c_str(),element);
+        if (!element.second.empty())
+            name = std::move(element.second);
+        else if (fallback && !element.first.empty())
+            name = std::move(element.first);
+        else
+            return std::string();
+    }
     if(index) {
-        std::size_t pos = element.second.find_first_of("0123456789");
+        std::size_t pos = name.find_first_of("0123456789");
         if(pos == std::string::npos)
             *index = -1;
         else {
-            *index = std::atoi(element.second.c_str()+pos);
-            element.second.resize(pos);
+            *index = std::atoi(name.c_str()+pos);
+            name.resize(pos);
         }
     }
-    if (!element.second.empty() || !fallback)
-        return std::move(element.second);
-    return std::move(element.first);
+    return name;
 }
 
 App::DocumentObject *SubObjectT::getSubObject() const {
