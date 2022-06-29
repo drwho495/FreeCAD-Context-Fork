@@ -3746,8 +3746,27 @@ bool SketchObject::isExternalAllowed(App::Document *pDoc, App::DocumentObject *p
     }
 }
 
+static inline bool
+checkOutList(std::set<App::DocumentObject*> outSet, const App::DocumentObject *owner, App::DocumentObject *obj)
+{
+    if (obj == owner)
+        return false;
+    if (!outSet.insert(obj).second)
+        return true;
+    for (auto o : obj->getOutList())
+        if (!checkOutList(outSet, owner, o))
+            return false;
+    return true;
+}
+
 bool SketchObject::isCarbonCopyAllowed(App::Document *pDoc, App::DocumentObject *pObj, bool & xinv, bool & yinv, eReasonList* rsn) const
 {
+    if (pObj == this) {
+        if (rsn)
+            *rsn = rlCircularReference;
+        return false;
+    }
+
     if (rsn)
         *rsn = rlAllowed;
 
@@ -3769,10 +3788,26 @@ bool SketchObject::isCarbonCopyAllowed(App::Document *pDoc, App::DocumentObject 
 
     //circular reference prevention
     try {
-        if (!(this->testIfLinkDAGCompatible(pObj))){
-            if (rsn)
-                *rsn = rlCircularReference;
-            return false;
+        // testIfLinkDAGCompatible disallow pObj link to this sketch. However,
+        // carbon copy can now handle external geometry to itself (but not
+        // from any other property that links to itself).
+        //
+        // if (!(this->testIfLinkDAGCompatible(pObj)))
+        std::vector<App::Property*> props;
+        pObj->getPropertyList(props);
+        std::set<App::DocumentObject*> outSet;
+        for (auto prop : props) {
+            if (auto propLink = Base::freecad_dynamic_cast<App::PropertyLinkBase>(prop)) {
+                for (auto obj : propLink->linkedObjects()) {
+                    if (obj == this && propLink == &psObj->ExternalGeometry)
+                        continue;
+                    if (!checkOutList(outSet, this, obj)) {
+                        if (rsn)
+                            *rsn = rlCircularReference;
+                        return false;
+                    }
+                }
+            }
         }
     } catch (Base::Exception &e) {
         Base::Console().Warning("Probably, there is a circular reference in the document. Error: %s\n", e.what());
@@ -6227,8 +6262,6 @@ int SketchObject::carbonCopy(App::DocumentObject * pObj, bool construction)
 
     int nextgeoid = vals.size();
 
-    int nextextgeoid = getExternalGeometryCount();
-
     int nextcid = cvals.size();
 
     const std::vector< Part::Geometry * > &svals = psObj->getInternalGeometry();
@@ -6237,6 +6270,43 @@ int SketchObject::carbonCopy(App::DocumentObject * pObj, bool construction)
 
     newVals.reserve(vals.size()+svals.size());
     newcVals.reserve(cvals.size()+scvals.size());
+
+    std::map<int, int> extMap;
+    if (psObj->ExternalGeo.getSize() > 1) {
+        int i = -1;
+        auto geos = this->ExternalGeo.getValues();
+        std::string myName(this->getNameInDocument());
+        myName += ".";
+        for (const auto &geo : psObj->ExternalGeo.getValues()) {
+            if (++i < 2) // skip h/v axes
+                continue;
+            else {
+                auto egf = ExternalGeometryFacade::getFacade(geo);
+                const auto &ref = egf->getRef();
+                if (boost::starts_with(ref, myName)) {
+                    int geoId;
+                    PointPos posId;
+                    if (this->geoIdFromShapeType(ref.c_str()+myName.size(), geoId, posId)) {
+                        extMap[-i-1] = geoId;
+                        continue;
+                    }
+                }
+            }
+            auto copy = geo->copy();
+            auto egf = ExternalGeometryFacade::getFacade(copy);
+            egf->setId(++geoLastId);
+            if (!egf->getRef().empty()) {
+                auto &refs = this->externalGeoRefMap[egf->getRef()];
+                refs.push_back(geoLastId);
+            }
+            this->externalGeoMap[geoLastId] = (int)geos.size();
+            geos.push_back(copy);
+            extMap[-i-1] = -(int)geos.size();
+        }
+        Base::ObjectStatusLocker<App::Property::Status,App::Property>
+            guard(App::Property::User3, &this->ExternalGeo);
+        this->ExternalGeo.setValues(std::move(geos));
+    }
 
     if(psObj->ExternalGeometry.getSize()>0) {
         std::vector<DocumentObject*> Objects     = ExternalGeometry.getValues();
@@ -6251,22 +6321,25 @@ int SketchObject::carbonCopy(App::DocumentObject * pObj, bool construction)
             return -1;
         }
 
-        int si=0;
-        for (auto & sobj : sObjects) {
+        int si=-1;
+        for (const auto &sobj : sObjects) {
+            ++si;
+            if (sobj == this)
+                continue;
             int i=0;
             for (auto & obj : Objects){
                 if (obj == sobj && SubElements[i] == sSubElements[si]){
-                    Base::Console().Error("Link to %s already exists in this sketch. Delete the link and try again\n",sSubElements[si].c_str());
-                    return -1;
+                    FC_WARN("Link to %s already exists in this sketch");
+                    i = -1;
+                    break;
                 }
-
                 i++;
             }
 
-            Objects.push_back(sobj);
-            SubElements.push_back(sSubElements[si]);
-
-            si++;
+            if (i >= 0) {
+                Objects.push_back(sobj);
+                SubElements.push_back(sSubElements[si]);
+            }
         }
 
         ExternalGeometry.setValues(Objects,SubElements);
@@ -6283,23 +6356,34 @@ int SketchObject::carbonCopy(App::DocumentObject * pObj, bool construction)
         newVals.push_back(geoNew);
     }
 
-    for (std::vector< Sketcher::Constraint * >::const_iterator it= scvals.begin(); it != scvals.end(); ++it) {
-        Sketcher::Constraint *newConstr = (*it)->copy();
-        if( (*it)->First>=0 )
-            newConstr->First += nextgeoid;
-        if( (*it)->Second>=0 )
-            newConstr->Second += nextgeoid;
-        if( (*it)->Third>=0 )
-            newConstr->Third += nextgeoid;
+    auto adjustConstraint = [&](int idx, int &geoId) {
+        if (geoId >= 0)
+            geoId += nextgeoid;
+        else if (geoId < -2 && geoId != Constraint::GeoUndef) {
+            auto it = extMap.find(geoId);
+            if (it != extMap.end())
+                geoId = it->second;
+            else {
+                std::string name;
+                try {
+                    name = psObj->Constraints.createPath(idx).toString();
+                } catch (Base::Exception &e) {
+                }
+                FC_WARN("Failed to copy constraint " << name);
+                return false;
+            }
+        }
+        return true;
+    };
 
-        if( (*it)->First<-2 && (*it)->First != Constraint::GeoUndef )
-            newConstr->First -= (nextextgeoid-2);
-        if( (*it)->Second<-2 && (*it)->Second != Constraint::GeoUndef)
-            newConstr->Second -= (nextextgeoid-2);
-        if( (*it)->Third<-2 && (*it)->Third != Constraint::GeoUndef)
-            newConstr->Third -= (nextextgeoid-2);
-
-        newcVals.push_back(newConstr);
+    for (int i=0; i<(int)scvals.size(); ++i) {
+        Sketcher::Constraint *newConstr = scvals[i]->copy();
+        if (adjustConstraint(i, newConstr->First)
+                && adjustConstraint(i, newConstr->Second)
+                && adjustConstraint(i, newConstr->Third))
+            newcVals.push_back(newConstr);
+        else
+            delete newConstr;
     }
 
     // Block acceptGeometry in OnChanged to avoid unnecessary checks and updates
@@ -6327,19 +6411,26 @@ int SketchObject::carbonCopy(App::DocumentObject * pObj, bool construction)
             // (there is a plausible alternative for a slightly different use case to copy the expression of the parent if one is existing)
             if ((*it)->isDriving) {
                 App::ObjectIdentifier spath = psObj->Constraints.createPath(sourceid);
-                /*
-                 *           App::PropertyExpressionEngine::ExpressionInfo expr_info = psObj->getExpression(path);
-                 *
-                 *           if (expr_info.expression)*/
-                //App::Expression * expr = parse(this, const std::string& buffer);
-
-                boost::shared_ptr<App::Expression> expr(App::Expression::parse(this, spath.getDocumentObjectName().getString() +std::string(1,'.') + spath.toString()));
-                setExpression(Constraints.createPath(nextcid), expr);
+                App::PropertyExpressionEngine::ExpressionInfo expr_info = psObj->getExpression(spath);
+                if (expr_info.expression && !expr_info.expression->getDepObjects().count(psObj))
+                    setExpression(Constraints.createPath(nextcid), expr_info.expression->copy());
+                else {
+                    boost::shared_ptr<App::Expression> expr(App::Expression::parse(this, spath.getDocumentObjectName().getString() +std::string(1,'.') + spath.toString()));
+                    setExpression(Constraints.createPath(nextcid), expr);
+                }
             }
         }
     }
 
+    // We shall solve in all cases, because recompute may fail, and leave the
+    // sketch in an inconsistent state. A concrete example. If the copied sketch
+    // has broken external geometry, its recomputation will fail. And because we
+    // use expression for copied constraint to add dependency to the copied
+    // sketch, this sketch will not be recomputed (because its dependency fails
+    // to recompute).
+#if 0
     if (noRecomputes) // if we do not have a recompute, the sketch must be solved to update the DoF of the solver
+#endif
         solve();
 
 
@@ -8645,7 +8736,7 @@ void SketchObject::onChanged(const App::Property* prop)
             }
         }
 
-    } else if ( prop == &ExternalGeo) {
+    } else if ( prop == &ExternalGeo && !prop->testStatus(App::Property::User3) ) {
         if(doc && doc->isPerformingTransaction())
             setStatus(App::PendingTransactionUpdate, true);
 
