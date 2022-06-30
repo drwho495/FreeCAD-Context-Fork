@@ -936,7 +936,7 @@ bool ViewProviderBody::_reorderObject(PartDesign::Body *body,
 
     // In case the old object has self sibling group, repoint the old object to
     // the earliest sibling
-    if (i < j && secondFeat && secondFeat->_Siblings.getSize()) {
+    if (i > j && secondFeat && secondFeat->_Siblings.getSize()) {
         const auto & siblings = secondFeat->_Siblings.getValues();
         for (auto rit=siblings.rbegin(); rit!=siblings.rend(); ++rit) {
             auto feat = Base::freecad_dynamic_cast<PartDesign::Feature>(*rit);
@@ -969,12 +969,14 @@ bool ViewProviderBody::_reorderObject(PartDesign::Body *body,
         Base::ObjectStatusLocker<App::Property::Status,App::Property>
             guard2(App::Property::User3, &secondFeat->BaseFeature);
 
-        if (secondFeat->NewSolid.getValue()) {
-            secondFeat->NewSolid.setValue(false);
-            firstFeat->NewSolid.setValue(true);
-        }
+        // Must change BaseFeature before NewSolid, because changing NewSolid
+        // will auto adjust BaseFeature
         firstFeat->BaseFeature.setValue(secondFeat->BaseFeature.getValue());
         secondFeat->BaseFeature.setValue(firstFeat);
+        if (secondFeat->NewSolid.getValue()) {
+            firstFeat->NewSolid.setValue(true);
+            secondFeat->NewSolid.setValue(false);
+        }
         for (auto obj : objs) {
             if (obj == secondFeat
                     || !body->isSolidFeature(obj)
