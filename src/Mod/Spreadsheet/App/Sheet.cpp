@@ -765,7 +765,7 @@ void Sheet::updateProperty(CellAddress key)
                     Base::PyGILStateLocker lock;
                     setObjectProperty(key, constant->getPyValue());
                 }
-            } else if (!number->getUnit().isEmpty())
+            } else if (cell->getEditMode() == Cell::EditQuantity || number->getUnit().isEmpty())
                 setQuantityProperty(key, number->getValue(), number->getUnit());
             else if(number->isInteger(&l))
                 setIntegerProperty(key,l);
