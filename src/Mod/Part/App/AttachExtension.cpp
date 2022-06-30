@@ -238,7 +238,7 @@ bool AttachExtension::isAttacherActive() const {
             updateAttacherVals(/*base*/true);
             _props.attacher->calculateAttachedPlacement(getPlacement().getValue());
             _active = 1;
-        } catch (ExceptionCancel&) {
+        } catch (Base::Exception &) {
         }
     }
     return _active!=0;
