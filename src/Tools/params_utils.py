@@ -896,11 +896,12 @@ class ParamFile(ParamProxy):
     WidgetSetter = 'setFileNameStd'
 
 class ParamSpinBox(ParamProxy):
-    def __init__(self, value_min, value_max, value_step, param_bool=None):
+    def __init__(self, value_min, value_max, value_step, decimals=0, param_bool=None):
         super().__init__(param_bool)
         self.value_min = value_min
         self.value_max = value_max
         self.value_step = value_step
+        self.decimals = decimals
 
     def init_widget(self, param, row, group_name):
         super().init_widget(param, row, group_name)
@@ -909,6 +910,10 @@ class ParamSpinBox(ParamProxy):
     {param.widget_name}->setMaximum({self.value_min});
     {param.widget_name}->setMaximum({self.value_max});
     {param.widget_name}->setSingleStep({self.value_step});''')
+        if self.decimals:
+            cog.out(f'''
+    {param.widget_name}->setDecimals({self.decimals});''')
+
 
 class ParamShortcutEdit(ParamProxy):
     WidgetType = 'Gui::PrefAccelLineEdit'
