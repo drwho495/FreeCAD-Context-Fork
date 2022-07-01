@@ -60,6 +60,9 @@ Branding::Branding()
     filter.push_back("SplashInfoVersion");
     filter.push_back("SplashInfoFont");
 
+    filter.push_back("SplashGIF");
+    filter.push_back("SplashGIFAlignment");
+
     filter.push_back("StartWorkbench");
 
     filter.push_back("ExeName");
