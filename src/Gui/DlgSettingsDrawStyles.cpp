@@ -341,6 +341,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowGroundScale = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowGroundScale, 6, 1);
     ShadowGroundScale->setValue(Gui::ViewParams::defaultShadowGroundScale());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowGroundScale->setMaximum(0.0);
+    ShadowGroundScale->setMaximum(10000000.0);
+    ShadowGroundScale->setSingleStep(0.5);
     ShadowGroundScale->setEntryName("ShadowGroundScale");
     ShadowGroundScale->setParamGrpPath("View");
 
@@ -350,6 +354,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowGroundTransparency = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowGroundTransparency, 7, 1);
     ShadowGroundTransparency->setValue(Gui::ViewParams::defaultShadowGroundTransparency());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowGroundTransparency->setMaximum(0.0);
+    ShadowGroundTransparency->setMaximum(1.0);
+    ShadowGroundTransparency->setSingleStep(0.1);
     ShadowGroundTransparency->setEntryName("ShadowGroundTransparency");
     ShadowGroundTransparency->setParamGrpPath("View");
 
@@ -368,6 +376,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowGroundTextureSize = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowGroundTextureSize, 9, 1);
     ShadowGroundTextureSize->setValue(Gui::ViewParams::defaultShadowGroundTextureSize());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowGroundTextureSize->setMaximum(0.0);
+    ShadowGroundTextureSize->setMaximum(10000000.0);
+    ShadowGroundTextureSize->setSingleStep(10.0);
     ShadowGroundTextureSize->setEntryName("ShadowGroundTextureSize");
     ShadowGroundTextureSize->setParamGrpPath("View");
 
@@ -411,6 +423,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowPrecision = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowPrecision, 14, 1);
     ShadowPrecision->setValue(Gui::ViewParams::defaultShadowPrecision());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowPrecision->setMaximum(0.0);
+    ShadowPrecision->setMaximum(1.0);
+    ShadowPrecision->setSingleStep(0.1);
     ShadowPrecision->setEntryName("ShadowPrecision");
     ShadowPrecision->setParamGrpPath("View");
 
@@ -429,6 +445,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowSpreadSize = new Gui::PrefSpinBox(this);
     layoutShadow->addWidget(ShadowSpreadSize, 16, 1);
     ShadowSpreadSize->setValue(Gui::ViewParams::defaultShadowSpreadSize());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowSpreadSize->setMaximum(0);
+    ShadowSpreadSize->setMaximum(10000000.0);
+    ShadowSpreadSize->setSingleStep(500);
     ShadowSpreadSize->setEntryName("ShadowSpreadSize");
     ShadowSpreadSize->setParamGrpPath("View");
 
@@ -447,6 +467,11 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowEpsilon = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowEpsilon, 18, 1);
     ShadowEpsilon->setValue(Gui::ViewParams::defaultShadowEpsilon());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowEpsilon->setMaximum(0.0);
+    ShadowEpsilon->setMaximum(1.0);
+    ShadowEpsilon->setSingleStep(1e-05);
+    ShadowEpsilon->setDecimals(10);
     ShadowEpsilon->setEntryName("ShadowEpsilon");
     ShadowEpsilon->setParamGrpPath("View");
 
@@ -456,6 +481,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowThreshold = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowThreshold, 19, 1);
     ShadowThreshold->setValue(Gui::ViewParams::defaultShadowThreshold());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowThreshold->setMaximum(0.0);
+    ShadowThreshold->setMaximum(1.0);
+    ShadowThreshold->setSingleStep(0.1);
     ShadowThreshold->setEntryName("ShadowThreshold");
     ShadowThreshold->setParamGrpPath("View");
 
@@ -465,6 +494,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowBoundBoxScale = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowBoundBoxScale, 20, 1);
     ShadowBoundBoxScale->setValue(Gui::ViewParams::defaultShadowBoundBoxScale());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowBoundBoxScale->setMaximum(0.0);
+    ShadowBoundBoxScale->setMaximum(10000000.0);
+    ShadowBoundBoxScale->setSingleStep(0.5);
     ShadowBoundBoxScale->setEntryName("ShadowBoundBoxScale");
     ShadowBoundBoxScale->setParamGrpPath("View");
 
@@ -474,6 +507,10 @@ DlgSettingsDrawStyles::DlgSettingsDrawStyles(QWidget* parent)
     ShadowMaxDistance = new Gui::PrefDoubleSpinBox(this);
     layoutShadow->addWidget(ShadowMaxDistance, 21, 1);
     ShadowMaxDistance->setValue(Gui::ViewParams::defaultShadowMaxDistance());
+    // Auto generated code (Tools/params_utils.py:909)
+    ShadowMaxDistance->setMaximum(0.0);
+    ShadowMaxDistance->setMaximum(10000000.0);
+    ShadowMaxDistance->setSingleStep(0.5);
     ShadowMaxDistance->setEntryName("ShadowMaxDistance");
     ShadowMaxDistance->setParamGrpPath("View");
 

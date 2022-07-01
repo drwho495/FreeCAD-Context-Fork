@@ -301,19 +301,19 @@ Params = [
     ParamFloat('ShadowGroundScale',  2.0,
        "The auto generated ground face is determined by the scene bounding box\n"
        "multiplied by this scale",
-       title='Ground scale'),
+       title='Ground scale', proxy=ParamSpinBox(0.0, 1e7, 0.5)),
     ParamHex('ShadowGroundColor',  0x7d7d7dff, title='Ground color', proxy=ParamColor()),
     ParamString('ShadowGroundBumpMap', '', title='Ground bump map', proxy=ParamFile()),
     ParamString('ShadowGroundTexture', '', title='Ground texture', proxy=ParamFile()),
     ParamFloat('ShadowGroundTextureSize',  100.0,
        "Specifies the physcal length of the ground texture image size.\n"
        "Texture mappings beyond this size will be wrapped around",
-       title='Ground texture size'),
+       title='Ground texture size', proxy=ParamSpinBox(0.0, 1e7, 10.0)),
     ParamFloat('ShadowGroundTransparency',  0.0,
        "Specifics the ground transparency. When set to 0, the non-shadowed part\n"
        "of the ground will be complete transparent, showing only the shadowed part\n"
        "of the ground with some transparency.",
-       title='Ground transparency'),
+       title='Ground transparency', proxy=ParamSpinBox(0.0, 1.0, 0.1)),
     ParamBool('ShadowGroundShading',  True,
         "Render ground with shading. If disabled, the ground and the shadow casted\n"
         "on ground will not change shading when viewing in different angle.",
@@ -327,7 +327,7 @@ Params = [
     ParamInt('ShadowSpreadSize',  0,
         "Specifies the spread size for a soft shadow. The resulting spread size is\n"
         "dependent on the model scale",
-        title='Spread size'),
+        title='Spread size', proxy=ParamSpinBox(0, 1e7, 500)),
     ParamInt('ShadowSpreadSampleSize',  0,
         "Specifies the sample size used for rendering shadow spread. A value 0\n"
         "corresponds to a sampling square of 2x2. And 1 corresponds to 3x3, etc.\n"
@@ -338,25 +338,25 @@ Params = [
         "Specifies shadow precision. This parameter affects the internal texture\n"
         "size used to hold the casted shadows. You might want a bigger texture if\n"
         "you want a hard shadow but a smaller one for soft shadow.",
-        title='Precision'),
+        title='Precision', proxy=ParamSpinBox(0.0, 1.0, 0.1)),
     ParamFloat('ShadowEpsilon',  1e-5,
         "Epsilon is used to offset the shadow map depth from the model depth.\n"
         "Should be set to as low a number as possible without causing flickering\n"
         "in the shadows or on non-shadowed objects.",
-        title='Epsilon'),
+        title='Epsilon', proxy=ParamSpinBox(0.0, 1.0, 1e-5, 10)),
     ParamFloat('ShadowThreshold',  0.0,
         "Can be used to avoid light bleeding in merged shadows cast from different objects.",
-        title='Threshold'),
+        title='Threshold', proxy=ParamSpinBox(0.0, 1.0, 0.1)),
     ParamFloat('ShadowBoundBoxScale',  1.2,
         "Scene bounding box is used to determine the scale of the shadow texture.\n"
         "You can increase the bounding box scale to avoid execessive clipping of\n"
         "shadows when viewing up close in certain angle.",
-        title='Bounding box scale'),
+        title='Bounding box scale', proxy=ParamSpinBox(0.0, 1e7, 0.5)),
     ParamFloat('ShadowMaxDistance',  0.0,
         "Specifics the clipping distance for when rendering shadows.\n"
         "You can increase the bounding box scale to avoid execessive\n"
         "clipping of shadows when viewing up close in certain angle.",
-        title='Maximum distance'),
+        title='Maximum distance', proxy=ParamSpinBox(0.0, 1e7, 0.5)),
     ParamBool('ShadowTransparentShadow',  False,
         "Whether to cast shadow from transparent objects.",
         title='Transparent shadow'),
