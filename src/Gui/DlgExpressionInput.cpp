@@ -479,6 +479,17 @@ bool DlgExpressionInput::eventFilter(QObject *obj, QEvent *ev)
     return false;
 }
 
+void DlgExpressionInput::accept()
+{
+    if (timer.isActive()) {
+        timer.stop();
+        onTimer();
+    }
+    if (!ui->okBtn->isEnabled())
+        return;
+    QDialog::accept();
+}
+
 void DlgExpressionInput::adjustPosition()
 {
     if (this->adjustingPosition || !this->isVisible())
