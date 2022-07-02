@@ -3154,12 +3154,7 @@ void View3DInventorViewer::imageFromFramebuffer(int width, int height, int sampl
 
     QtGLFramebufferObjectFormat fboFormat;
     fboFormat.setSamples(samples);
-    fboFormat.setAttachment(QtGLFramebufferObject::Depth);
-    // With enabled alpha a transparent background is supported but
-    // at the same time breaks semi-transparent models. A workaround
-    // is to use a certain background color using GL_RGB as texture
-    // format and in the output image search for the above color and
-    // replaces it with the color requested by the user.
+    fboFormat.setAttachment(QtGLFramebufferObject::CombinedDepthStencil);
     fboFormat.setInternalTextureFormat(getInternalTextureFormat());
 
     QtGLFramebufferObject fbo(width, height, fboFormat);
@@ -3167,44 +3162,14 @@ void View3DInventorViewer::imageFromFramebuffer(int width, int height, int sampl
     const QColor col = backgroundColor();
     bool on = hasGradientBackground();
 
-    int alpha = 255;
-    QColor bgopaque = bgcolor;
-    if (bgopaque.isValid()) {
-        // force an opaque background color
-        alpha = bgopaque.alpha();
-        if (alpha < 255)
-            bgopaque.setRgb(255,255,255);
-        setBackgroundColor(bgopaque);
+    if (bgcolor.isValid()) {
+        setBackgroundColor(bgcolor);
         setGradientBackground(false);
     }
-
     renderToFramebuffer(&fbo);
     setBackgroundColor(col);
     setGradientBackground(on);
     img = fbo.toImage();
-
-    // if background color isn't opaque manipulate the image
-    if (alpha < 255) {
-        QImage image(img.constBits(), img.width(), img.height(), QImage::Format_ARGB32);
-        img = image.copy();
-        QRgb rgba = bgcolor.rgba();
-        QRgb rgb = bgopaque.rgb();
-        QRgb * bits = (QRgb*) img.bits();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (*bits == rgb)
-                    *bits = rgba;
-                bits++;
-            }
-        }
-    } else if (alpha == 255) {
-        QImage image(img.width(), img.height(), QImage::Format_RGB32);
-        QPainter painter(&image);
-        painter.fillRect(image.rect(),Qt::black);
-        painter.drawImage(0, 0, img);
-        painter.end();
-        img = image;
-    }
 }
 
 void View3DInventorViewer::renderToFramebuffer(QtGLFramebufferObject* fbo)
