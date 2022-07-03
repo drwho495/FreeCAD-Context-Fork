@@ -3471,7 +3471,6 @@ void StdCmdSelBack::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
     Selection().selStackGoBack();
-    // TreeWidget::scrollItemToTop();
 }
 
 bool StdCmdSelBack::isActive(void)
@@ -3512,7 +3511,6 @@ void StdCmdSelForward::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
     Selection().selStackGoForward();
-    // TreeWidget::scrollItemToTop();
 }
 
 bool StdCmdSelForward::isActive(void)
