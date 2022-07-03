@@ -1228,7 +1228,7 @@ std::string PropertyComplexGeoData::getElementMapVersion(bool) const {
     auto data = getComplexData();
     if(!data)
         return std::string();
-    auto owner = dynamic_cast<DocumentObject*>(getContainer());
+    auto owner = Base::freecad_dynamic_cast<DocumentObject>(getContainer());
     std::ostringstream ss;
     if(owner && owner->getDocument() && owner->getDocument()->Hasher==data->Hasher)
         ss << "1.";
@@ -1250,4 +1250,15 @@ bool PropertyComplexGeoData::isSame(const Property &_other) const
     if(!data || !other)
         return false;
     return data->isSame(*other);
+}
+
+void PropertyComplexGeoData::afterRestore()
+{
+    auto data = getComplexData();
+    if (data && data->isRestoreFailed()) {
+        auto owner = Base::freecad_dynamic_cast<DocumentObject>(getContainer());
+        if (owner && owner->getDocument() && !owner->getDocument()->testStatus(App::Document::PartialDoc))
+            owner->getDocument()->addRecomputeObject(owner);
+    }
+    PropertyGeometry::afterRestore();
 }

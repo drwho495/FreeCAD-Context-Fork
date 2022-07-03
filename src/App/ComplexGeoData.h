@@ -388,6 +388,8 @@ public:
     void RestoreDocFile(Base::Reader &reader);
     unsigned int getMemSize (void) const;
     void setPersistenceFileName(const char *name) const;
+    bool isRestoreFailed() const { return _restoreFailed; }
+    void resetRestoreFailure() const { _restoreFailed = true; }
     //@}
 
     virtual bool isSame(const ComplexGeoData &other) const = 0;
@@ -423,6 +425,7 @@ public:
 protected:
     ElementMapPtr _ElementMap;
     mutable std::string _PersistenceName;
+    mutable bool _restoreFailed = false;
 };
 
 struct AppExport ElementNameComp {

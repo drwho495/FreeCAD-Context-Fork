@@ -98,6 +98,8 @@ public:
     virtual std::string getElementMapVersion(bool restored=false) const override;
     void resetElementMapVersion() {_Ver.clear();}
 
+    virtual void afterRestore() override;
+
     friend class Feature;
 
 private:

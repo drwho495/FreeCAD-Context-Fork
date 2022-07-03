@@ -536,6 +536,8 @@ public:
 
     virtual bool isSame(const Property &other) const;
     virtual Property *copyBeforeChange() const {return Copy();}
+
+    virtual void afterRestore();
 };
 
 } // namespace App

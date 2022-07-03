@@ -794,29 +794,37 @@ void ComplexGeoData::restoreStream(std::istream &s, std::size_t count) {
     std::string key,value,sid;
     bool warned = false;
 
-    for(size_t i=0;i<count;++i) {
-        sids.clear();
-        std::size_t scount;
-        if(!(s >> value >> key >> scount))
-            throw Base::RuntimeError("Failed to restore element map");
-        for(std::size_t j=0;j<scount;++j) {
-            long id;
-            if(!(s >> id))
-                throw Base::RuntimeError("Failed to restore element map");
-            auto sid = Hasher->getID(id);
-            if(!sid) 
-                ++invalid_count;
-            else
-                sids.push_back(sid);
-        }
-        if(sids.size() && !Hasher) {
+    try {
+        for(size_t i=0;i<count;++i) {
             sids.clear();
-            if(!warned) {
-                warned = true;
-                FC_ERR("missing hasher");
+            std::size_t scount;
+            if(!(s >> value >> key >> scount))
+                FC_THROWM(Base::RuntimeError,
+                        "Failed to restore element map " << _PersistenceName);
+            for(std::size_t j=0;j<scount;++j) {
+                long id;
+                if(!(s >> id))
+                    FC_THROWM(Base::RuntimeError,
+                            "Failed to restore element map " << _PersistenceName);
+                auto sid = Hasher->getID(id);
+                if(!sid) 
+                    ++invalid_count;
+                else
+                    sids.push_back(sid);
             }
+            if(sids.size() && !Hasher) {
+                sids.clear();
+                if(!warned) {
+                    warned = true;
+                    FC_ERR("missing hasher");
+                }
+            }
+            setElementName(value.c_str(),"",key.c_str(),&sids);
         }
-        setElementName(value.c_str(),"",key.c_str(),&sids);
+    } catch (Base::Exception &e) {
+        e.ReportException();
+        _restoreFailed = true;
+        _ElementMap.reset();
     }
     if(invalid_count)
         FC_ERR("Found " << invalid_count << " invalid string id");
