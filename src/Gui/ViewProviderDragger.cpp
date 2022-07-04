@@ -106,12 +106,22 @@ bool ViewProviderDragger::doubleClicked(void)
 
 void ViewProviderDragger::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
 {
-    QAction* act = menu->addAction(QObject::tr("Transform"), receiver, member);
-    act->setToolTip(QObject::tr("Transform at the origin of the placement"));
-    act->setData(QVariant((int)ViewProvider::Transform));
-    act = menu->addAction(QObject::tr("Transform at"), receiver, member);
-    act->setToolTip(QObject::tr("Transform at the center of the shape"));
-    act->setData(QVariant((int)ViewProvider::TransformAt));
+    if (!getObject())
+        return;
+    if (auto propPlacement = Base::freecad_dynamic_cast<App::PropertyPlacement>(
+                getObject()->getPropertyByName("Placement")))
+    {
+        if (!propPlacement->testStatus(App::Property::Hidden)
+                && !propPlacement->testStatus(App::Property::ReadOnly))
+        {
+            QAction* act = menu->addAction(QObject::tr("Transform"), receiver, member);
+            act->setToolTip(QObject::tr("Transform at the origin of the placement"));
+            act->setData(QVariant((int)ViewProvider::Transform));
+            act = menu->addAction(QObject::tr("Transform at"), receiver, member);
+            act->setToolTip(QObject::tr("Transform at the center of the shape"));
+            act->setData(QVariant((int)ViewProvider::TransformAt));
+        }
+    }
     ViewProviderDocumentObject::setupContextMenu(menu, receiver, member);
 }
 
