@@ -46,8 +46,10 @@ AttachExtension::AttachExtension()
     this->AttacherType.setStatus(App::Property::Status::Hidden, true);
 
     EXTENSION_ADD_PROPERTY_TYPE(Support, (0,0), "Attachment",(App::PropertyType)(App::Prop_Hidden),"Support of the 2D geometry (Deprecated! Use AttachmentSupport instead");
+    Support.setScope(App::LinkScope::Global);
 
     EXTENSION_ADD_PROPERTY_TYPE(AttachmentSupport, (0,0), "Attachment",(App::PropertyType)(App::Prop_None),"Support of the 2D geometry");
+    AttachmentSupport.setScope(App::LinkScope::Global);
 
     EXTENSION_ADD_PROPERTY_TYPE(MapMode, (mmDeactivated), "Attachment", App::Prop_None, "Mode of attachment to other object");
     MapMode.setEditorName("PartGui::PropertyEnumAttacherItem");

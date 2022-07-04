@@ -544,8 +544,18 @@ void TaskAttacher::onSelectionChanged(const Gui::SelectionChanges& msg)
             if (selObj->getLinkedObject(true)->isDerivedFrom(App::OriginFeature::getClassTypeId()))
                 sel.setSubName(sel.getSubNameNoElement());
 
-            if (editObjT.getSubObject())
-                sel = Part::SubShapeBinder::import(sel, editObjT);
+            sel.normalize();
+            if (editObjT.getSubObject()) {
+                auto self = editObjT.normalized();
+                auto topParent = self.getObject();
+                App::DocumentObject *link = sel.getObject();
+                std::string linkSub = sel.getSubName();
+                std::string subname = self.getSubNameNoElement();
+                topParent->resolveRelativeLink(subname, link, linkSub,
+                        App::DocumentObject::RelativeLinkOption::Flatten);
+                if (link)
+                    sel = App::SubObjectT(link, linkSub.c_str());
+            }
             selObj = sel.getSubObject();
             auto selElement = sel.getOldElementName();
 
