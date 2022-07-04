@@ -6827,17 +6827,7 @@ void ViewProviderSketch::setupContextMenu(QMenu *menu, QObject *receiver, const 
     QAction *act = menu->addAction(tr("Edit sketch"), receiver, member);
     func->trigger(act, boost::bind(&ViewProviderSketch::doubleClicked, this));
 
-    auto sketch = static_cast<Sketcher::SketchObject*>(getObject());
-    if (sketch->MapMode.getValue() == Attacher::mmDeactivated || !sketch->Support.getValue()) {
-        QAction* act = menu->addAction(QObject::tr("Transform"), receiver, member);
-        act->setToolTip(QObject::tr("Transform at the origin of the placement"));
-        act->setData(QVariant((int)ViewProvider::Transform));
-        act = menu->addAction(QObject::tr("Transform at"), receiver, member);
-        act->setToolTip(QObject::tr("Transform at the center of the shape"));
-        act->setData(QVariant((int)ViewProvider::TransformAt));
-    }
-
-    PartGui::ViewProviderAttachExtension::extensionSetupContextMenu(menu, receiver, member);
+    PartGui::ViewProvider2DObjectGrid::setupContextMenu(menu, receiver, member);
 }
 
 bool ViewProviderSketch::setEdit(int ModNum)

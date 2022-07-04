@@ -112,6 +112,8 @@
 #include <App/Document.h>
 
 #include <Gui/Application.h>
+#include <Gui/Command.h>
+#include <Gui/Action.h>
 #include <Gui/SoFCUnifiedSelection.h>
 #include <Gui/SoFCSelectionAction.h>
 #include <Gui/Selection.h>
@@ -1713,6 +1715,24 @@ void ViewProviderPartExt::updateData(const App::Property* prop)
 
 void ViewProviderPartExt::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)
 {
+    if (!getObject())
+        return;
+    if (auto propPlacement = Base::freecad_dynamic_cast<App::PropertyPlacement>(
+                getObject()->getPropertyByName("Placement")))
+    {
+        if (getObject()->getExtensionByType<Part::AttachExtension>(true)
+                || (!propPlacement->testStatus(App::Property::Hidden)
+                    && !propPlacement->testStatus(App::Property::ReadOnly))) {
+            if (auto cmd = Gui::Application::Instance->commandManager().getCommandByName("Part_EditAttachment"))
+            {
+                cmd->initAction();
+                if (auto action = cmd->getAction()) {
+                    if (auto act = action->action())
+                        menu->addAction(act);
+                }
+            }
+        }
+    }
     Gui::ViewProviderGeometryObject::setupContextMenu(menu, receiver, member);
     QAction* act = menu->addAction(QObject::tr("Set colors..."), receiver, member);
     act->setData(QVariant((int)ViewProvider::Color));

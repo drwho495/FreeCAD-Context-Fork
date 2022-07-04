@@ -240,10 +240,6 @@ void ViewProviderSubShapeBinder::setupContextMenu(QMenu* menu, QObject* receiver
     if (!self)
         return;
 
-    Gui::MenuItem menuItem;
-    menuItem << "Part_EditAttachment";
-    Gui::MenuManager::getInstance()->setupContextMenu(&menuItem, *menu);
-
     Gui::ActionFunction* func = new Gui::ActionFunction(menu);
     QAction* act;
     act = menu->addAction(QObject::tr("Synchronize"), receiver, member);
@@ -315,6 +311,8 @@ void ViewProviderSubShapeBinder::setupContextMenu(QMenu* menu, QObject* receiver
         auto act = menu->addAction(QObject::tr("Toggle export"), receiver, member);
         act->setData(QVariant((int)Gui::ViewProvider::ExportInGroup));
     }
+
+    ViewProviderPart::setupContextMenu(menu,receiver,member);
 }
 
 bool ViewProviderSubShapeBinder::setEdit(int ModNum) {

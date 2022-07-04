@@ -2824,11 +2824,13 @@ bool CmdPartEditAttachment::isActive(void)
     auto sels = Gui::Selection().getSelection("", 1, true);
     if (sels.empty())
         return false;
+    auto obj = sels[0].pObject;
     if (auto prop = Base::freecad_dynamic_cast<App::PropertyPlacement>(
-            sels[0].pObject->getPropertyByName("Placement")))
+            obj->getPropertyByName("Placement")))
     {
-        return !prop->testStatus(App::Property::Hidden)
-            && !prop->testStatus(App::Property::ReadOnly);
+        return obj->getExtensionByType<Part::AttachExtension>(true)
+            || (!prop->testStatus(App::Property::Hidden)
+                && !prop->testStatus(App::Property::ReadOnly));
     }
     return false;
 }
