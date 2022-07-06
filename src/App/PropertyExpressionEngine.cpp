@@ -338,13 +338,14 @@ void PropertyExpressionEngine::Restore(Base::XMLReader &reader)
     if(!count)
         return;
 
+    int cdata = reader.getAttributeAsInteger("cdata","");
     if(reader.hasAttribute("xlink") && reader.getAttributeAsInteger("xlink"))
         PropertyExpressionContainer::Restore(reader);
 
     restoredExpressions.reset(new std::vector<RestoredExpression>);
     restoredExpressions->resize(count);
 
-    if(reader.getAttributeAsInteger("cdata","")) {
+    if(cdata) {
         reader.readElement("Expressions");
         Base::InputStream s(reader.beginCharStream(false),false);
         for(auto &info : *restoredExpressions)
@@ -485,8 +486,8 @@ void PropertyExpressionEngine::afterRestore()
     }
     restoredExpressions.reset();
 
-    if (hasError)
-        throw Base::RuntimeError("Failed to restore some expression");
+    if (hasError && docObj && docObj->getDocument())
+        docObj->getDocument()->setErrorDescription(docObj, "Failed to restore some expression");
 }
 
 void PropertyExpressionEngine::onContainerRestored() {
