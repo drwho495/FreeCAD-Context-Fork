@@ -788,7 +788,29 @@ void PropertyEditor::contextMenuEvent(QContextMenuEvent *ev) {
         action = menu.addSeparator();
         hiddenActions.push_back(action);
 
-        QCheckBox *checkbox;
+        auto setupAction = [&](const char *name, int action_type, int ptype, int prop_type) {
+            QCheckBox *checkbox;
+            QString text = tr({name});
+            bool checked = (propStatus & (1<<ptype)) ? true : false;
+            action = Action::addCheckBox(&menu, text, checked, &checkbox);
+            action->setData(QVariant(action_type));
+            hiddenActions.push_back(action);
+            flags[action_type] = checked;
+            if(propType & prop_type) {
+                action->setText(text + QStringLiteral(" *"));
+                checkbox->setChecked(true);
+                checkbox->setDisabled(true);
+                flags.erase(action_type);
+            }
+        };
+        setupAction("Hidden", MA_Hidden, App::Property::Hidden, App::PropertyType::Prop_Hidden);
+        setupAction("Output", MA_Output, App::Property::Output, App::PropertyType::Prop_Output);
+        setupAction("NoRecompute", MA_NoRecompute, App::Property::NoRecompute, App::PropertyType::Prop_NoRecompute);
+        setupAction("ReadOnly", MA_ReadOnly, App::Property::ReadOnly, App::PropertyType::Prop_ReadOnly);
+        setupAction("Transient", MA_Transient, App::Property::Transient, App::PropertyType::Prop_Transient);
+        setupAction("Touched", MA_Touched, App::Property::Touched, App::PropertyType::Prop_None);
+        setupAction("EvalOnRestore", MA_EvalOnRestore, App::Property::EvalOnRestore, App::PropertyType::Prop_None);
+        setupAction("CopyOnChange", MA_CopyOnChange, App::Property::CopyOnChange, App::PropertyType::Prop_None);
         if (auto prop = props.begin()->getProperty()) {
             if (prop->isDerivedFrom(App::PropertyMaterial::getClassTypeId()))
                 setupAction("MaterialEdit", MA_MaterialEdit, App::Property::MaterialEdit, App::PropertyType::Prop_None);
