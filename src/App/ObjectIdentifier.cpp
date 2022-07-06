@@ -2312,13 +2312,15 @@ void ObjectIdentifier::setValue(const App::any &value) const
 void ObjectIdentifier::setPyValue(Py::Object value) const
 {
     ResolveResults rs(*this);
-    if(rs.propertyType && rs.propertyIndex+1 == (int)components.size())
-        FC_THROWM(Base::RuntimeError,"Cannot set pseudo property " << toString());
     if(!rs.resolvedProperty)
         FC_THROWM(Base::RuntimeError,"Property not found " << toString());
-    if(rs.resolvedProperty->testStatus(Property::Immutable)
-            || rs.resolvedProperty->testStatus(Property::PropReadOnly))
-        FC_THROWM(Base::RuntimeError,"Cannot set read-only property: " << toString());
+    if(rs.propertyIndex+1 == (int)components.size()) {
+        if (rs.propertyType)
+            FC_THROWM(Base::RuntimeError,"Cannot set pseudo property " << toString());
+        if(rs.resolvedProperty->testStatus(Property::Immutable)
+                || rs.resolvedProperty->testStatus(Property::PropReadOnly))
+            FC_THROWM(Base::RuntimeError,"Cannot set read-only property: " << toString());
+    }
 
     try {
         access(rs,&value);
