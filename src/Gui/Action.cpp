@@ -1954,6 +1954,7 @@ void DockWidgetAction::addTo ( QWidget * w )
       _menu = new QMenu();
       _action->setMenu(_menu);
       connect(_menu, SIGNAL(aboutToShow()), getMainWindow(), SLOT(onDockWindowMenuAboutToShow()));
+      _menu->aboutToShow();
     }
 
     if (qobject_cast<QToolBar*>(w))

@@ -698,12 +698,14 @@ MainWindow* MainWindow::getInstance()
 }
 
 namespace {
+
 enum MenuType {
     ToolBarMenu,
     DockWindowMenu,
 };
 
-void populateMenu(QMenu *menu, MenuType type, bool popup)
+void populateMenu(QMenu *menu, MenuType type, bool popup,
+                  const QString &shortcutPrefix = QString())
 {
     auto mw = getMainWindow();
     QMap<QString, QAction*> actions;
@@ -818,19 +820,69 @@ void populateMenu(QMenu *menu, MenuType type, bool popup)
         }
     }
 
-    for(auto it=actions.begin(); it!=actions.end(); ++it) {
-        auto action = *it;
-        auto m = hiddenMenu && !action->isVisible() ? hiddenMenu : menu;
-        if (!popup) {
-            m->addAction(action);
-            continue;
-        }
+    auto addCheckBox = [&](QMenu *m, const QString &title, QAction *action) {
         QCheckBox *checkbox;
         auto wa = Action::addCheckBox(
-                m, it.key(), tooltip, action->icon(), action->isChecked(), &checkbox);
+                m, title, tooltip, action->icon(), action->isChecked(), &checkbox);
         QObject::connect(checkbox, SIGNAL(toggled(bool)), action, SIGNAL(triggered(bool)));
         QObject::connect(wa, SIGNAL(triggered(bool)), action, SIGNAL(triggered(bool)));
+        return wa;
+    };
+
+    if (!popup || shortcutPrefix.isEmpty()) {
+        for(auto it=actions.begin(); it!=actions.end(); ++it) {
+            auto action = *it;
+            auto m = hiddenMenu && !action->isVisible() ? hiddenMenu : menu;
+            if (!popup)
+                m->addAction(action);
+            else
+                addCheckBox(m, it.key(), action);
+        }
     }
+    else {
+        // Auto assign shortcuts. Try to reuse old one so that the shortcut won't
+        // jump around due to the fact that the actions are sorted by their names.
+        std::map<int, std::pair<QString, QAction*>> shortcutMap;
+        for(auto it=actions.begin(); it!=actions.end();) {
+            auto action = *it;
+            if (hiddenMenu && !action->isVisible()) {
+                addCheckBox(hiddenMenu, it.key(), action);
+                it = actions.erase(it);
+                continue;
+            }
+            QString shortcut = action->shortcut().toString();
+            if (shortcut.startsWith(shortcutPrefix)) {
+                int idx = shortcut.right(shortcut.size()-shortcutPrefix.size()).toInt();
+                if (!shortcutMap.emplace(idx, std::make_pair(it.key(), action)).second) {
+                    action->setShortcut(QString());
+                } else {
+                    it = actions.erase(it);
+                    continue;
+                }
+            }
+            ++it;
+        }
+        int i = 1;
+        for(auto it=actions.begin(); it!=actions.end(); ++it) {
+            for (; shortcutMap.count(i); ++i);
+            shortcutMap.emplace(i,std::make_pair(it.key(), it.value()));
+        }
+
+        for (const auto &v : shortcutMap) {
+            int idx = v.first;
+            QString title = v.second.first;
+            QAction *action = v.second.second;
+            QString shortcut;
+            if (idx <= 9) {
+                shortcut = QStringLiteral("%1%2").arg(shortcutPrefix).arg(idx);
+                title += QStringLiteral("  (%1)").arg(shortcut);
+            }
+            auto wa = addCheckBox(menu, title, action);
+            wa->setShortcut(shortcut);
+            action->setShortcut(shortcut);
+        }
+    }
+
     if (hiddenMenu)
         menu->addMenu(hiddenMenu);
     if (lockMenu)
@@ -1438,7 +1490,15 @@ void MainWindow::onDockWindowMenuAboutToShow()
 {
     QMenu* menu = static_cast<QMenu*>(sender());
     menu->clear();
-    populateMenu(menu, DockWindowMenu, false);
+    QString shortcutPrefix = QString::fromUtf8(d->hGrp->GetASCII("DockableWindowShortcut", "D, D").c_str());
+    shortcutPrefix = shortcutPrefix.trimmed();
+    if (!shortcutPrefix.isEmpty()) {
+        if (!shortcutPrefix.endsWith(QLatin1Char(',')))
+            shortcutPrefix += QStringLiteral(", ");
+        else
+            shortcutPrefix += QStringLiteral(" ");
+    }
+    populateMenu(menu, DockWindowMenu, false, shortcutPrefix);
 }
 
 QList<QWidget*> MainWindow::windows(QMdiArea::WindowOrder order) const
