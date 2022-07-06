@@ -4426,9 +4426,31 @@ bool OverlayManager::eventFilter(QObject *o, QEvent *ev)
     return false;
 }
 
+namespace {
+class  MouseGrabberGuard {
+public:
+    MouseGrabberGuard(QWidget *grabber)
+    {
+        if (grabber && grabber == QWidget::mouseGrabber()) {
+            _grabber = grabber;
+            _grabber->releaseMouse();
+        }
+    }
+    ~MouseGrabberGuard()
+    {
+        if (_grabber)
+            _grabber->grabMouse();
+    }
+
+    QPointer<QWidget> _grabber;
+};
+}// anonymous namespace
+
 void OverlayManager::Private::interceptEvent(QWidget *widget, QEvent *ev)
 {
     Base::StateLocker guard(this->intercepting);
+    MouseGrabberGuard grabberGuard(_trackingOverlay);
+
     lastIntercept = nullptr;
     auto getChildAt = [](QWidget *w, const QPoint &pos) {
         QWidget *res = w;
