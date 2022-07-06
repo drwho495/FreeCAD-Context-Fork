@@ -270,6 +270,8 @@ void ViewProviderDocumentObject::onChanged(const App::Property* prop)
     }
 
     ViewProvider::onChanged(prop);
+    if (pcObject)
+        pcObject->ViewObject.touch();
 }
 
 void ViewProviderDocumentObject::hide(void)
@@ -352,7 +354,12 @@ void ViewProviderDocumentObject::attach(App::DocumentObject *pcObj)
     // save Object pointer
     pcObject = pcObj;
 
-    pcObj->setStatus(App::ObjectStatus::ViewProviderAttached,true);
+    if (pcObj) {
+        pcObj->setStatus(App::ObjectStatus::ViewProviderAttached,true);
+
+        Base::PyGILStateLocker lock;
+        pcObj->ViewObject.setValue(Py::asObject(this->getPyObject()));
+    }
 
     if(pcObj && pcObj->getNameInDocument()
              && !testStatus(SecondaryView)

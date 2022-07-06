@@ -362,13 +362,6 @@ getElementMapVersion(property_name): return element map version of a given geome
 			</Documentation>
 			<Parameter Name="State" Type="List"/>
 		</Attribute>
-		<Attribute Name="ViewObject" ReadOnly="true">
-			<Documentation>
-				<UserDocu>If the GUI is loaded the associated view provider is returned
-or None if the GUI is not up</UserDocu>
-			</Documentation>
-			<Parameter Name="ViewObject" Type="Object"/>
-		</Attribute>
 		<CustomAttributes />
 		<Attribute Name="MustExecute" ReadOnly="true">
 			<Documentation>

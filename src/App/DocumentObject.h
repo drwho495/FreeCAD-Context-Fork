@@ -30,6 +30,7 @@
 #include <App/PropertyStandard.h>
 #include <App/PropertyLinks.h>
 #include <App/PropertyExpressionEngine.h>
+#include <App/PropertyPythonObject.h>
 
 #include <Base/TimeInfo.h>
 #include <Base/Matrix.h>
@@ -102,6 +103,7 @@ public:
 
     PropertyString Label;
     PropertyString Label2;
+    PropertyPythonObject ViewObject;
     PropertyExpressionEngine ExpressionEngine;
 
     /// Allow control visibility status in App name space

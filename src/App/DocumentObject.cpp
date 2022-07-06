@@ -23,6 +23,7 @@
 
 
 #include "PreCompiled.h"
+#include "PropertyContainer.h"
 
 #ifndef _PreComp_
 #endif
@@ -82,6 +83,12 @@ DocumentObject::DocumentObject(void)
     TreeRank.setStatus(App::Property::Hidden, true);
     TreeRank.setStatus(App::Property::NoRecompute, true);
     TreeRank.setStatus(App::Property::Output, true);
+
+    ADD_PROPERTY_TYPE(ViewObject, (), "Base",
+            (App::PropertyType)(App::Prop_Output
+                               |App::Prop_Hidden
+                               |App::Prop_ReadOnly
+                               |App::Prop_NoPersist), "View object");
 
     ADD_PROPERTY(Visibility, (true));
 
