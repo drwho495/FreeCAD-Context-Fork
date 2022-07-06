@@ -90,6 +90,13 @@ SubShapeBinder::SubShapeBinder()
     static const char *FillStyleEnum[] = {"Stretch", "Coons", "Curved", 0};
     FillStyle.setEnums(FillStyleEnum);
 
+    ADD_PROPERTY_TYPE(Offset, (0.0), "Offsetting", App::Prop_None, "2D offset face or wires, 0.0 = no offset");
+    ADD_PROPERTY_TYPE(OffsetJoinType, ((long)0), "Offsetting", App::Prop_None, "Arcs, Tangent, Intersection");
+    static const char* JoinTypeEnum[] = { "Arcs", "Tangent", "Intersection", nullptr };
+    OffsetJoinType.setEnums(JoinTypeEnum);
+    ADD_PROPERTY_TYPE(OffsetFill, (false), "Offsetting", App::Prop_None, "True = make face between original wire and offset.");
+    ADD_PROPERTY_TYPE(OffsetOpenResult, (false), "Offsetting", App::Prop_None, "False = make closed offset from open wire.");
+    ADD_PROPERTY_TYPE(OffsetIntersection, (false), "Offsetting", App::Prop_None, "False = offset child wires independently.");
     ADD_PROPERTY_TYPE(ClaimChildren, (false), "Base",App::Prop_Output,"Claim linked object as children");
     ADD_PROPERTY_TYPE(Relative, (true), "Base",App::Prop_None,"Enable relative sub-object binding");
     ADD_PROPERTY_TYPE(BindMode, ((long)0), "Base", App::Prop_None, 
@@ -659,6 +666,54 @@ void SubShapeBinder::update(SubShapeBinder::UpdateOption options) {
             } else if (result.hasSubShape(TopAbs_SHELL) && Refine.getValue())
                 result = result.makERefine();
         } 
+
+        if (fabs(Offset.getValue()) > Precision::Confusion()) {
+            try {
+                std::vector<TopoShape> results;
+                auto makeOffset = [&](const TopoShape &s, bool is2D) {
+                    if (is2D)
+                        results.push_back(s.makEOffset2D(Offset.getValue(),
+                                                         OffsetJoinType.getValue(),
+                                                         OffsetFill.getValue(),
+                                                         OffsetOpenResult.getValue(),
+                                                         OffsetIntersection.getValue()));
+                    else
+                        results.push_back(s.makEOffset(Offset.getValue(),
+                                                       Precision::Confusion(),
+                                                       OffsetIntersection.getValue(),
+                                                       false,
+                                                       OffsetOpenResult.getValue() ? 0 : 1,
+                                                       OffsetJoinType.getValue(),
+                                                       OffsetFill.getValue()));
+                };
+                for (const auto &s : result.getSubTopoShapes(TopAbs_SOLID))
+                    makeOffset(s, false);
+                for (const auto &s : result.getSubTopoShapes(TopAbs_SHELL, TopAbs_SOLID))
+                    makeOffset(s, false);
+                for (auto s : result.getSubTopoShapes(TopAbs_FACE, TopAbs_SHELL)) {
+                    if (s.isPlanarFace()) {
+                        s.linearize(true, false);
+                        makeOffset(s, true);
+                    } else
+                        makeOffset(s, false);
+                }
+                for (auto s : result.getSubTopoShapes(TopAbs_EDGE, TopAbs_FACE)) {
+                    if (s.isLinearEdge()) {
+                        s.linearize(false, true);
+                        makeOffset(s, true);
+                    } else
+                        makeOffset(s, false);
+                }
+
+                result.makECompound(results);
+
+            } catch(Base::Exception & e) {
+                e.ReportException();
+                throw;
+            } catch(Standard_Failure & e) {
+                FC_THROWM(Base::CADKernelError, "Failed to make offset: " << e.GetMessageString());
+            }
+        }
 
         result.setPlacement(Placement.getValue());
         Shape.setValue(result);

@@ -60,6 +60,11 @@ public:
     App::PropertyXLink Context;
     App::PropertyInteger _Version;
     App::PropertyEnumeration BindCopyOnChange;
+    App::PropertyFloat Offset;
+    App::PropertyEnumeration OffsetJoinType;
+    App::PropertyBool OffsetFill;
+    App::PropertyBool OffsetOpenResult;
+    App::PropertyBool OffsetIntersection;
 
     enum UpdateOption {
         UpdateNone = 0,
