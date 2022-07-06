@@ -137,9 +137,23 @@ protected:
     QMenu *contextMenu;
     QMenu *pasteMenu;
 
-#define SHEET_CELL_MODE(_name,_label,_doc) QAction *actionEdit##_name;
-    SHEET_CELL_MODES
-#undef SHEET_CELL_MODE
+    /*[[[cog
+    import SheetParams
+    SheetParams.declare_edit_modes_actions()
+    ]]]*/
+
+    // Auto generated code (Mod/Spreadsheet/App/SheetParams.py:197)
+    QAction *actionEditNormal;
+    QAction *actionEditButton;
+    QAction *actionEditCombo;
+    QAction *actionEditLabel;
+    QAction *actionEditQuantity;
+    QAction *actionEditCheckBox;
+    QAction *actionEditAutoAlias;
+    QAction *actionEditAutoAliasV;
+    QAction *actionEditColor;
+    //[[[end]]]
+
     QAction *actionEditPersistent;
 
     QAction *actionShowRows;

@@ -43,6 +43,7 @@
 #include <Mod/Spreadsheet/App/Sheet.h>
 #include <Gui/ExpressionCompleter.h>
 #include <Gui/QuantitySpinBox.h>
+#include <Gui/Widgets.h>
 #include "DlgBindSheet.h"
 
 FC_LOG_LEVEL_INIT("Spreadsheet",true,true)
@@ -72,6 +73,11 @@ QWidget *SpreadsheetDelegate::createEditor(QWidget *parent,
         case Cell::EditButton: {
             auto button = new QPushButton(parent);
             connect(button, SIGNAL(clicked()), this, SLOT(commitAndCloseEditor()));
+            return button;
+        } 
+        case Cell::EditColor: {
+            auto button = new Gui::TransparentColorButton(parent);
+            connect(button, SIGNAL(changed()), this, SLOT(commitAndCloseEditor()));
             return button;
         } 
         case Cell::EditLabel: {
@@ -182,6 +188,12 @@ void SpreadsheetDelegate::setEditorData(QWidget *editor,
         }
         return;
     }
+    if (auto colorButton = qobject_cast<Gui::ColorButton*>(editor)) {
+        App::Color fcColor(data.toUInt());
+        QColor color(fcColor.r*255.0f, fcColor.g*255.0f, fcColor.b*255.0f, fcColor.a*255.0f);
+        colorButton->setColor(color);
+        return;
+    }
     QPushButton *button = qobject_cast<QPushButton*>(editor);
     if(button) {
         button->setText(data.toString());
@@ -285,6 +297,14 @@ void SpreadsheetDelegate::setModelData(QWidget *editor,
     TextEdit *edit = qobject_cast<TextEdit *>(editor);
     if (edit) {
         model->setData(index, edit->toPlainText());
+        return;
+    }
+    if (auto colorButton = qobject_cast<Gui::ColorButton*>(editor)) {
+        if(committing) {
+            auto c = colorButton->color();
+            App::Color color(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+            model->setData(index, color.getPackedValue());
+        }
         return;
     }
     QPushButton *button = qobject_cast<QPushButton*>(editor);
