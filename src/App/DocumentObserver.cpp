@@ -194,6 +194,15 @@ void DocumentObjectT::operator=(const Property *prop) {
             property = prop->getName();
             return;
         }
+        std::string fullname = prop->getFullName();
+        auto pos = fullname.find('#');
+        auto dot = fullname.find('.');
+        if (pos != std::string::npos && dot != std::string::npos && dot > pos) {
+            document = fullname.substr(0, pos);
+            object = fullname.substr(pos+1, dot-pos-1);
+            property = fullname.c_str() + dot + 1;
+            return;
+        }
     }
     object.clear();
     label.clear();
@@ -285,7 +294,46 @@ Property *DocumentObjectT::getProperty() const {
         return doc ? doc->getPropertyByName(property.c_str()) : nullptr;
     }
     auto obj = getObject();
-    return obj ? obj->getPropertyByName(property.c_str()) : nullptr;
+    if (!obj)
+        return nullptr;
+
+    const char *prop = property.c_str();
+    const char *dot = strchr(prop, '.');
+    if (!dot)
+        return obj->getPropertyByName(property.c_str());
+
+    App::Property *res = nullptr;
+    Base::PyGILStateLocker lock;
+    try {
+        Py::Object pyobj(obj->getPyObject(), true);
+        std::string _name;
+        for (;;) {
+            const char *name;
+            if (dot) {
+                _name = std::string(prop, dot);
+                name = _name.c_str();
+            }
+            else
+                name = prop;
+            if (PyObject_TypeCheck(pyobj.ptr(), &PropertyContainerPy::Type)) {
+                auto p = static_cast<PropertyContainerPy*>(pyobj.ptr())->getPropertyContainerPtr()->getPropertyByName(name);
+                if (p)
+                    res = p;
+            }
+            if(!dot || !pyobj.hasAttr(name))
+                break;
+            pyobj = pyobj.getAttr(name);
+            prop = dot+1;
+            dot = strchr(prop, '.');
+        }
+
+    } catch (Py::Exception &) {
+        PyErr_Clear();
+        return nullptr;
+    } catch (Base::Exception &) {
+        return nullptr;
+    }
+    return res;
 }
 
 // -----------------------------------------------------------------------------

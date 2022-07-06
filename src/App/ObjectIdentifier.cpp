@@ -39,6 +39,7 @@
 #include <Base/QuantityPy.h>
 #include <Base/Console.h>
 #include <App/DocumentObjectPy.h>
+#include "DocumentObserver.h"
 #include "ComplexGeoData.h"
 #include "Property.h"
 #include "Application.h"
@@ -221,6 +222,31 @@ ObjectIdentifier::ObjectIdentifier(const Property &prop, int index)
     , _hash(0)
 {
     DocumentObject * docObj = freecad_dynamic_cast<DocumentObject>(prop.getContainer());
+    if (docObj)
+        addComponent(SimpleComponent(prop.getName()));
+    else {
+        App::DocumentObjectT objT(&prop);
+        docObj = objT.getObject();
+        if (docObj) {
+            const char *prop = objT.getPropertyName().c_str();
+            const char *dot = strchr(prop, '.');
+            std::string _name;
+            for (;;) {
+                const char *name;
+                if (dot) {
+                    _name = std::string(prop, dot);
+                    name = _name.c_str();
+                }
+                else
+                    name = prop;
+                addComponent(SimpleComponent(name));
+                if(!dot)
+                    break;
+                prop = dot+1;
+                dot = strchr(prop, '.');
+            }
+        }
+    }
 
     if (!docObj)
         FC_THROWM(Base::TypeError,"Property must be owned by a document object.");
@@ -229,7 +255,6 @@ ObjectIdentifier::ObjectIdentifier(const Property &prop, int index)
 
     setDocumentObjectName(docObj);
 
-    addComponent(SimpleComponent(prop.getName()));
     if(index!=INT_MAX)
         addComponent(ArrayComponent(index));
 }
@@ -1977,6 +2002,49 @@ void ObjectIdentifier::String::checkImport(const App::DocumentObject *owner,
     }
 }
 
+namespace {
+
+// PropertyContainer attribute change notification is disabled for some reason.
+// This class is to make sure it is enabled when setting a long chain of attributes.
+class ContainerNotifierEnabler
+{
+public:
+    ContainerNotifierEnabler(PyObject *pyObj)
+    {
+        attach(pyObj);
+    }
+
+    ~ContainerNotifierEnabler()
+    {
+        detach();
+    }
+
+    void detach()
+    {
+        if (pyBase) {
+            pyBase->setShouldNotify(shouldNotify);
+            Py_DECREF(pyBase);
+            pyBase = nullptr;
+        }
+    }
+
+    void attach(PyObject *pyObj)
+    {
+        if(pyObj && pyObj != pyBase && PyObject_TypeCheck(pyObj, &PropertyContainerPy::Type)) {
+            detach();
+            pyBase = static_cast<PyObjectBase*>(pyObj);
+            Py_INCREF(pyBase);
+            shouldNotify = pyBase->shouldNotify();
+            pyBase->setShouldNotify(true);
+        }
+    }
+
+public:
+    PyObjectBase *pyBase = nullptr;
+    bool shouldNotify;
+};
+}
+
 Py::Object ObjectIdentifier::access(const ResolveResults &result,
         Py::Object *value, Dependencies *deps) const
 {
@@ -2191,6 +2259,8 @@ Py::Object ObjectIdentifier::access(const ResolveResults &result,
     size_t count = components.size();
     if(value) --count;
 
+    ContainerNotifierEnabler notificationEnabler(pyobj.ptr());
+
     for(;idx<count;++idx)  {
         if(PyObject_TypeCheck(*pyobj, &DocumentObjectPy::Type))
             lastObj = static_cast<DocumentObjectPy*>(*pyobj)->getDocumentObjectPtr();
@@ -2209,6 +2279,8 @@ Py::Object ObjectIdentifier::access(const ResolveResults &result,
             }
             lastObj = 0;
         }
+
+        notificationEnabler.attach(pyobj.ptr());
         pyobj = components[idx].get(pyobj);
     }
     if(value) {
