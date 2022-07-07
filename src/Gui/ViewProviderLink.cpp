@@ -2233,7 +2233,7 @@ void ViewProviderLink::updateDataPrivate(App::LinkBaseExtension *ext, const App:
             if(canScale(v))
                 pcTransform->scaleFactor.setValue(v.x,v.y,v.z);
             SbMatrix matrix = convert(ext->getTransform(false));
-            linkView->renderDoubleSide(matrix.det3() < 0);
+            linkView->renderDoubleSide(matrix.det3() < 1e-7);
         }
     }else if(prop == ext->getMatrixProperty()) {
         if(!prop->testStatus(App::Property::User3)) {
@@ -2244,7 +2244,7 @@ void ViewProviderLink::updateDataPrivate(App::LinkBaseExtension *ext, const App:
             }
             pcMatrixTransform->matrix = convert(ext->getMatrixValue());
             SbMatrix matrix = convert(ext->getTransform(false));
-            linkView->renderDoubleSide(matrix.det3() < 0);
+            linkView->renderDoubleSide(matrix.det3() < 1e-7);
         }
     }else if(prop == ext->getPlacementProperty() || prop == ext->getLinkPlacementProperty()) {
         auto propLinkPlacement = ext->getLinkPlacementProperty();
