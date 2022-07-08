@@ -841,9 +841,7 @@ void Document::slotNewObject(const App::DocumentObject& Obj)
         pcProvider->setStatus(Gui::ViewStatus::TouchDocument, d->_changeViewTouchDocument);
 
         try {
-            // if successfully created set the right name and calculate the view
-            //FIXME: Consider to change argument of attach() to const pointer
-            pcProvider->attach(const_cast<App::DocumentObject*>(&Obj));
+            pcProvider->attachDocumentObject(const_cast<App::DocumentObject*>(&Obj));
             pcProvider->updateView();
             pcProvider->setActiveMode();
         }

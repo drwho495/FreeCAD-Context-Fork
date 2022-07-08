@@ -349,23 +349,31 @@ void ViewProviderDocumentObject::updateView()
     if (vis && Visibility.getValue()) ViewProvider::show();
 }
 
+void ViewProviderDocumentObject::attachDocumentObject(App::DocumentObject *pcObj)
+{
+    pcObject = pcObj;
+
+    if(pcObj && pcObj->getNameInDocument()
+             && !testStatus(SecondaryView))
+    {
+        Base::PyGILStateLocker lock;
+        pcObj->ViewObject.setValue(Py::asObject(this->getPyObject()));
+    }
+
+    attach(pcObj);
+}
+
 void ViewProviderDocumentObject::attach(App::DocumentObject *pcObj)
 {
     // save Object pointer
     pcObject = pcObj;
 
-    if (pcObj) {
-        pcObj->setStatus(App::ObjectStatus::ViewProviderAttached,true);
-
-        Base::PyGILStateLocker lock;
-        pcObj->ViewObject.setValue(Py::asObject(this->getPyObject()));
-    }
-
     if(pcObj && pcObj->getNameInDocument()
-             && !testStatus(SecondaryView)
-             && Visibility.getValue()!=pcObj->Visibility.getValue())
+             && !testStatus(SecondaryView))
     {
-        pcObj->Visibility.setValue(Visibility.getValue());
+        pcObj->setStatus(App::ObjectStatus::ViewProviderAttached,true);
+        if (Visibility.getValue()!=pcObj->Visibility.getValue())
+            pcObj->Visibility.setValue(Visibility.getValue());
     }
 
     DisplayMode.setEnumVector(this->getDisplayModes());

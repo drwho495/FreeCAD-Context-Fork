@@ -253,6 +253,10 @@ protected:
 private:
     void updateChildren(bool propagate=false);
 
+    // To be called by Gui::Document, in order to make sure the implementation
+    // will never be skipped by any derived class
+    void attachDocumentObject(App::DocumentObject*);
+
 protected:
     App::DocumentObject *pcObject;
     Gui::Document* pcDocument;
