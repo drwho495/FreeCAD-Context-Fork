@@ -33,7 +33,7 @@ from params_utils import ParamBool, ParamInt, ParamString, ParamUInt,\
                          ParamFloat, ParamSpinBox, ParamColor, ParamHex,\
                          auto_comment, quote
 
-NameSpace = 'Gui'
+NameSpace = 'Spreadsheet'
 ClassName = 'SheetParams'
 ParamPath = 'User parameter:BaseApp/Preferences/Mod/Spreadsheet'
 ClassDoc = 'Convenient class to obtain spreadsheet related parameters'
