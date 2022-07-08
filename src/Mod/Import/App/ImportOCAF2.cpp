@@ -364,8 +364,13 @@ Part::Feature *ImportOCAF2::expandShape(App::Document *doc,
                 info.obj = child;
 
                 std::vector<App::Color> faceColors;
+                Part::TopoShape s(it.Value());
+
                 if(colors.faceColors.size()) {
-                    const auto &s = child->Shape.getShape();
+                    // child Shape is not ready yet, since we haven't recompute
+                    // the compound feature.
+                    //
+                    // const auto &s = child->Shape.getShape();
                     bool hasColors = false;
                     faceColors.assign(s.countSubShapes(TopAbs_FACE),colors.faceColor);
                     int i=0;
@@ -382,7 +387,7 @@ Part::Feature *ImportOCAF2::expandShape(App::Document *doc,
 
                 std::vector<App::Color> edgeColors;
                 if(colors.edgeColors.size()) {
-                    const auto &s = child->Shape.getShape();
+                    // const auto &s = child->Shape.getShape();
                     bool hasColors = false;
                     edgeColors.assign(s.countSubShapes(TopAbs_EDGE),colors.edgeColor);
                     int i=0;
