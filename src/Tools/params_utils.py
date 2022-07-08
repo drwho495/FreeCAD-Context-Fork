@@ -52,14 +52,18 @@ def auto_comment(frame=1, msg=None, count=1):
 def trace_comment():
     return auto_comment(2)
 
+def get_module_path(module):
+    return path.dirname(module.__file__.split(f'src{path.sep}')[-1])
+
 def declare_begin(module, header=True):
     class_name = module.ClassName
     namespace = module.NameSpace
     params = module.Params
     param_path = module.ParamPath
-    param_file = getattr(module, 'ParamSource', f'{namespace}/{class_name}.py')
-    header_file = getattr(module, 'HeaderFile', f'{namespace}/{class_name}.h')
-    source_file = getattr(module, 'SourceFile', f'{namespace}/{class_name}.cpp')
+    file_path = getattr(module, 'FilePath', get_module_path(module))
+    param_file = getattr(module, 'ParamSource', f'{file_path}/{class_name}.py')
+    header_file = getattr(module, 'HeaderFile', f'{file_path}/{class_name}.h')
+    source_file = getattr(module, 'SourceFile', f'{file_path}/{class_name}.cpp')
     class_doc = module.ClassDoc
     signal = getattr(module, 'Signal', False)
 
@@ -389,9 +393,10 @@ def preference_dialog_declare_begin(param_set, header=True):
     class_name = param_set.ClassName
     dialog_namespace = getattr(param_set, 'DialogNameSpace', 'Dialog')
     param_group = param_set.ParamGroup
-    param_file = getattr(param_set, 'ParamSource', class_name + '.py')
-    header_file = getattr(param_set, 'HeaderFile', class_name + '.h')
-    source_file = getattr(param_set, 'SourceFile', class_name + '.cpp')
+    file_path = getattr(module, 'FilePath', get_module_path(module))
+    param_file = getattr(module, 'ParamSource', f'{file_path}/{class_name}.py')
+    header_file = getattr(module, 'HeaderFile', f'{file_path}/{class_name}.h')
+    source_file = getattr(module, 'SourceFile', f'{file_path}/{class_name}.cpp')
     class_doc = param_set.ClassDoc
 
     if header:
@@ -461,9 +466,10 @@ def preference_dialog_define(param_set, header=True):
     class_name = param_set.ClassName
     dialog_namespace = getattr(param_set, 'DialogNameSpace', 'Dialog')
     namespace = f'{param_set.NameSpace}::{dialog_namespace}'
-    param_file = getattr(param_set, 'ParamSource', class_name + '.py')
-    header_file = getattr(param_set, 'HeaderFile', class_name + '.h')
-    source_file = getattr(param_set, 'SourceFile', class_name + '.cpp')
+    file_path = getattr(module, 'FilePath', get_module_path(module))
+    param_file = getattr(module, 'ParamSource', f'{file_path}/{class_name}.py')
+    header_file = getattr(module, 'HeaderFile', f'{file_path}/{class_name}.h')
+    source_file = getattr(module, 'SourceFile', f'{file_path}/{class_name}.cpp')
     user_init = getattr(param_set, 'UserInit', '')
     headers = set()
 
@@ -918,3 +924,40 @@ class ParamSpinBox(ParamProxy):
 class ParamShortcutEdit(ParamProxy):
     WidgetType = 'Gui::PrefAccelLineEdit'
     WidgetSetter = 'setDisplayText'
+
+
+class Property:
+    def __init__(self, name, property_type, doc, prop_flags=None):
+        self.name = name
+        self.type_name = property_type
+        self.doc = doc
+        self.prop_flags = prop_flags if prop_flags else 'App::Prop_None'
+
+    def declare(self):
+        cog.out(f'''
+    {self.type_name} *get{self.name}Property(bool force=false);''')
+
+    def define(self, class_name):
+        cog.out(f'''
+{trace_comment()}
+{self.type_name} *{class_name}::get{self.name}Property(bool force)
+{{
+    if (auto prop = Base::freecad_dynamic_cast<{self.type_name}>(
+            this->getPropertyByName("{self.name}")))
+        return prop;
+    if (!force)
+        return nullptr;
+    return static_cast<{self.type_name}*>(
+            this->addDynamicProperty("{self.type_name}", "{self.name}"));
+}}
+''')
+
+def declare_properties(properties):
+    cog.out(f'''
+    {trace_comment()}''')
+    for prop in properties:
+        prop.declare()
+
+def define_properties(properties, class_name):
+    for prop in properties:
+        prop.define(class_name)
