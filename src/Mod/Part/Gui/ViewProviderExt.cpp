@@ -263,8 +263,8 @@ ViewProviderPartExt::ViewProviderPartExt()
     static bool _inited;
     if (!_inited) {
         _inited = true;
-        tessRange = {PartParams::MinimumDeviation(),100.0,0.01};
-        angDeflectionRange = {PartParams::MinimumAngularDeflection(),180.0,0.05};
+        tessRange = {PartParams::getMinimumDeviation(),100.0,0.01};
+        angDeflectionRange = {PartParams::getMinimumAngularDeflection(),180.0,0.05};
     }
 
     UpdatingColor = false;
@@ -277,9 +277,9 @@ ViewProviderPartExt::ViewProviderPartExt()
     int lwidth = Gui::ViewParams::getDefaultShapeLineWidth();
     int psize = Gui::ViewParams::getDefaultShapePointSize();
 
-    NormalsFromUV = PartParams::NormalsFromUVNodes();
+    NormalsFromUV = PartParams::getNormalsFromUVNodes();
 
-    long twoside = PartParams::TwoSideRendering() ? 1 : 0;
+    long twoside = PartParams::getTwoSideRendering() ? 1 : 0;
 
     static const char *osgroup = "Object Style";
 
@@ -301,12 +301,12 @@ ViewProviderPartExt::ViewProviderPartExt()
     LineWidth.setConstraints(&sizeRange);
     PointSize.setConstraints(&sizeRange);
     ADD_PROPERTY_TYPE(PointSize,(psize), osgroup, App::Prop_None, "Set object point size.");
-    ADD_PROPERTY_TYPE(Deviation,(PartParams::MeshDeviation()), osgroup, App::Prop_None,
+    ADD_PROPERTY_TYPE(Deviation,(PartParams::getMeshDeviation()), osgroup, App::Prop_None,
             "Sets the accuracy of the polygonal representation of the model\n"
             "in the 3D view (tessellation). Lower values indicate better quality.\n"
             "The value is in percent of object's size.");
     Deviation.setConstraints(&tessRange);
-    ADD_PROPERTY_TYPE(AngularDeflection,(PartParams::MeshAngularDeflection()), osgroup, App::Prop_None,
+    ADD_PROPERTY_TYPE(AngularDeflection,(PartParams::getMeshAngularDeflection()), osgroup, App::Prop_None,
             "Specify how finely to generate the mesh for rendering on screen or when exporting.\n"
             "The default value is 28.5 degrees, or 0.5 radians. The smaller the value\n"
             "the smoother the appearance in the 3D view, and the finer the mesh that will be exported.");
@@ -319,10 +319,10 @@ ViewProviderPartExt::ViewProviderPartExt()
     ADD_PROPERTY_TYPE(MappedColors,(),"",
             (App::PropertyType)(App::Prop_Hidden|App::Prop_ReadOnly),"");
 
-    ADD_PROPERTY(MapFaceColor,(PartParams::MapFaceColor()));
-    ADD_PROPERTY(MapLineColor,(PartParams::MapLineColor()));
-    ADD_PROPERTY(MapPointColor,(PartParams::MapPointColor()));
-    ADD_PROPERTY(MapTransparency,(PartParams::MapTransparency()));
+    ADD_PROPERTY(MapFaceColor,(PartParams::getMapFaceColor()));
+    ADD_PROPERTY(MapLineColor,(PartParams::getMapLineColor()));
+    ADD_PROPERTY(MapPointColor,(PartParams::getMapPointColor()));
+    ADD_PROPERTY(MapTransparency,(PartParams::getMapTransparency()));
     ADD_PROPERTY(ForceMapColors,(false));
 
     coords = new SoFCCoordinate3();
@@ -477,14 +477,14 @@ void ViewProviderPartExt::onChanged(const App::Property* prop)
         }
     }
     if (prop == &LineWidth) {
-        if (PartParams::RespectSystemDPI())
-            pcLineStyle->lineWidth = std::min(1.0, qApp->devicePixelRatio()*LineWidth.getValue());
+        if (PartParams::getRespectSystemDPI())
+            pcLineStyle->lineWidth = std::max(1.0, qApp->devicePixelRatio()*LineWidth.getValue());
         else
             pcLineStyle->lineWidth = LineWidth.getValue();
     }
     else if (prop == &PointSize) {
-        if (PartParams::RespectSystemDPI())
-            pcPointStyle->pointSize = std::min(1.0, qApp->devicePixelRatio()*PointSize.getValue());
+        if (PartParams::getRespectSystemDPI())
+            pcPointStyle->pointSize = std::max(1.0, qApp->devicePixelRatio()*PointSize.getValue());
         else
             pcPointStyle->pointSize = PointSize.getValue();
     }
@@ -1277,7 +1277,7 @@ void ViewProviderPartExt::reload()
     bool update = false;
     double pointsize = PointSize.getValue();
     double linewidth = LineWidth.getValue();
-    if (PartParams::RespectSystemDPI()) {
+    if (PartParams::getRespectSystemDPI()) {
         auto dpi = qApp->devicePixelRatio();
         pointsize = std::min(1.0, pointsize/dpi);
         linewidth = std::min(1.0, linewidth/dpi);
@@ -1290,26 +1290,26 @@ void ViewProviderPartExt::reload()
         update = true;
     }
 
-    tessRange.LowerBound = PartParams::MinimumDeviation();
-    angDeflectionRange.LowerBound = PartParams::MinimumAngularDeflection();
+    tessRange.LowerBound = PartParams::getMinimumDeviation();
+    angDeflectionRange.LowerBound = PartParams::getMinimumAngularDeflection();
 
-    if (Deviation.getValue() != PartParams::MeshDeviation()
-            || Deviation.getValue() < PartParams::MinimumDeviation()
-            || AngularDeflection.getValue() != PartParams::MeshAngularDeflection()
-            || AngularDeflection.getValue() < PartParams::MinimumAngularDeflection())
+    if (Deviation.getValue() != PartParams::getMeshDeviation()
+            || Deviation.getValue() < PartParams::getMinimumDeviation()
+            || AngularDeflection.getValue() != PartParams::getMeshAngularDeflection()
+            || AngularDeflection.getValue() < PartParams::getMinimumAngularDeflection())
         update = true;
 
     if (!update)
         return;
 
-    if (!PartParams::OverrideTessellation()) {
+    if (!PartParams::getOverrideTessellation()) {
         Base::ObjectStatusLocker<App::Property::Status,App::Property> guard(
                 App::Property::User3, &Deviation);
 
-        Deviation.setValue(PartParams::MeshDeviation());
+        Deviation.setValue(PartParams::getMeshDeviation());
         Base::ObjectStatusLocker<App::Property::Status,App::Property> guard2(
                 App::Property::User3, &AngularDeflection);
-        AngularDeflection.setValue(PartParams::MeshAngularDeflection());
+        AngularDeflection.setValue(PartParams::getMeshAngularDeflection());
     }
     updateVisual();
 }
@@ -1843,16 +1843,17 @@ void ViewProviderPartExt::updateVisual()
         bounds.SetGap(0.0);
         Standard_Real xMin, yMin, zMin, xMax, yMax, zMax;
         bounds.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-        Standard_Real deflection = ((xMax-xMin)+(yMax-yMin)+(zMax-zMin))/300.0 *
-            std::max(PartParams::OverrideTessellation() ? PartParams::MeshDeviation() : Deviation.getValue(),
-                     PartParams::MinimumDeviation());
+        Standard_Real deflection = std::max(Precision::Confusion(),
+            ((xMax-xMin)+(yMax-yMin)+(zMax-zMin))/300.0 *
+                std::max(PartParams::getOverrideTessellation() ? PartParams::getMeshDeviation() : Deviation.getValue(),
+                     PartParams::getMinimumDeviation()));
 
         // create or use the mesh on the data structure
 #if OCC_VERSION_HEX >= 0x060600
-        Standard_Real AngDeflectionRads = 
-            std::max((PartParams::OverrideTessellation() ?
-                        PartParams::MeshAngularDeflection() : AngularDeflection.getValue()),
-                      PartParams::MinimumAngularDeflection()) / 180.0 * M_PI;
+        Standard_Real AngDeflectionRads = std::max(Precision::Angular(),
+            std::max((PartParams::getOverrideTessellation() ?
+                        PartParams::getMeshAngularDeflection() : AngularDeflection.getValue()),
+                      PartParams::getMinimumAngularDeflection()) / 180.0 * M_PI);
         BRepMesh_IncrementalMesh(cShape,deflection,Standard_False,
                 AngDeflectionRads,Standard_True);
 #else

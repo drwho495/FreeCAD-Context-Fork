@@ -2853,7 +2853,7 @@ TopoShape &TopoShape::makEShape(const char *maker,
 
 # if OCC_VERSION_HEX >= 0x060900
 #   if OCC_VERSION_HEX >= 0x070500
-    if (PartParams::ParallelRunThreshold() > 0) {
+    if (PartParams::getParallelRunThreshold() > 0) {
         mk->SetRunParallel(Standard_True);
         OSD_Parallel::SetUseOcctThreads(Standard_True);
     }
@@ -2861,11 +2861,11 @@ TopoShape &TopoShape::makEShape(const char *maker,
     // Only run parallel 
     if (shapeArguments.Size() + shapeTools.Size() > 2)
         mk->SetRunParallel(true);
-    else if (PartParams::ParallelRunThreshold() > 0) {
+    else if (PartParams::getParallelRunThreshold() > 0) {
         int total = 0;
         for (const auto &shape : inputs) {
             total += shape.countSubShapes(TopAbs_FACE);
-            if (total > PartParams::ParallelRunThreshold()) {
+            if (total > PartParams::getParallelRunThreshold()) {
                 mk->SetRunParallel(true);
                 break;
             }

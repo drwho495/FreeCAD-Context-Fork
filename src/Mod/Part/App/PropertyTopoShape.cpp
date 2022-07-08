@@ -216,7 +216,7 @@ App::Property *PropertyPartShape::Copy(void) const
 {
     PropertyPartShape *prop = new PropertyPartShape();
 
-    if (PartParams::ShapePropertyCopy()) {
+    if (PartParams::getShapePropertyCopy()) {
         // makECopy() consume too much memory for complex geometry.
         prop->_Shape = this->_Shape.makECopy();
     } else
@@ -929,7 +929,7 @@ PropertyShapeCache *PropertyShapeCache::get(const App::DocumentObject *obj, bool
 }
 
 bool PropertyShapeCache::getShape(const App::DocumentObject *obj, TopoShape &shape, const char *subname) {
-    if (PartParams::DisableShapeCache())
+    if (PartParams::getDisableShapeCache())
         return false;
     auto prop = get(obj,false);
     if(!prop)
@@ -946,7 +946,7 @@ bool PropertyShapeCache::getShape(const App::DocumentObject *obj, TopoShape &sha
 void PropertyShapeCache::setShape(
         const App::DocumentObject *obj, const TopoShape &shape, const char *subname) 
 {
-    if (PartParams::DisableShapeCache())
+    if (PartParams::getDisableShapeCache())
         return;
     auto prop = get(obj,true);
     if(!prop)

@@ -125,7 +125,7 @@ void TaskFeatureParameters::recomputeFeature(bool delay)
         return;
 
     if (delay && updateViewTimer)
-        updateViewTimer->start(PartGui::PartParams::EditRecomputeWait());
+        updateViewTimer->start(PartGui::PartParams::getEditRecomputeWait());
     else {
         setupTransaction();
         App::DocumentObject* obj = vp->getObject ();

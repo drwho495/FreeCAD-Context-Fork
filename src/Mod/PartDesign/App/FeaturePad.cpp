@@ -118,8 +118,8 @@ App::DocumentObjectExecReturn *Pad::execute(void)
 void Pad::setupObject()
 {
     ProfileBased::setupObject();
-    UsePipeForDraft.setValue(Part::PartParams::UsePipeForExtrusionDraft());
-    Linearize.setValue(Part::PartParams::LinearizeExtrusionDraft());
+    UsePipeForDraft.setValue(Part::PartParams::getUsePipeForExtrusionDraft());
+    Linearize.setValue(Part::PartParams::getLinearizeExtrusionDraft());
 }
 
 App::DocumentObjectExecReturn *Pad::_execute(bool makeface, bool fuse)

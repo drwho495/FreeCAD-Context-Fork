@@ -601,7 +601,7 @@ void relinkToOrigin(App::DocumentObject* feat, PartDesign::Body* targetbody)
 
 PartDesign::Body *queryCommandOverride()
 {
-    if (Part::PartParams::CommandOverride() == 0)
+    if (Part::PartParams::getCommandOverride() == 0)
         return nullptr;
 
     PartDesign::Body * body = nullptr;
@@ -615,7 +615,7 @@ PartDesign::Body *queryCommandOverride()
                 break;
         }
     }
-    if (!body || Part::PartParams::CommandOverride() == 1)
+    if (!body || Part::PartParams::getCommandOverride() == 1)
         return body;
 
     QMessageBox box(Gui::getMainWindow());
@@ -641,7 +641,7 @@ PartDesign::Body *queryCommandOverride()
         QMessageBox::information(Gui::getMainWindow(),
                 QObject::tr("PartDesign Command override"),
                 QObject::tr("You can change your choice in 'Part design' preference page."));
-        Part::PartParams::set_CommandOverride(res == QMessageBox::Yes ? 1 : 0);
+        Part::PartParams::setCommandOverride(res == QMessageBox::Yes ? 1 : 0);
     }
     return res == QMessageBox::Yes ? body : nullptr;
 }
@@ -812,10 +812,10 @@ public:
                                     [this](const App::Property &) {
                                         if (!this->editPreview)
                                             this->editTimer.start(
-                                                    PartGui::PartParams::EditRecomputeWait());
+                                                    PartGui::PartParams::getEditRecomputeWait());
                                     });
                     }
-                    if (PartGui::PartParams::PreviewOnEdit()) {
+                    if (PartGui::PartParams::getPreviewOnEdit()) {
                         auto vp = Base::freecad_dynamic_cast<ViewProviderAddSub>(
                                 Gui::Application::Instance->getViewProvider(editObj));
                         if (vp) {
@@ -824,7 +824,7 @@ public:
                         }
                     } else if (editObj)
                         editObj->Visibility.setValue(true);
-                    if (PartGui::PartParams::EditOnTop())
+                    if (PartGui::PartParams::getEditOnTop())
                         showEditOnTop(true);
                     else {
                         App::DocumentObject *parent = *objs.begin();
@@ -851,7 +851,7 @@ public:
 
     void slotVisibilityChanged(const std::deque<App::DocumentObject*> &siblings)
     {
-        if (!PartGui::PartParams::EditOnTop())
+        if (!PartGui::PartParams::getEditOnTop())
             return;
         auto feat = editObjT.getObject();
         if (!feat)
@@ -994,7 +994,7 @@ public:
                            const App::DocumentObject &object,
                            const App::Property &prop)
     {
-        if (Part::PartParams::EnableWrapFeature() == 0)
+        if (Part::PartParams::getEnableWrapFeature() == 0)
             return;
         if (!activeBody|| activeBody->getDocument() != object.getDocument()
                        || !prop.isDerivedFrom(App::PropertyLinkBase::getClassTypeId()))
@@ -1034,7 +1034,7 @@ public:
                 return;
         }
 
-        if (Part::PartParams::EnableWrapFeature() > 1) {
+        if (Part::PartParams::getEnableWrapFeature() > 1) {
             QMessageBox box(Gui::getMainWindow());
             box.setIcon(QMessageBox::Question);
             box.setWindowTitle(QObject::tr("PartDesign feature wrap"));
@@ -1053,7 +1053,7 @@ public:
                 QMessageBox::information(Gui::getMainWindow(),
                         QObject::tr("PartDesign feature wrap"),
                         QObject::tr("You can change your choice in 'Part design' preference page."));
-                Part::PartParams::set_EnableWrapFeature(res == QMessageBox::Yes ? 1 : 0);
+                Part::PartParams::setEnableWrapFeature(res == QMessageBox::Yes ? 1 : 0);
             }
             if (res != QMessageBox::Yes)
                 return;
@@ -1272,14 +1272,14 @@ void MonitorProxy::addCheckBox(QWidget * widget, int index)
     auto checkbox = new QCheckBox(widget);
     checkbox->setText(tr("Show preview"));
     checkbox->setToolTip(tr("Show base feature with preview shape"));
-    checkbox->setChecked(PartGui::PartParams::PreviewOnEdit());
+    checkbox->setChecked(PartGui::PartParams::getPreviewOnEdit());
     connect(checkbox, SIGNAL(toggled(bool)), this, SLOT(onPreview(bool)));
     hlayout->addWidget(checkbox);
 
     checkbox = new QCheckBox(widget);
     checkbox->setText(tr("Show on top"));
     checkbox->setToolTip(tr("Show the editing feature always on top"));
-    checkbox->setChecked(PartGui::PartParams::EditOnTop());
+    checkbox->setChecked(PartGui::PartParams::getEditOnTop());
     connect(checkbox, SIGNAL(toggled(bool)), this, SLOT(onShowOnTop(bool)));
     hlayout->addWidget(checkbox);
 
@@ -1288,7 +1288,7 @@ void MonitorProxy::addCheckBox(QWidget * widget, int index)
 
 void MonitorProxy::onPreview(bool checked)
 {
-    PartGui::PartParams::set_PreviewOnEdit(checked);
+    PartGui::PartParams::setPreviewOnEdit(checked);
     if (!_MonitorInstance)
         return;
 
@@ -1309,7 +1309,7 @@ void MonitorProxy::onPreview(bool checked)
 
 void MonitorProxy::onShowOnTop(bool checked)
 {
-    PartGui::PartParams::set_EditOnTop(checked);
+    PartGui::PartParams::setEditOnTop(checked);
     if (!_MonitorInstance)
         return;
 

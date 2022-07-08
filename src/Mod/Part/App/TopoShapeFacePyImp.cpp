@@ -952,7 +952,7 @@ Py::Object TopoShapeFacePy::getOuterWire(void) const
     if (clSh.ShapeType() == TopAbs_FACE) {
         TopoDS_Face clFace = (TopoDS_Face&)clSh;
         TopoDS_Wire clWire;
-        if (PartParams::UseBrepToolsOuterWire())
+        if (PartParams::getUseBrepToolsOuterWire())
             clWire = BRepTools::OuterWire(clFace);
         else
             clWire = ShapeAnalysis::OuterWire(clFace);

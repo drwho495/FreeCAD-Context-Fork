@@ -137,17 +137,17 @@ void ViewProviderAddSub::checkAddSubColor()
     auto feat = Base::freecad_dynamic_cast<PartDesign::FeatureAddSub>(getObject());
     if (!feat)
         return;
-    App::Color color((uint32_t)PartGui::PartParams::PreviewAddColor());
+    App::Color color((uint32_t)PartGui::PartParams::getPreviewAddColor());
     if (AddSubColor.getValue().getPackedValue()) {
         color = AddSubColor.getValue();
     } else {
         if (feat) {
             if (feat->isDerivedFrom(PartDesign::DressUp::getClassTypeId())) {
-                color = App::Color((uint32_t)PartGui::PartParams::PreviewDressColor());
+                color = App::Color((uint32_t)PartGui::PartParams::getPreviewDressColor());
             } else if (feat->getAddSubType() == PartDesign::FeatureAddSub::Additive)
-                color = App::Color((uint32_t)PartGui::PartParams::PreviewAddColor());
+                color = App::Color((uint32_t)PartGui::PartParams::getPreviewAddColor());
             else
-                color = App::Color((uint32_t)PartGui::PartParams::PreviewSubColor());
+                color = App::Color((uint32_t)PartGui::PartParams::getPreviewSubColor());
         }
     }
     // clamp transparency between 0.1 ~ 0.8

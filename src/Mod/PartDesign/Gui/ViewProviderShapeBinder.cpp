@@ -70,7 +70,7 @@ ViewProviderShapeBinder::ViewProviderShapeBinder()
 
     //get the datum coloring scheme
     // set default color for datums (golden yellow with 60% transparency)
-    unsigned long shcol = PartGui::PartParams::DefaultDatumColor();
+    unsigned long shcol = PartGui::PartParams::getDefaultDatumColor();
     App::Color col ( (uint32_t) shcol );
     
     MapFaceColor.setValue(false);

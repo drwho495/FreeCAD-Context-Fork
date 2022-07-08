@@ -635,8 +635,8 @@ void FaceMakerExtrusion::Build()
 void Part::Extrusion::setupObject()
 {
     Part::Feature::setupObject();
-    UsePipeForDraft.setValue(PartParams::UsePipeForExtrusionDraft());
-    Linearize.setValue(Part::PartParams::LinearizeExtrusionDraft());
+    UsePipeForDraft.setValue(PartParams::getUsePipeForExtrusionDraft());
+    Linearize.setValue(Part::PartParams::getLinearizeExtrusionDraft());
     this->FaceMakerClass.setValue("Part::FaceMakerBullseye"); //default for newly created features
 }
 
@@ -646,7 +646,7 @@ Part::Extrusion::ExtrusionParameters::ExtrusionParameters()
     , solid(false)
     , innertaper(false)
     , usepipe(false)
-    , linearize(PartParams::LinearizeExtrusionDraft())
+    , linearize(PartParams::getLinearizeExtrusionDraft())
     , taperAngleFwd(0)
     , taperAngleRev(0)
     , innerTaperAngleFwd(0)

@@ -308,7 +308,7 @@ it inside the Placement property.</string>
          <string>Expand compound shape</string>
         </property>
         <property name="prefEntry" stdset="0">
-         <cstring>ExpandCompound</cstring>
+         <cstring>ExpandCompoundShape</cstring>
         </property>
         <property name="prefPath" stdset="0">
          <cstring>Mod/Import</cstring>

@@ -318,7 +318,7 @@ App::DocumentObjectExecReturn *Pocket::execute(void)
 void Pocket::setupObject()
 {
     ProfileBased::setupObject();
-    UsePipeForDraft.setValue(Part::PartParams::UsePipeForExtrusionDraft());
-    Linearize.setValue(Part::PartParams::LinearizeExtrusionDraft());
+    UsePipeForDraft.setValue(Part::PartParams::getUsePipeForExtrusionDraft());
+    Linearize.setValue(Part::PartParams::getLinearizeExtrusionDraft());
 }
 

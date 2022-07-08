@@ -169,7 +169,7 @@ App::DocumentObject *Feature::getSubObject(const char *subname,
         if(subname && *subname && !ts.isNull())
             ts = ts.getSubTopoShape(subname,true);
         if(doTransform && !ts.isNull()) {
-            bool copy = PartParams::CopySubShape();
+            bool copy = PartParams::getCopySubShape();
             if(!copy) {
                 // Work around OCC bug on transforming circular edge with an
                 // offset surface. The bug probably affect other shape type,

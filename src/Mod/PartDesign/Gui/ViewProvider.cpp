@@ -485,7 +485,7 @@ void ViewProvider::onChanged(const App::Property* prop) {
     else if (auto linkProp = Base::freecad_dynamic_cast<App::PropertyLinkBase>(
                 const_cast<App::Property*>(prop)))
     {
-        if (autoCorrectingLink || !Part::PartParams::AutoCorrectLink()) {
+        if (autoCorrectingLink || !Part::PartParams::getAutoCorrectLink()) {
             PartGui::ViewProviderPartExt::onChanged(prop);
             return;
         }

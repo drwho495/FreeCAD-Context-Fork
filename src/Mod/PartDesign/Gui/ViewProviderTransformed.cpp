@@ -145,8 +145,8 @@ void ViewProviderTransformed::checkAddSubColor()
     feat->getAddSubShape(addShape, subShape);
     if (addShape.isNull() && subShape.isNull())
         return;
-    App::Color addcolor((uint32_t)PartGui::PartParams::PreviewAddColor());
-    App::Color subcolor((uint32_t)PartGui::PartParams::PreviewSubColor());
+    App::Color addcolor((uint32_t)PartGui::PartParams::getPreviewAddColor());
+    App::Color subcolor((uint32_t)PartGui::PartParams::getPreviewSubColor());
     if (AddSubColor.getValue().getPackedValue()) {
         addcolor = AddSubColor.getValue();
         subcolor = App::Color((uint32_t)(0xFFFFFF00 ^ addcolor.getPackedValue()));
