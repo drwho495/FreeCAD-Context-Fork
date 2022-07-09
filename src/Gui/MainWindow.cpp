@@ -2205,11 +2205,11 @@ void MainWindow::insertFromMimeData (const QMimeData * mimeData)
         in.rdbuf(&buf);
         MergeDocuments mimeView(doc);
         std::vector<App::DocumentObject*> newObj = mimeView.importObjects(in);
-        std::vector<App::DocumentObjectGroup*> grp = Gui::Selection().getObjectsOfType<App::DocumentObjectGroup>();
+        auto grp = Gui::Selection().getSelection(doc->getName(), /*resolve*/1, /*single*/true);
         if (grp.size() == 1) {
             Gui::Document* gui = Application::Instance->getDocument(doc);
             if (gui)
-                gui->addRootObjectsToGroup(newObj, grp.front());
+                gui->addRootObjectsToGroup(newObj, grp.front().pObject);
         }
         doc->commitTransaction();
     }
@@ -2222,11 +2222,11 @@ void MainWindow::insertFromMimeData (const QMimeData * mimeData)
         MergeDocuments mimeView(doc);
         std::vector<App::DocumentObject*> newObj = mimeView.importObjects(str);
         str.close();
-        std::vector<App::DocumentObjectGroup*> grp = Gui::Selection().getObjectsOfType<App::DocumentObjectGroup>();
+        auto grp = Gui::Selection().getSelection(doc->getName(), /*resolve*/1, /*single*/true);
         if (grp.size() == 1) {
             Gui::Document* gui = Application::Instance->getDocument(doc);
             if (gui)
-                gui->addRootObjectsToGroup(newObj, grp.front());
+                gui->addRootObjectsToGroup(newObj, grp.front().pObject);
         }
         doc->commitTransaction();
     }

@@ -164,7 +164,7 @@ public:
     void writeObject(Base::Writer &writer, 
             const App::DocumentObject *doc, const ViewProvider *obj) const;
     /// Add all root objects of the given array to a group
-    void addRootObjectsToGroup(const std::vector<App::DocumentObject*>&, App::DocumentObjectGroup*);
+    void addRootObjectsToGroup(const std::vector<App::DocumentObject*>&, App::DocumentObject*);
     //@}
 
     /// Observer message from the App doc

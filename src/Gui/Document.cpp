@@ -1971,31 +1971,45 @@ void Document::slotFinishImportObjects(const std::vector<App::DocumentObject*> &
 }
 
 
-void Document::addRootObjectsToGroup(const std::vector<App::DocumentObject*>& obj, App::DocumentObjectGroup* grp)
+void Document::addRootObjectsToGroup(const std::vector<App::DocumentObject*>& objs, App::DocumentObject* grp)
 {
-    std::map<App::DocumentObject*, bool> rootMap;
-    for (std::vector<App::DocumentObject*>::const_iterator it = obj.begin(); it != obj.end(); ++it) {
-        rootMap[*it] = true;
+    if (!grp)
+        return;
+    auto grpExt = grp->getExtensionByType<App::GroupExtension>(true);
+    if (!grpExt)
+        return;
+
+    auto geoGrp = grp->getExtensionByType<App::GeoFeatureGroupExtension>(true);
+    if (!geoGrp) {
+        if (auto geoGrpObj = App::GeoFeatureGroupExtension::getGroupOfObject(grp))
+            geoGrp = geoGrpObj->getExtensionByType<App::GeoFeatureGroupExtension>(true);
     }
-    // get the view providers and check which objects are children
-    for (std::vector<App::DocumentObject*>::const_iterator it = obj.begin(); it != obj.end(); ++it) {
-        Gui::ViewProvider* vp = getViewProvider(*it);
-        if (vp) {
-            std::vector<App::DocumentObject*> child = vp->claimChildren();
-            for (std::vector<App::DocumentObject*>::iterator jt = child.begin(); jt != child.end(); ++jt) {
-                std::map<App::DocumentObject*, bool>::iterator kt = rootMap.find(*jt);
-                if (kt != rootMap.end()) {
-                    kt->second = false;
-                }
-            }
+
+    std::vector<App::DocumentObject *> geoNewObjects;
+    std::vector<App::DocumentObject *> grpNewObjects;
+    std::set<App::DocumentObject *> objSet;
+
+    for (auto obj : objs) {
+        if (!obj || !objSet.insert(obj).second)
+            continue;
+        if (geoGrp) {
+            if (!App::GeoFeatureGroupExtension::getGroupOfObject(obj))
+                geoNewObjects.push_back(obj);
+        }
+        if (grpExt == geoGrp)
+            continue;
+
+        if (auto vp = Base::freecad_dynamic_cast<ViewProviderDocumentObject>(
+                    Application::Instance->getViewProvider(obj)))
+        {
+            if (vp->claimedBy().empty())
+                grpNewObjects.push_back(obj);
         }
     }
 
-    // all objects that are not children of other objects can be added to the group
-    for (std::map<App::DocumentObject*, bool>::iterator it = rootMap.begin(); it != rootMap.end(); ++it) {
-        if (it->second)
-            grp->addObject(it->first);
-    }
+    if (geoGrp)
+        geoGrp->addObjects(geoNewObjects);
+    grpExt->addObjects(grpNewObjects);
 }
 
 MDIView *Document::createView(const Base::Type& typeId)
