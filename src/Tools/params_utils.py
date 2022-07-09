@@ -393,10 +393,10 @@ def preference_dialog_declare_begin(param_set, header=True):
     class_name = param_set.ClassName
     dialog_namespace = getattr(param_set, 'DialogNameSpace', 'Dialog')
     param_group = param_set.ParamGroup
-    file_path = getattr(module, 'FilePath', get_module_path(module))
-    param_file = getattr(module, 'ParamSource', f'{file_path}/{class_name}.py')
-    header_file = getattr(module, 'HeaderFile', f'{file_path}/{class_name}.h')
-    source_file = getattr(module, 'SourceFile', f'{file_path}/{class_name}.cpp')
+    file_path = getattr(param_set, 'FilePath', get_module_path(param_set))
+    param_file = getattr(param_set, 'ParamSource', f'{file_path}/{class_name}.py')
+    header_file = getattr(param_set, 'HeaderFile', f'{file_path}/{class_name}.h')
+    source_file = getattr(param_set, 'SourceFile', f'{file_path}/{class_name}.cpp')
     class_doc = param_set.ClassDoc
 
     if header:
@@ -466,10 +466,10 @@ def preference_dialog_define(param_set, header=True):
     class_name = param_set.ClassName
     dialog_namespace = getattr(param_set, 'DialogNameSpace', 'Dialog')
     namespace = f'{param_set.NameSpace}::{dialog_namespace}'
-    file_path = getattr(module, 'FilePath', get_module_path(module))
-    param_file = getattr(module, 'ParamSource', f'{file_path}/{class_name}.py')
-    header_file = getattr(module, 'HeaderFile', f'{file_path}/{class_name}.h')
-    source_file = getattr(module, 'SourceFile', f'{file_path}/{class_name}.cpp')
+    file_path = getattr(param_set, 'FilePath', get_module_path(param_set))
+    param_file = getattr(param_set, 'ParamSource', f'{file_path}/{class_name}.py')
+    header_file = getattr(param_set, 'HeaderFile', f'{file_path}/{class_name}.h')
+    source_file = getattr(param_set, 'SourceFile', f'{file_path}/{class_name}.cpp')
     user_init = getattr(param_set, 'UserInit', '')
     headers = set()
 
