@@ -28,11 +28,11 @@ import GroupParams
 GroupParams.declare()
 ]]]*/
 
-// Auto generated code (Tools/params_utils.py:68)
+// Auto generated code (Tools/params_utils.py:72)
 #include <Base/Parameter.h>
 
 
-// Auto generated code (Tools/params_utils.py:74)
+// Auto generated code (Tools/params_utils.py:78)
 namespace App {
 /** Convenient class to obtain group object (App::GroupExtension and GeoFeatureGroupExtension) related parameters
 
@@ -68,7 +68,7 @@ class AppExport GroupParams {
 public:
     static ParameterGrp::handle getHandle();
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:122)
     //@{
     /// Accessor for parameter ClaimAllChildren
     ///
@@ -81,7 +81,7 @@ public:
     static const char *docClaimAllChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:122)
     //@{
     /// Accessor for parameter KeepHiddenChildren
     ///
@@ -94,7 +94,7 @@ public:
     static const char *docKeepHiddenChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:122)
     //@{
     /// Accessor for parameter ExportChildren
     ///
@@ -107,7 +107,7 @@ public:
     static const char *docExportChildren();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:122)
     //@{
     /// Accessor for parameter CreateOrigin
     ///
@@ -121,7 +121,7 @@ public:
     static const char *docCreateOrigin();
     //@}
 
-    // Auto generated code (Tools/params_utils.py:118)
+    // Auto generated code (Tools/params_utils.py:122)
     //@{
     /// Accessor for parameter GeoGroupAllowCrossLink
     ///
@@ -135,7 +135,23 @@ public:
     static const char *docGeoGroupAllowCrossLink();
     //@}
 
-// Auto generated code (Tools/params_utils.py:146)
+    // Auto generated code (Tools/params_utils.py:122)
+    //@{
+    /// Accessor for parameter CreateGroupInGroup
+    ///
+    /// This option only applies to creating a new group when there is a singleselected object that is also a group (either plain or App::Part).
+    /// 
+    /// If the option is enabled, then the new group will be created inside the
+    /// selected group. If disabled, then the selected group will be moved into
+    /// the newly created group instead.
+    static const bool & getCreateGroupInGroup();
+    static const bool & defaultCreateGroupInGroup();
+    static void removeCreateGroupInGroup();
+    static void setCreateGroupInGroup(const bool &v);
+    static const char *docCreateGroupInGroup();
+    //@}
+
+// Auto generated code (Tools/params_utils.py:150)
 }; // class GroupParams
 } // namespace App
 //[[[end]]]

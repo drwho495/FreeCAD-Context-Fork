@@ -58,6 +58,13 @@ Params = [
         doc = "Allow objects to be contained in more than one GeoFeatureGroup (e.g. App::Part).\n"
               "If diabled, adding an object to one group will auto remove it from other groups.\n"
               "WARNING! Disabling this option may produce an invalid group after changing its children."),
+    ParamBool('CreateGroupInGroup', True,
+        title = 'Create new group inside current selected group',
+        doc = 'This option only applies to creating a new group when there is a single'
+              'selected object that is also a group (either plain or App::Part).\n\n'
+              'If the option is enabled, then the new group will be created inside the\n'
+              'selected group. If disabled, then the selected group will be moved into\n'
+              'the newly created group instead.'),
 ]
 
 def declare():
