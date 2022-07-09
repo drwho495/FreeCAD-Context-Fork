@@ -282,7 +282,8 @@ void SketchObject::buildShape() {
     std::string name("Edge");
     for(auto geo : getInternalGeometry()) {
         ++i;
-        if(GeometryFacade::getConstruction(geo))
+        if(GeometryFacade::getConstruction(geo)
+                || geo->isDerivedFrom(Part::GeomPoint::getClassTypeId()))
             continue;
         shapes.push_back(getEdge(geo,convertSubName(
                         name+std::to_string(i),false).c_str()));
