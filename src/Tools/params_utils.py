@@ -913,7 +913,7 @@ class ParamSpinBox(ParamProxy):
         super().init_widget(param, row, group_name)
         cog.out(f'''
     {trace_comment()}
-    {param.widget_name}->setMaximum({self.value_min});
+    {param.widget_name}->setMinimum({self.value_min});
     {param.widget_name}->setMaximum({self.value_max});
     {param.widget_name}->setSingleStep({self.value_step});''')
         if self.decimals:
