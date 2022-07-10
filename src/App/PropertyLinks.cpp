@@ -440,6 +440,8 @@ bool PropertyLinkBase::_updateElementReference(DocumentObject *feature,
                 << " element reference shadow update " << ret->getFullName() << " "
                 << shadow.first << " -> " << elementName.first);
         shadow.swap(elementName);
+        if(shadow.first.size() && Data::ComplexGeoData::hasMappedElementName(sub.c_str()))
+            sub = shadow.first;
     }
 
     if(reverse) {
