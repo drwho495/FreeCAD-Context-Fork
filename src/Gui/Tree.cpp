@@ -5029,9 +5029,11 @@ void TreeWidget::dropEvent(QDropEvent *event)
                     }
                 }
 
-                if(inList.count(obj))
-                    FC_THROWM(Base::RuntimeError,
-                            "Dependency loop detected for " << obj->getFullName());
+                // Dependency loop will be checked later after actual drop
+                //
+                // if(inList.count(obj))
+                //     FC_THROWM(Base::RuntimeError,
+                //             "Dependency loop detected for " << obj->getFullName());
 
                 std::string dropName;
                 ss.str("");
