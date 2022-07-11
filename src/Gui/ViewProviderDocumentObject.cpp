@@ -399,6 +399,15 @@ void ViewProviderDocumentObject::reattach(App::DocumentObject *pcObj) {
 
 void ViewProviderDocumentObject::update(const App::Property* prop)
 {
+    // DocumentObject.ViewObject has been changed to a real property instead of
+    // a Python attribute. It is used as a bridge for expression binding of all
+    // view properties. Any view provider property change will touch ViewObject
+    // to trigger ExpressionEngine update. This may cause problem for some
+    // python extended view object initialization. For better backward
+    // compatibility, it is disabled here.
+    if (prop == &getObject()->ViewObject)
+        return;
+
     // bypass view provider update to always allow changing visibility from
     // document object
     if(prop == &getObject()->Visibility) {
