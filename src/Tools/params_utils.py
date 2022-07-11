@@ -927,28 +927,50 @@ class ParamShortcutEdit(ParamProxy):
 
 
 class Property:
-    def __init__(self, name, property_type, doc, prop_flags=None):
+    def __init__(self, name, property_type, doc, group=None, prop_flags=None, static=False):
         self.name = name
         self.type_name = property_type
         self.doc = doc
         self.prop_flags = prop_flags if prop_flags else 'App::Prop_None'
+        self.static = static
+        self.group = group if group else ""
 
     def declare(self):
-        cog.out(f'''
+        if self.static:
+            cog.out(f'''
+    static {self.type_name} *get{self.name}Property(App::DocumentObject *obj, bool force=false);
+    inline {self.type_name} *get{self.name}Property(bool force=false) {{
+        return get{self.name}Property(this, force);
+    }}''')
+        else:
+            cog.out(f'''
     {self.type_name} *get{self.name}Property(bool force=false);''')
 
     def define(self, class_name):
-        cog.out(f'''
+        if self.static:
+            cog.out(f'''
+{trace_comment()}
+{self.type_name} *{class_name}::get{self.name}Property(App::DocumentObject *obj, bool force)
+{{''')
+        else:
+            cog.out(f'''
 {trace_comment()}
 {self.type_name} *{class_name}::get{self.name}Property(bool force)
 {{
+    auto obj = this;''')
+        cog.out(f'''
     if (auto prop = Base::freecad_dynamic_cast<{self.type_name}>(
-            this->getPropertyByName("{self.name}")))
-        return prop;
+            obj->getPropertyByName("{self.name}")))
+    {{
+        if (prop->getContainer() == obj)
+            return prop;
+    }}
     if (!force)
         return nullptr;
-    return static_cast<{self.type_name}*>(
-            this->addDynamicProperty("{self.type_name}", "{self.name}"));
+    return static_cast<{self.type_name}*>(obj->addDynamicProperty(
+            "{self.type_name}", "{self.name}", "{self.group}",
+    {quote(self.doc)},
+    {self.prop_flags}));
 }}
 ''')
 
