@@ -168,6 +168,9 @@ private:
         DocumentInfo(App::Document *d, std::vector<App::DocumentObject*> &objs)
             :doc(d), children(objs)
         {}
+        DocumentInfo(DocumentInfo &&other)
+            :doc(other.doc), children(other.children)
+        {}
     };
     std::vector<DocumentInfo> myDocumentStack;
     std::vector<App::Document*> myNewDocuments;
