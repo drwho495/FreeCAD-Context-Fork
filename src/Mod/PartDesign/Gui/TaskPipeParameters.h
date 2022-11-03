@@ -64,22 +64,17 @@ private Q_SLOTS:
     void onTangentChanged(bool checked);
     void onTransitionChanged(int);
     void onButtonRefAdd(bool checked);
-    void onBaseButton(bool checked);
-    void onProfileButton(bool checked);
     void onDeleteEdge();
     void onItemEntered(QTreeWidgetItem *, int);
     void onItemSelectionChanged();
     void updateUI();
 
 protected:
-    enum selectionModes { none, refAdd, refObjAdd, refProfile };
-    selectionModes selectionMode = none;
-    
     void refresh();
-    bool eventFilter(QObject *o, QEvent *e);
+    bool _eventFilter(QObject *o, QEvent *e);
 
 private:
-    void onSelectionChanged(const Gui::SelectionChanges& msg);
+    void _onSelectionChanged(const Gui::SelectionChanges& msg);
 
 public:
     void exitSelectionMode();
@@ -90,9 +85,7 @@ public:
 private:
     QWidget* proxy;
     bool initing = false;
-    App::SubObjectT lastProfile;
     App::SubObjectT lastSpine;
-    boost::signals2::scoped_connection connProfile;
     boost::signals2::scoped_connection connSpine;
     std::unique_ptr<Ui_TaskPipeParameters> ui;
 };
@@ -118,14 +111,11 @@ private Q_SLOTS:
     void onItemSelectionChanged();
   
 protected:
-    enum selectionModes { none, refAdd, refObjAdd };
-    selectionModes selectionMode = none;
-    
     void refresh();
-    bool eventFilter(QObject *o, QEvent *e);
+    bool _eventFilter(QObject *o, QEvent *e);
 
 private:
-    void onSelectionChanged(const Gui::SelectionChanges& msg);
+    void _onSelectionChanged(const Gui::SelectionChanges& msg);
 
 public:
     void exitSelectionMode();
@@ -155,15 +145,11 @@ private Q_SLOTS:
     void onItemEntered(QListWidgetItem *);
     void onItemSelectionChanged();
   
-protected:
-    enum selectionModes { none, refAdd };
-    selectionModes selectionMode = none;
-    
-    bool eventFilter(QObject *o, QEvent *e);
+    bool _eventFilter(QObject *o, QEvent *e);
     void refresh();
 
 private:
-    void onSelectionChanged(const Gui::SelectionChanges& msg);
+    void _onSelectionChanged(const Gui::SelectionChanges& msg);
     void addItem(App::DocumentObject *obj, bool select=false);
 
 public:

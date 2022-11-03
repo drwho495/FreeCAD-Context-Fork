@@ -128,46 +128,50 @@ void TaskFeatureParameters::onUpdateView(bool on)
     recomputeFeature();
 }
 
-void TaskFeatureParameters::addBlinkEditor(QLineEdit *edit)
+void TaskFeatureParameters::addBlinkWidget(QWidget *widget, const QString &txt)
 {
-    blinkEdits[edit] = edit->placeholderText();
+    QString text;
+    if (auto *w = qobject_cast<QLineEdit*>(widget))
+        text = w->placeholderText();
+    else if (auto *w = qobject_cast<QLabel*>(widget))
+        text = w->text();
+    else if (auto *w = qobject_cast<QAbstractButton*>(widget))
+        text = w->text();
+    else
+        return;
+    auto &info = blinkWidgets[widget];
+    info.widget = widget;
+    info.text = text;
+    info.altText = txt;
     if (blinkTimerId == 0)
         blinkTimerId = startTimer(500);
 }
 
-void TaskFeatureParameters::removeBlinkEditor(QLineEdit *edit)
+void TaskFeatureParameters::BlinkInfo::setText(const QString &text)
 {
-    auto it = blinkEdits.find(edit);
-    if (it != blinkEdits.end()) {
-        edit->setPlaceholderText(it->second);
-        blinkEdits.erase(it);
+    if (auto *w = qobject_cast<QLineEdit*>(widget))
+        w->setPlaceholderText(text);
+    else if (auto *w = qobject_cast<QLabel*>(widget))
+        w->setText(text);
+    else if (auto *w = qobject_cast<QAbstractButton*>(widget))
+        w->setText(text);
+}
+
+void TaskFeatureParameters::removeBlinkWidget(QWidget *widget)
+{
+    auto it = blinkWidgets.find(widget);
+    if (it != blinkWidgets.end()) {
+        it->second.setText(it->second.text);
+        blinkWidgets.erase(it);
     }
 }
 
 void TaskFeatureParameters::timerEvent(QTimerEvent *ev)
 {
     if (ev->timerId() == blinkTimerId) {
-        for (auto &v : blinkEdits)
-            v.first->setPlaceholderText(blink ? QString() : v.second);
-        for (auto &v : blinkLabels)
-            v.first->setText(blink ? QString() : v.second);
+        for (auto &v : blinkWidgets)
+            v.second.setText(blink ? v.second.altText : v.second.text);
         blink = !blink;
-    }
-}
-
-void TaskFeatureParameters::addBlinkLabel(QLabel *label)
-{
-    blinkLabels[label] = label->text();
-    if (blinkTimerId == 0)
-        blinkTimerId = startTimer(500);
-}
-
-void TaskFeatureParameters::removeBlinkLabel(QLabel *label)
-{
-    auto it = blinkLabels.find(label);
-    if (it != blinkLabels.end()) {
-        label->setText(it->second);
-        blinkLabels.erase(it);
     }
 }
 

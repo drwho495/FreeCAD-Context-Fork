@@ -74,7 +74,8 @@ private Q_SLOTS:
 
 protected:
     void changeEvent(QEvent *e) override;
-    bool eventFilter(QObject*, QEvent*) override;
+    bool _eventFilter(QObject*, QEvent*) override;
+    void exitSelectionMode() override;
 
 private:
     double getLength(void) const;
@@ -85,7 +86,7 @@ private:
     bool   getReversed(void) const;
     QString getFaceName(void) const;
 
-    void onSelectionChanged(const Gui::SelectionChanges& msg) override;
+    void _onSelectionChanged(const Gui::SelectionChanges& msg) override;
     void updateUI(int index);
 
 private:

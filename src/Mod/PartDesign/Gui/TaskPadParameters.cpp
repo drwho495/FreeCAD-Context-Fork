@@ -80,16 +80,11 @@ void TaskPadParameters::setupUI(bool newObj)
     ui->setupUi(proxy);
     if (useElement) {
         ui->buttonFace->setText(tr("Element"));
-#if QT_VERSION >= 0x040700
         ui->lineFaceName->setPlaceholderText(tr("No element selected"));
-#endif
     }
-    else {
-#if QT_VERSION >= 0x040700
+    else
         ui->lineFaceName->setPlaceholderText(tr("No face selected"));
-#endif
-    }
-    addBlinkEditor(ui->lineFaceName);
+    addBlinkWidget(ui->lineFaceName);
 
     ui->lineFaceName->installEventFilter(this);
     ui->lineFaceName->setMouseTracking(true);
@@ -407,14 +402,11 @@ void TaskPadParameters::updateUI(int index)
     }
 }
 
-void TaskPadParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
+void TaskPadParameters::_onSelectionChanged(const Gui::SelectionChanges& msg)
 {
     if (msg.Type == Gui::SelectionChanges::AddSelection) {
-        if (!selectingReference)
-            return;
         // if we have an edge selection for the pad direction
-        if (!selectionFace) {
-            removeBlinkLabel(ui->labelEdge);
+        if (getSelectionMode() == SelectionMode::refAxis) {
             std::vector<std::string> edge;
             App::DocumentObject* selObj;
             if (getReferencedSelection(vp->getObject(), msg, selObj, edge) && selObj) {
@@ -425,7 +417,7 @@ void TaskPadParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
                 fillDirectionCombo();
             }
         }
-        else if (selectionFace) {
+        else if (getSelectionMode() == SelectionMode::refAdd) {
             QString refText = onAddSelection(msg);
             if (refText.length() > 0) {
                 ui->lineFaceName->blockSignals(true);
@@ -574,17 +566,12 @@ void TaskPadParameters::onDirectionCBChanged(int num)
     if (axesInList.empty() || !pcPad)
         return;
 
-    removeBlinkLabel(ui->labelEdge);
-
     if (num == 0 || num == 2)
         propReferenceAxis->setValue(nullptr);
     else if (num == 1) {
-        addBlinkLabel(ui->labelEdge);
         // enter reference selection mode
-        this->blockConnection(false);
         // to distinguish that this is the direction selection
-        selectionFace = false;
-        TaskSketchBasedParameters::onSelectReference(true, true, true, true, true);
+        TaskSketchBasedParameters::onSelectReference(ui->labelEdge, SelectionMode::refAxis);
         return;
     }
     else {
@@ -729,27 +716,25 @@ void TaskPadParameters::onModeChanged(int index)
 
 void TaskPadParameters::onButtonFace(const bool pressed)
 {
-    this->blockConnection(!pressed);
+    if (!pressed) {
+        exitSelectionMode();
+        return;
+    }
 
-    // to distinguish that this is the direction selection
-    selectionFace = true;
-
+    ReferenceSelection::Config conf;
     if (vp && vp->getObject()
            && vp->getObject()->isDerivedFrom(PartDesign::Extrusion::getClassTypeId()))
-    {
-        if (pressed) {
-            Gui::Selection().clearSelection();
-            Gui::Selection().addSelectionGate(
-                    new ReferenceSelection(vp->getObject(), true, true, false, true));
-        }
-        else
-            Gui::Selection().rmvSelectionGate();
-    }
+        conf.point = true;
     else
-        TaskSketchBasedParameters::onSelectReference(pressed, false, true, false);
+        conf.edge = false;
+    TaskSketchBasedParameters::onSelectReference(ui->buttonFace, conf);
+    ui->buttonFace->setChecked(true);
+}
 
-    // Update button if onButtonFace() is called explicitly
-    ui->buttonFace->setChecked(pressed);
+void TaskPadParameters::exitSelectionMode()
+{
+    TaskSketchBasedParameters::exitSelectionMode();
+    ui->buttonFace->setChecked(false);
 }
 
 void TaskPadParameters::onFaceName(const QString& text)
@@ -853,7 +838,7 @@ QString TaskPadParameters::getFaceName(void) const
     return QStringLiteral("None");
 }
 
-bool TaskPadParameters::eventFilter(QObject *o, QEvent *ev)
+bool TaskPadParameters::_eventFilter(QObject *o, QEvent *ev)
 {
     switch(ev->type()) {
     case QEvent::Leave:
@@ -908,17 +893,12 @@ void TaskPadParameters::changeEvent(QEvent *e)
 
         if (useElement) {
             ui->buttonFace->setText(tr("Element"));
-#if QT_VERSION >= 0x040700
             ui->lineFaceName->setPlaceholderText(tr("No element selected"));
-#endif
         }
         else {
-#if QT_VERSION >= 0x040700
             ui->lineFaceName->setPlaceholderText(tr("No face selected"));
-#endif
         }
-        addBlinkEditor(ui->lineFaceName);
-
+        addBlinkWidget(ui->lineFaceName);
         ui->lengthEdit->blockSignals(false);
         ui->lengthEdit2->blockSignals(false);
         ui->XDirectionEdit->blockSignals(false);

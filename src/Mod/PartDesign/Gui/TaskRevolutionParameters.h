@@ -72,7 +72,7 @@ private Q_SLOTS:
     void onReversed(bool);
 
 protected:
-    void onSelectionChanged(const Gui::SelectionChanges& msg) override;
+    void _onSelectionChanged(const Gui::SelectionChanges& msg) override;
     void changeEvent(QEvent *e) override;
     bool updateView() const;
     void getReferenceAxis(App::DocumentObject *&obj, std::vector<std::string> &sub) const;

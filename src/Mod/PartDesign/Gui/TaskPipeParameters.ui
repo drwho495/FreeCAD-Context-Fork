@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>304</width>
-    <height>376</height>
+    <height>303</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,36 +20,6 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QGroupBox" name="groupprofile">
-     <property name="title">
-      <string>Profile</string>
-     </property>
-     <layout class="QVBoxLayout">
-      <item>
-       <layout class="QHBoxLayout">
-        <item>
-         <widget class="QPushButton" name="buttonProfileBase">
-          <property name="text">
-           <string>Object</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="profileBaseEdit">
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <layout class="QFormLayout" name="formLayout">
      <property name="fieldGrowthPolicy">

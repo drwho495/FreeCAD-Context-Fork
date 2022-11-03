@@ -1278,6 +1278,118 @@ public:
         }
     }
 
+    bool importExternalObjects(App::PropertyLinkSub &prop,
+                               std::vector<App::SubObjectT> _sobjs,
+                               bool report)
+    {
+        try {
+            if (!prop.getName() || !prop.getName()[0])
+                FC_THROWM(Base::RuntimeError, "Invalid property");
+            auto editObj = Base::freecad_dynamic_cast<App::DocumentObject>(prop.getContainer());
+            if (!editObj || editObjT.getObject() != editObj)
+                FC_THROWM(Base::RuntimeError, "Editting object not found: " << editObjT.getObjectName());
+            auto body = PartDesign::Body::findBodyOf(editObj);
+            if (!body)
+                FC_THROWM(Base::RuntimeError, "No body for editing object: " << editObjT.getObjectName());
+            std::map<App::DocumentObject*, std::vector<std::string>> links;
+            std::vector<App::SubObjectT> sobjs;
+            auto docName = editObj->getDocument()->getName();
+            auto inList = editObj->getInListEx(true);
+            inList.insert(editObj);
+            for (auto sobjT : _sobjs) {
+                auto sobj = sobjT.getSubObject();
+                if (!sobj)
+                    FC_THROWM(Base::RuntimeError, "Object not found: " << sobjT.getSubObjectFullName(docName));
+                if (inList.count(sobj))
+                    FC_THROWM(Base::RuntimeError, "Cyclic dependency on object " << sobjT.getSubObjectFullName(docName));
+                sobjT.normalized();
+                // Make sure that if a subelement is choosen for some object,
+                // we exclude whole object reference for that object.
+                auto &subs = links[sobj];
+                std::string element = sobjT.getOldElementName();
+                if (element.size()) {
+                    if (subs.size() == 1 && subs.front().empty()) {
+                        for (auto it=sobjs.begin(); it!=sobjs.end();) {
+                            if (it->getSubObject() == sobj) {
+                                sobjs.erase(it);
+                                break;
+                            }
+                        }
+                    }
+                } else if (subs.size() > 0)
+                    continue;
+                subs.push_back(std::move(element));
+                sobjs.push_back(sobjT);
+            }
+
+            bool import = false;
+            App::DocumentObject *obj = nullptr;
+            std::vector<std::string> subs;
+            for (const auto &sobjT : sobjs) {
+                auto sobj = sobjT.getSubObject();
+                if (PartDesign::Body::findBodyOf(sobj) != body) {
+                    import = true;
+                    break;
+                }
+                if (!obj)
+                    obj = sobj;
+                else if (obj != sobj) {
+                    import = true;
+                    break;
+                }
+                subs.push_back(sobjT.getOldElementName());
+            }
+            if (!import) {
+                if (subs.empty())
+                    subs.emplace_back();
+                if (obj == prop.getValue() && prop.getSubValues() == subs)
+                    return false;
+                prop.setValue(obj, std::move(subs));
+                return true;
+            }
+
+            Part::SubShapeBinder *binder = nullptr;
+            std::string binderName(editObj->getNameInDocument());
+            binderName += "_";
+            binderName += prop.getName();
+            // Try to get the binder that is specifically created for the given property
+            for (auto obj : body->Group.getValues()) {
+                if (auto bd = Base::freecad_dynamic_cast<Part::SubShapeBinder>(obj)) {
+                    if (boost::starts_with(bd->getNameInDocument(), binderName)) {
+                        binder = bd;
+                        break;
+                    }
+                }
+            }
+            if (!binder) {
+                binder = Base::freecad_dynamic_cast<Part::SubShapeBinder>(
+                        body->getDocument()->addObject("PartDesign::SubShapeBinder", binderName.c_str()));
+                body->addObject(binder);
+            }
+
+            links.clear();
+            for (auto sobjT : sobjs) {
+                sobjT.normalized();
+                auto obj = sobjT.getObject();
+                if (!obj)
+                    FC_THROWM(Base::RuntimeError, "Object not found: " << sobjT.getSubObjectFullName(docName));
+                if (obj == binder)
+                    FC_THROWM(Base::RuntimeError, "Please select the original bound shape");
+                links[obj].push_back(sobjT.getSubName());
+            }
+            binder->setLinks(std::move(links), true);
+            prop.setValue(binder);
+            return true;
+        } catch (Base::Exception & e) {
+            if (!report)
+                throw;
+            QMessageBox::critical(Gui::getMainWindow(),
+                    QObject::tr("Failed to import external object"),
+                    QString::fromUtf8(e.what()));
+            return false;
+        }
+    }
+
 public:
     std::map<const App::Document*, Connections> conns;
     boost::signals2::scoped_connection connDeleteDocument;
@@ -1450,15 +1562,27 @@ App::SubObjectT importExternalObject(const App::SubObjectT &feature,
     return _MonitorInstance->importExternalObject(feature, report, wholeObject, noSubElement);
 }
 
-App::SubObjectT importExternalElement(App::SubObjectT feature, bool report) {
+App::SubObjectT importExternalElement(App::SubObjectT feature, bool report)
+{
     initMonitor();
     auto element = feature.getOldElementName();
     if (boost::starts_with(element, "Edge"))  {
         auto sobj = feature.getSubObject();
-        if (sobj && sobj->isDerivedFrom(Part::Part2DObject::getClassTypeId()))
-            feature.setSubName(feature.getSubNameNoElement());
+        if (sobj && sobj->isDerivedFrom(Part::Part2DObject::getClassTypeId())) {
+            auto subShape = Part::Feature::getTopoShape(sobj, element.c_str());
+            if (!subShape.isClosed())
+                feature.setSubName(feature.getSubNameNoElement());
+        }
     }
     return _MonitorInstance->importExternalObject(feature, report, false, true);
+}
+
+bool importExternalElements(App::PropertyLinkSub &prop,
+                            const std::vector<App::SubObjectT> &sobjs,
+                            bool report)
+{
+    initMonitor();
+    return _MonitorInstance->importExternalObjects(prop, sobjs, report);
 }
 
 bool populateGeometryReferences(QTreeWidget *treeWidget, App::PropertyLinkSub &prop, bool refresh)

@@ -436,8 +436,11 @@ void TaskDressUpParameters::onButtonRefAdd(bool checked)
     selectionMode = refToggle;
     clearButtons(refToggle);
     Gui::Selection().clearSelection();
-    Gui::Selection().addSelectionGate(
-            new ReferenceSelection(this->getBase(), allowEdges, allowFaces, false));
+    ReferenceSelection::Config conf;
+    conf.edge = allowEdges;
+    conf.plane = allowFaces;
+    conf.planar = false;
+    Gui::Selection().addSelectionGate(new ReferenceSelection(this->getBase(), conf));
 }
 
 void TaskDressUpParameters::onRefDeleted() {

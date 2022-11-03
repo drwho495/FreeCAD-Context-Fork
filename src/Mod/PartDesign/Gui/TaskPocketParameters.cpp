@@ -62,10 +62,8 @@ TaskPocketParameters::TaskPocketParameters(ViewProviderPocket *PocketView,QWidge
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
     ui->setupUi(proxy);
-#if QT_VERSION >= 0x040700
     ui->lineFaceName->setPlaceholderText(tr("No face selected"));
-    addBlinkEditor(ui->lineFaceName);
-#endif
+    addBlinkWidget(ui->lineFaceName);
 
     ui->lineFaceName->installEventFilter(this);
     ui->lineFaceName->setMouseTracking(true);
@@ -176,7 +174,7 @@ TaskPocketParameters::TaskPocketParameters(ViewProviderPocket *PocketView,QWidge
     }
 }
 
-bool TaskPocketParameters::eventFilter(QObject *o, QEvent *ev)
+bool TaskPocketParameters::_eventFilter(QObject *o, QEvent *ev)
 {
     switch(ev->type()) {
     case QEvent::Leave:
@@ -370,7 +368,7 @@ void TaskPocketParameters::updateUI(int index)
     ui->labelInnerTaperAngle2->setVisible( angleVisible );
 }
 
-void TaskPocketParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
+void TaskPocketParameters::_onSelectionChanged(const Gui::SelectionChanges& msg)
 {
     if (msg.Type == Gui::SelectionChanges::AddSelection) {
         if (!selectingReference)
@@ -525,11 +523,19 @@ void TaskPocketParameters::onModeChanged(int index)
 void TaskPocketParameters::onButtonFace(const bool pressed)
 {
     this->blockConnection(!pressed);
+    if (!pressed) {
+        exitSelectionMode();
+        return;
+    }
 
-    TaskSketchBasedParameters::onSelectReference(pressed, false, true, false);
+    TaskSketchBasedParameters::onSelectReference(ui->buttonFace);
+    ui->buttonFace->setChecked(true);
+}
 
-    // Update button if onButtonFace() is called explicitly
-    ui->buttonFace->setChecked(pressed);
+void TaskPocketParameters::exitSelectionMode()
+{
+    TaskSketchBasedParameters::exitSelectionMode();
+    ui->buttonFace->setChecked(false);
 }
 
 void TaskPocketParameters::onFaceName(const QString& text)
@@ -623,10 +629,9 @@ void TaskPocketParameters::changeEvent(QEvent *e)
         ui->changeMode->addItem(tr("Two dimensions"));
         ui->changeMode->setCurrentIndex(index);
 
-#if QT_VERSION >= 0x040700
         ui->lineFaceName->setPlaceholderText(tr("No face selected"));
-        addBlinkEditor(ui->lineFaceName);
-#endif
+        addBlinkWidget(ui->lineFaceName);
+        
         ui->lengthEdit->blockSignals(false);
         ui->lengthEdit2->blockSignals(false);
         ui->offsetEdit->blockSignals(false);

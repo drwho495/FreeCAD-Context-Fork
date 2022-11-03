@@ -552,10 +552,21 @@ void TaskTransformedParameters::exitSelectionMode()
     }
 }
 
-void TaskTransformedParameters::addReferenceSelectionGate(bool edge, bool face, bool planar, bool whole, bool circle)
+void TaskTransformedParameters::addReferenceSelectionGate(bool edge, bool face)
+{
+    ReferenceSelection::Config conf;
+    conf.edge = edge;
+    conf.plane = face;
+    conf.planar = true;
+    conf.whole = false;
+    conf.circle = false;
+    addReferenceSelectionGate(conf);
+}
+
+void TaskTransformedParameters::addReferenceSelectionGate(const ReferenceSelection::Config &conf)
 {
     std::unique_ptr<Gui::SelectionFilterGate> gateRefPtr(
-            new ReferenceSelection(getBaseObject(), edge, face, planar, false, whole, circle));
+            new ReferenceSelection(getBaseObject(), conf));
     std::unique_ptr<Gui::SelectionFilterGate> gateDepPtr(new NoDependentsSelection(getTopTransformedObject()));
     Gui::Selection().addSelectionGate(new CombineSelectionFilterGates(gateRefPtr, gateDepPtr));
 }

@@ -7,39 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>262</width>
-    <height>335</height>
+    <height>254</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
-   <item>
-    <widget class="QGroupBox" name="groupprofile">
-     <property name="title">
-      <string>Profile</string>
-     </property>
-     <layout class="QVBoxLayout">
-      <item>
-       <layout class="QHBoxLayout">
-        <item>
-         <widget class="QPushButton" name="buttonProfileBase">
-          <property name="text">
-           <string>Object</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="profileBaseEdit"/>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>

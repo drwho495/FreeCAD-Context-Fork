@@ -25,13 +25,18 @@
 #ifndef GUI_TASKVIEW_TaskSketchBasedParameters_H
 #define GUI_TASKVIEW_TaskSketchBasedParameters_H
 
+#include <QStandardItemModel>
+#include <QItemDelegate>
+
 #include <Gui/Selection.h>
 #include "ViewProvider.h"
 
+#include "ReferenceSelection.h"
 #include "TaskFeatureParameters.h"
 
 class QComboBox;
 class QCheckBox;
+class QListWidget;
 
 namespace App {
 class Property;
@@ -43,6 +48,20 @@ class PrefQuantitySpinBox;
 
 namespace PartDesignGui {
 
+class ProfileWidgetDelegate : public QItemDelegate
+{
+    Q_OBJECT
+
+public:
+    ProfileWidgetDelegate(QObject *parent = 0);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const;
+
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const;
+};
 
 /// Convenience class to collect common methods for all SketchBased features
 class TaskSketchBasedParameters : public PartDesignGui::TaskFeatureParameters,
@@ -56,10 +75,25 @@ public:
     ~TaskSketchBasedParameters();
 
 protected:
-    void onSelectionChanged(const Gui::SelectionChanges& msg)=0;
+    virtual void _onSelectionChanged(const Gui::SelectionChanges&) {}
+    virtual bool _eventFilter(QObject *, QEvent *) {return false;}
+
     const QString onAddSelection(const Gui::SelectionChanges& msg);
-    void onSelectReference(const bool pressed, const bool edge, const bool face, const bool planar, const bool circle = false);
-    void exitSelectionMode();
+
+    enum class SelectionMode { none, refAdd, refObjAdd, refProfile, refAxis };
+
+    void onSelectReference(QWidget *blinkWidget,
+                           const ReferenceSelection::Config &conf = ReferenceSelection::Config())
+    {
+        onSelectReference(blinkWidget, SelectionMode::refAdd, conf);
+    }
+    void onSelectReference(QWidget *blinkWidget,
+                           SelectionMode mode,
+                           const ReferenceSelection::Config &conf = ReferenceSelection::Config());
+    virtual void exitSelectionMode();
+    void setSelectionMode(SelectionMode mode);
+    SelectionMode getSelectionMode() const {return selectionMode;}
+
     QVariant setUpToFace(const QString& text);
     /// Try to find the name of a feature with the given label.
     /// For faster access a suggested name can be tested, first.
@@ -70,7 +104,16 @@ protected:
     void saveHistory();
 
     void initUI(QWidget *);
+    void addProfileEdit(QBoxLayout *boxLayout);
+    void addFittingWidgets(QBoxLayout *parentLayout);
     void _refresh();
+
+    virtual void onProfileButton(bool);
+    virtual void onClearProfile();
+    virtual void onDeleteProfile();
+
+    bool setProfile(const std::vector<App::SubObjectT> &objs);
+    bool addProfile(const App::SubObjectT &obj);
 
 protected Q_SLOTS:
     void onFitChanged(double);
@@ -78,12 +121,27 @@ protected Q_SLOTS:
     void onInnerFitChanged(double);
     void onInnerFitJoinChanged(int);
 
+private:
+    virtual void onSelectionChanged(const Gui::SelectionChanges& msg) final;
+    virtual bool eventFilter(QObject *o, QEvent *ev) final;
+
 protected:
+    friend class ProfileWidgetDelegate;
+
     Gui::PrefQuantitySpinBox * fitEdit = nullptr;
     QComboBox *fitJoinType = nullptr;
     Gui::PrefQuantitySpinBox * innerFitEdit = nullptr;
     QComboBox *innerFitJoinType = nullptr;
     bool selectingReference = false;
+    QListWidget *profileWidget = nullptr;
+    QPushButton *profileButton = nullptr;
+    QPushButton *clearProfileButton = nullptr;
+    QWidget *blinkWidget = nullptr;
+
+private:
+    SelectionMode selectionMode = SelectionMode::none;
+    boost::signals2::scoped_connection connProfile;
+    App::SubObjectT lastProfile;
 };
 
 class TaskDlgSketchBasedParameters : public PartDesignGui::TaskDlgFeatureParameters

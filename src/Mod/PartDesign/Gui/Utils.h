@@ -86,6 +86,11 @@ App::SubObjectT importExternalObject(const App::SubObjectT &feature,
 /// Import a feature with sub-element (Wire or Face) using SubShapeBinder
 App::SubObjectT importExternalElement(App::SubObjectT feature, bool report=true);
 
+/// Import multiple features with sub-elements using a single SubShapeBinder
+bool importExternalElements(App::PropertyLinkSub &prop,
+                            const std::vector<App::SubObjectT> &sobjs,
+                            bool report=true);
+
 /// Return active body or show a warning message
 PartDesign::Body *getBody(bool messageIfNot, bool autoActivate=true, bool assertModern=true,
         App::DocumentObject **topParent=0, std::string *subname=0);

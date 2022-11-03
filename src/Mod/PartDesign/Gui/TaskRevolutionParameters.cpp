@@ -237,20 +237,19 @@ void TaskRevolutionParameters::updateUI()
     blockUpdate = false;
 }
 
-void TaskRevolutionParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
+void TaskRevolutionParameters::_onSelectionChanged(const Gui::SelectionChanges& msg)
 {
     if (msg.Type == Gui::SelectionChanges::AddSelection) {
-        if (!selectingReference)
-            return;
-
-        exitSelectionMode();
-        std::vector<std::string> axis;
-        App::DocumentObject* selObj;
-        if (getReferencedSelection(vp->getObject(), msg, selObj, axis) && selObj) {
-            propReferenceAxis->setValue(selObj, axis);
-
-            recomputeFeature();
-            updateUI();
+        if (getSelectionMode() == SelectionMode::refAdd) {
+            exitSelectionMode();
+            std::vector<std::string> axis;
+            App::DocumentObject* selObj;
+            if (getReferencedSelection(vp->getObject(), msg, selObj, axis) && selObj) {
+                setupTransaction();
+                propReferenceAxis->setValue(selObj, axis);
+                recomputeFeature();
+                updateUI();
+            }
         }
     }
 }
@@ -258,6 +257,7 @@ void TaskRevolutionParameters::onSelectionChanged(const Gui::SelectionChanges& m
 
 void TaskRevolutionParameters::onAngleChanged(double len)
 {
+    setupTransaction();
     propAngle->setValue(len);
     exitSelectionMode();
     recomputeFeature();
@@ -281,12 +281,19 @@ void TaskRevolutionParameters::onAxisChanged(int num)
     App::PropertyLinkSub &lnk = *(axesInList[num]);
     if (lnk.getValue() == 0) {
         // enter reference selection mode
-        TaskSketchBasedParameters::onSelectReference(true, true, false, true, true);
+        ReferenceSelection::Config conf;
+        conf.edge = true;
+        conf.plane = false;
+        conf.planar = true;
+        conf.circle = true;
+        TaskSketchBasedParameters::onSelectReference(ui->labelAxis, conf);
+        return;
     } else {
         if (!pcRevolution->getDocument()->isIn(lnk.getValue())){
             Base::Console().Error("Object was deleted\n");
             return;
         }
+        setupTransaction();
         propReferenceAxis->Paste(lnk);
         exitSelectionMode();
     }
@@ -324,12 +331,14 @@ void TaskRevolutionParameters::onAxisChanged(int num)
 
 void TaskRevolutionParameters::onMidplane(bool on)
 {
+    setupTransaction();
     propMidPlane->setValue(on);
     recomputeFeature();
 }
 
 void TaskRevolutionParameters::onReversed(bool on)
 {
+    setupTransaction();
     propReversed->setValue(on);
     recomputeFeature();
 }
