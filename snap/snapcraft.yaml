@@ -137,37 +137,37 @@ parts:
     organize:
       "*": usr/Mod/SnapSetup/
 
-  coin3d:
-    plugin: cmake
-    source: https://github.com/realthunder/coin.git
-    source-tag: Coin-20210915
-    cmake-parameters:
-      - -DCMAKE_INSTALL_PREFIX=/usr
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DCOIN_BUILD_TESTS=OFF
-      - -DCMAKE_CXX_STANDARD=98
-
-  pivy:
-    after: [coin3d]
-    plugin: cmake
-    source: https://github.com/coin3d/pivy.git
-    source-tag: "0.6.6"
-    override-build: |
-      # out of source builds fail for some reason:
-      # https://github.com/coin3d/pivy/issues/72
-      # let's do an in-source build  instead
-      cd $SNAPCRAFT_PART_SRC
-      cmake \
-        -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current \
-        -DCMAKE_PREFIX_PATH="$SNAPCRAFT_STAGE" \
-        -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCMAKE_BUILD_TYPE=Release \
-        .
-      cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
-      DESTDIR="$SNAPCRAFT_PART_INSTALL" cmake --build  . --target install
+  # coin3d:
+  #   plugin: cmake
+  #   source: https://github.com/realthunder/coin.git
+  #   source-tag: Coin-20210915
+  #   cmake-parameters:
+  #     - -DCMAKE_INSTALL_PREFIX=/usr
+  #     - -DCMAKE_BUILD_TYPE=Release
+  #     - -DCOIN_BUILD_TESTS=OFF
+  #     - -DCMAKE_CXX_STANDARD=98
+  #
+  # pivy:
+  #   after: [coin3d]
+  #   plugin: cmake
+  #   source: https://github.com/coin3d/pivy.git
+  #   source-tag: "0.6.6"
+  #   override-build: |
+  #     # out of source builds fail for some reason:
+  #     # https://github.com/coin3d/pivy/issues/72
+  #     # let's do an in-source build  instead
+  #     cd $SNAPCRAFT_PART_SRC
+  #     cmake \
+  #       -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current \
+  #       -DCMAKE_PREFIX_PATH="$SNAPCRAFT_STAGE" \
+  #       -DCMAKE_INSTALL_PREFIX=/usr \
+  #       -DCMAKE_BUILD_TYPE=Release \
+  #       .
+  #     cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+  #     DESTDIR="$SNAPCRAFT_PART_INSTALL" cmake --build  . --target install
 
   freecad:
-    after: [coin3d, pivy]
+    # after: [coin3d, pivy]
     plugin: cmake
     source: .
     cmake-parameters:
@@ -181,7 +181,6 @@ parts:
       - -DFREECAD_USE_EXTERNAL_ZIPIOS=ON
       - -DFREECAD_USE_PYBIND11=ON
       - -DFREECAD_FORCE_USE_QT_FILEDIALOG=ON
-      - -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current
       - -DBUILD_FLAT_MESH=ON
     build-snaps:
       - freecad-deps-core20
@@ -205,6 +204,7 @@ parts:
       - libzipios++-dev
       - swig
       - python3-dev
+      - libcoin-dev
       - libvtk7-dev
       - libpyside2-dev
       - libshiboken2-dev
@@ -258,6 +258,7 @@ parts:
       - python3-pyside2.qtuitools
       - python3-qtpy # Nodes addon
       - calculix-ccx # FEM
+      - libcoin80c
       - libfreeimage3
       - libtbb2
       - libvtk7.1p
@@ -267,83 +268,94 @@ parts:
       - povray-includes # Raytracing
     override-build: |
       kde_sdk_dir="/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current"
-      mkdir -p "/snap/kde-frameworks-5-96-qt-5-15-5-core20-sdk/current/usr/lib/qt5"
+      ls -l /snap
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr/bin
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr/lib
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr/lib/qt5
+      ls -l /snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr/lib/qt5/bin
+      # mkdir -p "/snap/kde-frameworks-5-96-qt-5-15-5-core20-sdk/current/usr/lib/qt5"
       # ln -s "/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current/usr/bin" "/snap/kde-frameworks-5-96-qt-5-15-5-core20-sdk/current/usr/lib/qt5/bin"
       mkdir -p /etc/xdg/qtchooser
       cp "$kde_sdk_dir/etc/xdg/qtchooser/default.conf" "/etc/xdg/qtchooser/default.conf"
       mkdir -p /workspace/usr/bin
       ln -s /usr/bin/shiboken2 /workspace/usr/bin/shiboken2
-      snapcraftctl build
-      cd $SNAPCRAFT_PART_SRC
-      iso_date=$(date -I)
-      git_hash=$(git rev-parse --short=8 HEAD)
-      version="$iso_date-g$git_hash"
-      snapcraftctl set-version "$version"
+      # snapcraftctl build
+      cmake /home/runner/work/FreeCAD/FreeCAD/parts/freecad/src/ -G 'Unix Makefiles' -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-99-qt-5-15-7-core20-sdk/current -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_QT5=ON -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.8.so -DFREECAD_USE_EXTERNAL_ZIPIOS=ON -DFREECAD_USE_PYBIND11=ON -DFREECAD_FORCE_USE_QT_FILEDIALOG=ON -DBUILD_FLAT_MESH=ON || true
 
-  branding:
-    after: [freecad]
-    plugin: nil
-    source: https://github.com/realthunder/FreeCADMakeImage.git
-    override-prime: |
-      export FMK_BUILD_DATE=$(date +%Y%m%d)
-      branding_path=$SNAPCRAFT_PART_SRC/conda/branding/asm3-snap
-      $branding_path/install.sh $branding_path $SNAPCRAFT_PRIME/usr
-      sed -i -E \
-        "s|^Icon=(.*)|Icon=\${SNAP}/usr/share/icons/hicolor/scalable/apps/freecad_link.svg|g" \
-        $SNAPCRAFT_PRIME/freecad_link.desktop
-      
-  assembly3:
-    plugin: dump
-    source: https://github.com/realthunder/FreeCAD_assembly3.git
-    organize:
-      "*": usr/Mod/Assembly3/
+      # cd $SNAPCRAFT_PART_SRC
+      # iso_date=$(date -I)
+      # git_hash=$(git rev-parse --short=8 HEAD)
+      # version="$iso_date-g$git_hash"
+      # snapcraftctl set-version "$version"
 
-  python-packages:
-    plugin: python
-    build-packages:
-      - libsuitesparse-dev
-    stage-packages:
-      - python3-distutils # pip
-      - libamd2 # scikit-sparse
-      - libcamd2 # scikit-sparse
-      - libccolamd2 # scikit-sparse
-      - libcholmod3 # scikit-sparse
-      - libcolamd2 # scikit-sparse
-      - libsuitesparseconfig5 # scikit-sparse
-    python-packages:
-      - pip
-      - scikit-sparse
-    stage:
-      - -pyvenv.cfg
-      - -lib/python3.8/site-packages/scipy*
-      - -lib/python3.8/site-packages/numpy*
+  # branding:
+  #   after: [freecad]
+  #   plugin: nil
+  #   source: https://github.com/realthunder/FreeCADMakeImage.git
+  #   override-prime: |
+  #     export FMK_BUILD_DATE=$(date +%Y%m%d)
+  #     branding_path=$SNAPCRAFT_PART_SRC/conda/branding/asm3-snap
+  #     $branding_path/install.sh $branding_path $SNAPCRAFT_PRIME/usr
+  #     sed -i -E \
+  #       "s|^Icon=(.*)|Icon=\${SNAP}/usr/share/icons/hicolor/scalable/apps/freecad_link.svg|g" \
+  #       $SNAPCRAFT_PRIME/freecad_link.desktop
+  #
+  # assembly3:
+  #   plugin: dump
+  #   source: https://github.com/realthunder/FreeCAD_assembly3.git
+  #   organize:
+  #     "*": usr/Mod/Assembly3/
+  #
+  # python-packages:
+  #   plugin: python
+  #   build-packages:
+  #     - libsuitesparse-dev
+  #   stage-packages:
+  #     - python3-distutils # pip
+  #     - libamd2 # scikit-sparse
+  #     - libcamd2 # scikit-sparse
+  #     - libccolamd2 # scikit-sparse
+  #     - libcholmod3 # scikit-sparse
+  #     - libcolamd2 # scikit-sparse
+  #     - libsuitesparseconfig5 # scikit-sparse
+  #   python-packages:
+  #     - pip
+  #     - scikit-sparse
+  #   stage:
+  #     - -pyvenv.cfg
+  #     - -lib/python3.8/site-packages/scipy*
+  #     - -lib/python3.8/site-packages/numpy*
+  #
+  # graphviz:
+  #   plugin: nil
+  #   build-packages:
+  #     - graphviz
+  #   stage-packages:
+  #     - graphviz
+  #   override-build: |
+  #     dot -c
+  #     cp \
+  #       /usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/config* \
+  #       ${SNAPCRAFT_PART_INSTALL}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/
 
-  graphviz:
-    plugin: nil
-    build-packages:
-      - graphviz
-    stage-packages:
-      - graphviz
-    override-build: |
-      dot -c
-      cp \
-        /usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/config* \
-        ${SNAPCRAFT_PART_INSTALL}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/graphviz/
-
-  cleanup:
-    after: [stub-chown, freecad, python-packages, assembly3, snap-setup-mod, graphviz, coin3d, pivy, branding]
-    plugin: nil
-    build-snaps: [kde-frameworks-5-99-qt-5-15-7-core20]
-    override-prime: |
-      set -eux
-      for snap in "kde-frameworks-5-99-qt-5-15-7-core20"; do  # List all content-snaps you're using here
-        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" "$SNAPCRAFT_PRIME/usr/{}" \;
-      done
-      for cruft in bug lintian man; do
-        rm -rf $SNAPCRAFT_PRIME/usr/share/$cruft
-      done
-      find $SNAPCRAFT_PRIME/usr/share/doc/ -type f -not -name 'copyright' -delete
-      find $SNAPCRAFT_PRIME/usr/share -type d -empty -delete
-      find $SNAPCRAFT_PRIME/usr/lib -type f,l \
-        -name 'libQt*.so*' `# remove all Qt libs pulled in from Ubuntu repos` \
-        -not -name 'libQt5Gamepad.so*' -delete `# for OpenSCAD`
+  # cleanup:
+  #   after: [stub-chown, freecad, python-packages, assembly3, snap-setup-mod, graphviz, coin3d, pivy, branding]
+  #   plugin: nil
+  #   build-snaps: [kde-frameworks-5-99-qt-5-15-7-core20]
+  #   override-prime: |
+  #     set -eux
+  #     for snap in "kde-frameworks-5-99-qt-5-15-7-core20"; do  # List all content-snaps you're using here
+  #       cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" "$SNAPCRAFT_PRIME/usr/{}" \;
+  #     done
+  #     for cruft in bug lintian man; do
+  #       rm -rf $SNAPCRAFT_PRIME/usr/share/$cruft
+  #     done
+  #     find $SNAPCRAFT_PRIME/usr/share/doc/ -type f -not -name 'copyright' -delete
+  #     find $SNAPCRAFT_PRIME/usr/share -type d -empty -delete
+  #     find $SNAPCRAFT_PRIME/usr/lib -type f,l \
+  #       -name 'libQt*.so*' `# remove all Qt libs pulled in from Ubuntu repos` \
+  #       -not -name 'libQt5Gamepad.so*' -delete `# for OpenSCAD`
+  #

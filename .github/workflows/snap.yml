@@ -20,15 +20,19 @@ jobs:
     # due to the kde-neon SDK snap being mounted via fuse
     - name: build snap 
       run: |
-          sudo snapcraft --destructive-mode
+          sudo snapcraft --destructive-mode || true
           sudo rm -rf $HOME/.config/snapcraft
-    - name: upload snap
-      env:
-        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
-      run: |
-        if ${{ endsWith(github.ref, 'edge') }}; then
-          release_to="edge"
-        else
-          release_to="stable"
-        fi
-        snapcraft upload --release=${release_to} freecad-realthunder*.snap
+    - uses: actions/upload-artifact@v3
+      with:
+        path: /home/runner/work/FreeCAD/FreeCAD/parts/freecad/build/*
+
+    # - name: upload snap
+    #   env:
+    #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
+    #   run: |
+    #     if ${{ endsWith(github.ref, 'edge') }}; then
+    #       release_to="edge"
+    #     else
+    #       release_to="stable"
+    #     fi
+    #     snapcraft upload --release=${release_to} freecad-realthunder*.snap
