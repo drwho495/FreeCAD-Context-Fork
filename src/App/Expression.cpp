@@ -40,6 +40,7 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <cctype>
 
 #include <App/Application.h>
 #include <App/DocumentObject.h>

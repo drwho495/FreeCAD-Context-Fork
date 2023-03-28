@@ -78,7 +78,7 @@ bool Assistant::startAssistant()
     if (proc->state() != QProcess::Running) {
 #ifdef Q_OS_WIN
         QString app;
-        app = QDir::toNativeSeparators(QString::fromUtf8
+        app = QDir::toNativeSeparators(QString::fromStdString
             (App::GetApplication().getHomePath()) + QStringLiteral("bin/"));
 #elif defined(Q_OS_MAC)
         QString app = QCoreApplication::applicationDirPath() + QDir::separator();

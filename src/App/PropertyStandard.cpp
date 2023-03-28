@@ -23,6 +23,8 @@
 
 #include "PreCompiled.h"
 
+#include <cctype>
+
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/math/special_functions/round.hpp>
 
@@ -1522,8 +1524,8 @@ void PropertyString::setValue(const char* newLabel)
             int len = 0;
             const char *a=newLabel, *b=obj->getNameInDocument();
             for (; *a && *b; ++a, ++b) {
-                int ac = *a;
-                int bc = *b;
+                unsigned char ac = static_cast<unsigned char>(*a);
+                unsigned char bc = static_cast<unsigned char>(*b);
                 if (ac == bc) {
                     if(ac == '_' || std::isalpha(ac))
                         continue;
@@ -1538,7 +1540,7 @@ void PropertyString::setValue(const char* newLabel)
                 }
             }
             if (!len && *b == 0) {
-                int ac = *a;
+                unsigned char ac = static_cast<unsigned char>(*a);
                 if (ac == 0 || (ac != '_' && !std::isalpha(ac)))
                     len = a - newLabel;
             }

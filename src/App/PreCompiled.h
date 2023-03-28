@@ -51,6 +51,7 @@
 #include <cassert>
 #include <ctime>
 #include <csignal>
+#include <cctype>
 
 #ifdef FC_OS_WIN32
 #include <direct.h>

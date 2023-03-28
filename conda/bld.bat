@@ -1,11 +1,17 @@
 mkdir build
 cd build
 
+@echo on
+
 set "CFLAGS= "
 set "CXXFLAGS= "
 set "LDFLAGS_SHARED= ucrt.lib"
 
-cmake --debug-output -G "Ninja" ^
+REM remove chocolatey/bin from search path to hide ccache, as it cause resouce compilation failure
+set PATH=%PATH:C:/ProgramData/chocolatey/bin;=%
+echo "modified path: %PATH%"
+
+cmake -G "Ninja" ^
       -D BUID_WITH_CONDA:BOOL=ON ^
       -D CMAKE_BUILD_TYPE=Release ^
       -D FREECAD_LIBPACK_USE:BOOL=OFF ^
