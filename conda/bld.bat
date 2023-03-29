@@ -8,7 +8,7 @@ set "CXXFLAGS= "
 set "LDFLAGS_SHARED= ucrt.lib"
 
 REM remove chocolatey/bin from search path to hide ccache, as it cause resouce compilation failure
-set PATH=%PATH:C:/ProgramData/chocolatey/bin;=%
+set PATH=%PATH:C:/ProgramData/Chocolatey/bin;=%
 echo "modified path: %PATH%"
 
 cmake -G "Ninja" ^
