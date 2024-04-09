@@ -57,7 +57,7 @@ namespace Gui {
 namespace DockWnd {
 
 /** Combo View
-  * is a combination of a tree, property and TaskPanel for
+  * is a combination of a tree and property view for
   * integrated user action.
  */
 class GuiExport ComboView : public Gui::DockWindow
@@ -69,7 +69,9 @@ public:
      * A constructor.
      * A more elaborate description of the constructor.
      */
-    ComboView(bool showModel, Gui::Document*  pcDocument, QWidget *parent=nullptr);
+    ComboView(Gui::Document*  pcDocument, QWidget *parent=nullptr);
+
+    void setShowModel(bool);
 
     void setShowModel(bool);
 
@@ -78,10 +80,6 @@ public:
      * A more elaborate description of the destructor.
     */
     ~ComboView() override;
-
-    Gui::TaskView::TaskView *getTaskPanel(){return taskPanel;}
-    QTabWidget* getTabPanel() const { return tabs;}
-
 
     friend class Gui::ControlSingleton;
 
@@ -101,17 +99,15 @@ protected:
     void changeEvent(QEvent *e) override;
 
 private:
-    int oldTabIndex;
-    int modelIndex = -1;
-    int taskIndex;
-    QTabWidget                         * tabs = nullptr;
-    Gui::PropertyView                  * prop = nullptr;
-    Gui::TreePanel                     * tree = nullptr;
-    Gui::TaskView::TaskView            * taskPanel = nullptr;
+    int oldTabIndex {0};
+    int modelIndex {-1};
+    int taskIndex {0};
+    QTabWidget* tabs {nullptr};
+    Gui::PropertyView* prop {nullptr};
+    Gui::TreePanel* tree {nullptr};
+    Gui::TaskView::TaskView* taskPanel {nullptr};
 
     ParameterGrp::handle hGrp;
-
-  //Gui::ProjectWidget                 * projectView;
 };
 
 } // namespace DockWnd

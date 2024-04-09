@@ -28,6 +28,7 @@
 #endif
 
 #include <Base/Console.h>
+#include <App/Application.h>
 
 #include "PropertyPage.h"
 #include "PrefWidgets.h"
@@ -145,9 +146,7 @@ PreferenceUiForm::PreferenceUiForm(const QString& fn, QWidget* parent)
     }
 }
 
-PreferenceUiForm::~PreferenceUiForm()
-{
-}
+PreferenceUiForm::~PreferenceUiForm() = default;
 
 void PreferenceUiForm::changeEvent(QEvent *e)
 {
@@ -212,6 +211,24 @@ void PreferenceUiForm::saveSettings()
     savePrefWidgets<Gui::PrefQuantitySpinBox*>();
 }
 
+void PreferencePage::resetSettingsToDefaults()
+{
+    auto prefs = this->findChildren<QObject*>();
+
+    for (const auto& pref : prefs) {
+        if (!pref->property("prefPath").isNull() && !pref->property("prefEntry").isNull()) {
+            std::string path = pref->property("prefPath").toString().toStdString();
+            std::string entry = pref->property("prefEntry").toString().toStdString();
+
+            ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath(
+                std::string("User parameter:BaseApp/Preferences/" + path).c_str());
+
+            for (const auto& pn : hGrp->GetParameterNames(entry.c_str())) {
+                hGrp->RemoveAttribute(pn.first, pn.second.c_str());
+            }
+        }
+    }
+}
 // ----------------------------------------------------------------
 
 /** Construction */
@@ -220,9 +237,7 @@ CustomizeActionPage::CustomizeActionPage(QWidget* parent) : QWidget(parent)
 }
 
 /** Destruction */
-CustomizeActionPage::~CustomizeActionPage()
-{
-}
+CustomizeActionPage::~CustomizeActionPage() = default;
 
 bool CustomizeActionPage::event(QEvent* e)
 {

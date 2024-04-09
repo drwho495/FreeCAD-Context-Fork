@@ -84,8 +84,8 @@ TaskDressUpParameters::TaskDressUpParameters(ViewProviderDressUp *DressUpView, b
     if(!onTopEnabled)
         Gui::ViewParams::setShowSelectionOnTop(true);
 
-    connUndo = App::GetApplication().signalUndo.connect(boost::bind(&TaskDressUpParameters::refresh, this));
-    connRedo = App::GetApplication().signalRedo.connect(boost::bind(&TaskDressUpParameters::refresh, this));
+    connUndo = App::GetApplication().signalUndo.connect(std::bind(&TaskDressUpParameters::refresh, this));
+    connRedo = App::GetApplication().signalRedo.connect(std::bind(&TaskDressUpParameters::refresh, this));
 
     connDelete = Gui::Application::Instance->signalDeletedObject.connect(
         [this](const Gui::ViewProvider &Obj) {
@@ -839,10 +839,7 @@ TaskDlgDressUpParameters::TaskDlgDressUpParameters(ViewProviderDressUp *DressUpV
     assert(DressUpView);
 }
 
-TaskDlgDressUpParameters::~TaskDlgDressUpParameters()
-{
-
-}
+TaskDlgDressUpParameters::~TaskDlgDressUpParameters() = default;
 
 //==== calls from the TaskView ===============================================================
 
@@ -852,8 +849,8 @@ bool TaskDlgDressUpParameters::accept()
     std::stringstream str;
     str << Gui::Command::getObjectCmd(vp->getObject()) << ".Base = ("
         << Gui::Command::getObjectCmd(parameter->getBase()) << ",[";
-    for (std::vector<std::string>::const_iterator it = refs.begin(); it != refs.end(); ++it)
-        str << "\"" << *it << "\",";
+    for (const auto & ref : refs)
+        str << "\"" << ref << "\",";
     str << "])";
     Gui::Command::runCommand(Gui::Command::Doc,str.str().c_str());
     return TaskDlgFeatureParameters::accept();

@@ -81,7 +81,6 @@ protected:
     SoFCCSysDragger *csysDragger = nullptr;
 
 private:
-    static void dragStartCallback(void * data, SoDragger * d);
     static void dragFinishCallback(void * data, SoDragger * d);
     static void dragMotionCallback(void * data, SoDragger * d);
 

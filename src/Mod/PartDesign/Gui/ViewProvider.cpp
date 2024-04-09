@@ -81,9 +81,7 @@ ViewProvider::ViewProvider()
     }
 }
 
-ViewProvider::~ViewProvider()
-{
-}
+ViewProvider::~ViewProvider() = default;
 
 bool ViewProvider::doubleClicked()
 {
@@ -126,7 +124,7 @@ void ViewProvider::addDefaultAction(QMenu* menu, const QString& text)
     QAction* act = menu->addAction(text);
     act->setData(QVariant((int)ViewProvider::Default));
     Gui::ActionFunction* func = new Gui::ActionFunction(menu);
-    func->trigger(act, boost::bind(&ViewProvider::startDefaultEditMode, this));
+    func->trigger(act, std::bind(&ViewProvider::startDefaultEditMode, this));
 }
 
 void ViewProvider::setupContextMenu(QMenu* menu, QObject* receiver, const char* member)

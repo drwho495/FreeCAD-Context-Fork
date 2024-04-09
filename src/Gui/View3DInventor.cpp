@@ -65,6 +65,7 @@
 #include "View3DInventor.h"
 #include "View3DSettings.h"
 #include "Application.h"
+#include "BitmapFactory.h"
 #include "Camera.h"
 #include "Document.h"
 #include "FileDialog.h"
@@ -136,9 +137,9 @@ View3DInventor::View3DInventor(Gui::Document* pcDocument, QWidget* parent,
     // create the inventor widget and set the defaults
     _viewer->setDocument(this->_pcDocument);
     stack->addWidget(_viewer->getWidget());
-    // http://forum.freecad.org/viewtopic.php?f=3&t=6055&sid=150ed90cbefba50f1e2ad4b4e6684eba
+    // https://forum.freecad.org/viewtopic.php?f=3&t=6055&sid=150ed90cbefba50f1e2ad4b4e6684eba
     // describes a minor error but trying to fix it leads to a major issue
-    // http://forum.freecad.org/viewtopic.php?f=3&t=6085&sid=3f4bcab8007b96aaf31928b564190fd7
+    // https://forum.freecad.org/viewtopic.php?f=3&t=6085&sid=3f4bcab8007b96aaf31928b564190fd7
     // so the change is commented out
     // By default, the wheel events are processed by the 3d view AND the mdi area.
     //_viewer->getGLWidget()->setAttribute(Qt::WA_NoMousePropagation);
@@ -169,6 +170,8 @@ View3DInventor::View3DInventor(Gui::Document* pcDocument, QWidget* parent,
         auto self = reinterpret_cast<View3DInventor*>(arg);
         self->onCameraChanged(self->boundCamInfo, self->camInfo);
     });
+
+    setWindowIcon(Gui::BitmapFactory().pixmap("Document"));
 }
 
 View3DInventor::~View3DInventor()
@@ -295,6 +298,8 @@ void View3DInventor::printPdf()
     if (!filename.isEmpty()) {
         Gui::WaitCursor wc;
         QPrinter printer(QPrinter::ScreenResolution);
+        // setPdfVersion sets the printied PDF Version to comply with PDF/A-1b, more details under: https://www.kdab.com/creating-pdfa-documents-qt/
+        printer.setPdfVersion(QPagedPaintDevice::PdfVersion_A1b);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setPageOrientation(QPageLayout::Landscape);
         printer.setOutputFileName(filename);
@@ -1026,7 +1031,7 @@ void View3DInventor::dump(const char* filename, bool onlyVisible)
     _viewer->dump(filename, onlyVisible);
 }
 
-void View3DInventor::windowStateChanged(MDIView* view)
+void View3DInventor::windowStateChanged(QWidget* view)
 {
     bool canStartTimer = false;
     if (this != view) {
@@ -1132,8 +1137,8 @@ void View3DInventor::setCurrentViewMode(ViewMode newmode)
         _viewer->getGLWidget()->setFocusProxy(nullptr);
         qApp->removeEventFilter(this);
         QList<QAction*> acts = this->actions();
-        for (QList<QAction*>::Iterator it = acts.begin(); it != acts.end(); ++it)
-            this->removeAction(*it);
+        for (QAction* it : acts)
+            this->removeAction(it);
 
         // Step two
         auto mdi = qobject_cast<QMdiSubWindow*>(parentWidget());

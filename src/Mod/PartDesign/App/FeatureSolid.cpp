@@ -44,6 +44,8 @@ Solid::Solid()
     Placement.setStatus(App::Property::Immutable,true);
 }
 
+Solid::Solid() = default;
+
 void Solid::onChanged(const App::Property* prop) {
     if(!isRestoring()) {
         if(prop == &Active) {

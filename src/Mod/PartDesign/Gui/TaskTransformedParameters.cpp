@@ -70,8 +70,7 @@
 #include "ReferenceSelection.h"
 #include "Utils.h"
 
-
-namespace bp = boost::placeholders;
+namespace sp = std::placeholders;
 
 FC_LOG_LEVEL_INIT("PartDesign",true,true)
 
@@ -90,12 +89,8 @@ TaskTransformedParameters::TaskTransformedParameters(ViewProviderTransformed *Tr
     , insideMultiTransform(false)
     , blockUpdate(false)
 {
-    selectionMode = none;
-
-    if (TransformedView) {
-        Gui::Document* doc = TransformedView->getDocument();
-        this->attachDocument(doc);
-    }
+    Gui::Document* doc = TransformedView->getDocument();
+    this->attachDocument(doc);
 
     onTopEnabled = Gui::ViewParams::getShowSelectionOnTop();
     if(!onTopEnabled)
@@ -233,7 +228,7 @@ void TaskTransformedParameters::setupBaseUI() {
     App::GetApplication().getActiveTransaction(&transactionID);
 
     connMessage = TransformedView->signalDiagnosis.connect(
-            boost::bind(&TaskTransformedParameters::slotDiagnosis, this,bp::_1));
+            std::bind(&TaskTransformedParameters::slotDiagnosis, this,sp::_1));
     labelMessage = new QLabel(this);
     labelMessage->hide();
     labelMessage->setWordWrap(true);

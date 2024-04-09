@@ -217,14 +217,12 @@ private:
 };
 
 // --------------------------------------------------------------------
-
-class WorkbenchGroup;
 class GuiExport WorkbenchComboBox : public QComboBox
 {
     Q_OBJECT
 
 public:
-    explicit WorkbenchComboBox(WorkbenchGroup* wb, QWidget* parent=nullptr);
+    explicit WorkbenchComboBox(QWidget* parent=nullptr);
     void showPopup() override;
     void setAction(QAction *act) {action = act;}
     QAction *getAction() {return action;}
@@ -238,8 +236,8 @@ protected Q_SLOTS:
     void onWorkbenchActivated(const QString&);
 
 private:
-    WorkbenchGroup* group;
-    QAction *action = nullptr;
+    WorkbenchGroup* group {nullptr};
+    QAction *action {nullptr};
 
     Q_DISABLE_COPY(WorkbenchComboBox)
 };
@@ -250,10 +248,16 @@ class GuiExport WorkbenchTabWidget : public QTabWidget
 {
     Q_OBJECT
 public:
-    WorkbenchTabWidget(WorkbenchGroup* wb, QWidget* parent=0);
+    WorkbenchTabWidget(WorkbenchGroup* wb, QWidget* parent = nullptr);
     ~WorkbenchTabWidget() override;
-    void setAction(QAction *act) {action = act;}
-    QAction *getAction() {return action;}
+    void setAction(QAction *act)
+    {
+        action = act;
+    }
+    QAction *getAction()
+    {
+        return action;
+    }
     void setupVisibility();
 
 protected:
@@ -274,8 +278,8 @@ private:
     boost::signals2::scoped_connection connParam;
     QTimer timer;
     QTimer timerCurrentChange;
-    bool moved = false;
-    QAction *action = nullptr;
+    bool moved {false};
+    QAction *action {nullptr};
 };
 
 class WorkbenchTabBar: public QTabBar
@@ -295,8 +299,8 @@ protected:
     void changeEvent(QEvent*) override;
 
 private:
-    int _tabSize = 0;
-    bool hasTabSize = false;
+    int _tabSize {0};
+    bool hasTabSize {false};
 };
 /**
  * The WorkbenchGroup class represents a list of workbenches. When it is added
@@ -318,11 +322,12 @@ public:
     void refreshWorkbenchList();
 
     void slotActivateWorkbench(const char*);
-    void slotAddWorkbench(const char*);
-    void slotRemoveWorkbench(const char*);
 
-protected:
-    void customEvent(QEvent* event) override;
+Q_SIGNALS:
+    void workbenchListRefreshed(QList<QAction*>);
+
+protected Q_SLOTS:
+    void onWorkbenchActivated(const QString&);
 
 protected Q_SLOTS:
     void onShowMenu();
@@ -336,10 +341,11 @@ Q_SIGNALS:
 
 private:
     void setWorkbenchData(int index, const QString& wb);
+
     Q_DISABLE_COPY(WorkbenchGroup)
 
 private:
-    QMenu* _menu = nullptr;
+    QMenu* _menu {nullptr};
 
     class Private;
     friend class Private;
@@ -463,7 +469,7 @@ private Q_SLOTS:
     void actionChanged();
 
 private:
-    QAction* _toolAction;
+    QAction* _toolAction {nullptr};
 
     Q_DISABLE_COPY(RedoAction)
 };
@@ -484,7 +490,7 @@ public:
     void addTo (QWidget * widget) override;
 
 private:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
 
     Q_DISABLE_COPY(DockWidgetAction)
 };
@@ -505,7 +511,7 @@ public:
     void addTo (QWidget * widget) override;
 
 private:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
 
     Q_DISABLE_COPY(ToolBarAction)
 };
@@ -524,7 +530,7 @@ public:
     void addTo (QWidget * widget) override;
 
 private:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
 
     Q_DISABLE_COPY(WindowAction)
 };
@@ -548,7 +554,7 @@ protected Q_SLOTS:
     void onTriggered(QAction *);
 
 private:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
 };
 
 /**
@@ -568,8 +574,8 @@ protected Q_SLOTS:
     void onShowMenu();
 
 private:
-    QMenu* _menu;
-    QAction *_emptyAction;
+    QMenu* _menu {nullptr};
+    QAction *_emptyAction {nullptr};
 };
 
 /**
@@ -594,8 +600,8 @@ protected:
     void select(int idx, const std::vector<int> &subIndices={});
 
 private:
-    QMenu* _menu;
-    Type _type;
+    QMenu* _menu {nullptr};
+    Type _type {Type::Backward};
 };
 
 /**
@@ -622,11 +628,11 @@ protected Q_SLOTS:
     void onNewAction();
 
 private:
-    QMenu *_menu = nullptr;
-    QWidgetAction *_widgetAction = nullptr;
-    QLineEdit *_lineedit = nullptr;
-    QCompleter *_completer = nullptr;
-    QAction *_newAction = nullptr;
+    QMenu *_menu {nullptr};
+    QWidgetAction *_widgetAction {nullptr};
+    QLineEdit *_lineedit {nullptr};
+    QCompleter *_completer {nullptr};
+    QAction *_newAction {nullptr};
 };
 
 /**
@@ -652,7 +658,7 @@ protected:
     virtual void update();
 
 protected:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
     class Private;
     friend class Private;
     std::unique_ptr<Private> _pimpl;
@@ -676,7 +682,7 @@ protected Q_SLOTS:
     void onAction(QAction *action);
 
 protected:
-    QMenu* _menu;
+    QMenu* _menu {nullptr};
     class Private;
     friend class Private;
     std::unique_ptr<Private> _pimpl;
@@ -702,8 +708,8 @@ protected Q_SLOTS:
     void onAction(QAction *action);
 
 private:
-    QMenu* _menu;
-    QMenu* _undoMenu;
+    QMenu* _menu {nullptr};
+    QMenu* _undoMenu {nullptr};
     std::deque<std::pair<QString, ParameterGrp::handle>> _undos;
 };
 

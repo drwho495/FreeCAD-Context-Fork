@@ -45,6 +45,7 @@ public:
     void updateData(const App::Property*) override;
 
 protected:
+    QIcon getIcon() const override;
     void setupContextMenu(QMenu* menu, QObject* receiver, const char* member) override;
     TaskDlgFeatureParameters *getEditDialog() override;
     

@@ -55,11 +55,11 @@ FC_LOG_LEVEL_INIT("Toolbar", true, 2)
 
 using namespace Gui;
 
-ToolBarItem::ToolBarItem() : visibility(HideStyle::VISIBLE)
+ToolBarItem::ToolBarItem() : visibilityPolicy(DefaultVisibility::Visible)
 {
 }
 
-ToolBarItem::ToolBarItem(ToolBarItem* item, HideStyle visibility) : visibility(visibility)
+ToolBarItem::ToolBarItem(ToolBarItem* item, DefaultVisibility visibilityPolicy) : visibilityPolicy(visibilityPolicy)
 {
     if (item) {
         item->appendItem(this);
@@ -342,9 +342,7 @@ ToolBarManager::ToolBarManager()
     });
 }
 
-ToolBarManager::~ToolBarManager()
-{
-}
+ToolBarManager::~ToolBarManager() = default;
 
 int ToolBarManager::toolBarIconSize() const
 {

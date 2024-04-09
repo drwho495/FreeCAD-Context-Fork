@@ -61,6 +61,9 @@ public:
     App::PropertyFloat  Radius;
     App::PropertyString Reference;
 
+    App::PropertyBool   ShowMatting;
+    App::PropertyBool   ShowHighlight;
+
     short mustExecute() const override;
     App::DocumentObjectExecReturn *execute() override;
     void onChanged(const App::Property* prop) override;
@@ -84,6 +87,7 @@ public:
                                              gp_Dir& projDir);
 
     std::vector<DrawViewDetail*> getDetailRefs() const override;
+    TopoDS_Shape getDetailShape() const { return m_detailShape; }
 
 protected:
     struct Output {

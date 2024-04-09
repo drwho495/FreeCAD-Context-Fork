@@ -159,13 +159,15 @@ public:
     friend class Gui::ControlSingleton;
 
     void addTaskWatcher(const std::vector<TaskWatcher*> &Watcher);
-    void clearTaskWatcher(void);
+    void clearTaskWatcher();
     void takeTaskWatcher(TaskView *other);
 
     bool isEmpty(bool includeWatcher = true) const;
 
     void clearActionStyle();
     void restoreActionStyle();
+
+    QSize minimumSizeHint() const override;
 
 Q_SIGNALS:
     void taskUpdate();
@@ -177,10 +179,14 @@ protected Q_SLOTS:
     void clicked (QAbstractButton * button);
     void onUpdateWatcher();
 
+private:
+    void triggerMinimumSizeHint();
+    void adjustMinimumSizeHint();
+
 protected:
     bool eventFilter(QObject *, QEvent*) override;
-    void keyPressEvent(QKeyEvent*) override;
-    bool event(QEvent*) override;
+    void keyPressEvent(QKeyEvent* event) override;
+    bool event(QEvent* event) override;
 
     void addTaskWatcher();
     void removeTaskWatcher();

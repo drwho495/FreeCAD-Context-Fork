@@ -45,14 +45,7 @@ class Workbench;
 class GuiExport ToolBarItem
 {
 public:
-    enum class HideStyle {
-        VISIBLE,
-        HIDDEN, // toolbar hidden by default
-        FORCE_HIDE // Force a toolbar to be hidden. For when all elements are disabled at some point in a workbench.
-    };
-
-    ToolBarItem();
-    explicit ToolBarItem(ToolBarItem* item, HideStyle visibility = HideStyle::VISIBLE);
+    explicit ToolBarItem(ToolBarItem* item=nullptr);
     ~ToolBarItem();
 
     void setCommand(const std::string&);
@@ -75,8 +68,6 @@ public:
     ToolBarItem& operator << (const std::string& command);
     QList<ToolBarItem*> getItems() const;
 
-    HideStyle visibility;
-
 private:
     std::string _name;
     QString _id;
@@ -94,6 +85,7 @@ class GuiExport ToolBarManager: public QObject
 {
     Q_OBJECT
 public:
+
     /// The one and only instance.
     static ToolBarManager* getInstance();
     static void destruct();
@@ -128,6 +120,7 @@ protected:
     void setup(ToolBarItem*, QToolBar*) const;
     /** Returns a list of all currently existing toolbars. */
     std::map<QString, QPointer<QToolBar>> toolBars();
+
     QAction* findAction(const QList<QAction*>&, const QString&) const;
     QToolBar *createToolBar(const QString &name);
     void connectToolBar(QToolBar *);

@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GenerateModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="generateMetaModel_Module.xsd">
-	<PythonExport
-		Father="GeometryPy"
-		Name="GeometrySurfacePy"
+    <PythonExport
+        Name="GeometrySurfacePy"
+        Namespace="Part"
+        Twin="GeomSurface"
+        TwinPointer="GeomSurface"
         PythonName="Part.GeometrySurface"
-		Twin="GeomSurface"
-		TwinPointer="GeomSurface"
-		Include="Mod/Part/App/Geometry.h"
-		Namespace="Part"
-		FatherInclude="Mod/Part/App/GeometryPy.h"
-		FatherNamespace="Part"
-		Constructor="true">
-		<Documentation>
-			<Author Licence="LGPL" Name="Werner Mayer" EMail="wmayer@users.sourceforge.net" />
-			<UserDocu>
-				The abstract class GeometrySurface is the root class of all surface objects.
-			</UserDocu>
-		</Documentation>
-		<Methode Name="toShape" Const="true">
-			<Documentation>
-				<UserDocu>Return the shape for the geometry.</UserDocu>
-			</Documentation>
-		</Methode>
+        FatherInclude="Mod/Part/App/GeometryPy.h"
+        Include="Mod/Part/App/Geometry.h"
+        Father="GeometryPy"
+        FatherNamespace="Part"
+        Constructor="true">
+        <Documentation>
+            <Author Licence="LGPL" Name="Werner Mayer" EMail="wmayer@users.sourceforge.net"/>
+            <UserDocu>The abstract class GeometrySurface is the root class of all surface objects.</UserDocu>
+        </Documentation>
+        <Methode Name="toShape" Const="true">
+            <Documentation>
+                <UserDocu>Return the shape for the geometry.</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="toShell" Const="true" Keyword="true">
             <Documentation>
                 <UserDocu>Make a shell of the surface.</UserDocu>
@@ -57,17 +55,15 @@ Computes the normal of parameter (u,v) on this geometry</UserDocu>
         </Methode>
         <Methode Name="projectPoint" Const="true" Keyword="true">
             <Documentation>
-                <UserDocu>
-Computes the projection of a point on the surface
+                <UserDocu>Computes the projection of a point on the surface
 
-projectPoint(Point=Vector,[Method=\"NearestPoint\"])
-projectPoint(Vector,\"NearestPoint\") -> Vector
-projectPoint(Vector,\"LowerDistance\") -> float
-projectPoint(Vector,\"LowerDistanceParameters\") -> tuple of floats (u,v)
-projectPoint(Vector,\"Distance\") -> list of floats
-projectPoint(Vector,\"Parameters\") -> list of tuples of floats
-projectPoint(Vector,\"Point\") -> list of points
-</UserDocu>
+projectPoint(Point=Vector,[Method=&quot;NearestPoint&quot;])
+projectPoint(Vector,&quot;NearestPoint&quot;) -&gt; Vector
+projectPoint(Vector,&quot;LowerDistance&quot;) -&gt; float
+projectPoint(Vector,&quot;LowerDistanceParameters&quot;) -&gt; tuple of floats (u,v)
+projectPoint(Vector,&quot;Distance&quot;) -&gt; list of floats
+projectPoint(Vector,&quot;Parameters&quot;) -&gt; list of tuples of floats
+projectPoint(Vector,&quot;Point&quot;) -&gt; list of points</UserDocu>
             </Documentation>
         </Methode>
         <Methode Name="isUmbillic" Const="true">
@@ -103,19 +99,15 @@ the second vector corresponds to the minimum curvature.
 		</Methode>
         <Methode Name="isPlanar" Const="true">
             <Documentation>
-                <UserDocu>
-isPlanar([float]) -> Bool
-Checks if the surface is planar within a certain tolerance.
-                </UserDocu>
+                <UserDocu>isPlanar([float]) -&gt; Bool
+Checks if the surface is planar within a certain tolerance.</UserDocu>
             </Documentation>
         </Methode>
         <Attribute Name="Continuity" ReadOnly="true">
 			<Documentation>
-				<UserDocu>
-					Returns the global continuity of the surface.
-				</UserDocu>
-			</Documentation>
-			<Parameter Name="Continuity" Type="String"/>
+                <UserDocu>Returns the global continuity of the surface.</UserDocu>
+            </Documentation>
+            <Parameter Name="Continuity" Type="String"/>
 		</Attribute>
 		<Attribute Name="Rotation" ReadOnly="true">
 			<Documentation>
@@ -145,77 +137,63 @@ Checks if the surface is planar within a certain tolerance.
 		</Methode>
         <Methode Name="isUClosed" Const="true">
 			<Documentation>
-				<UserDocu>
-					Checks if this surface is closed in the u parametric direction.
-				</UserDocu>
-			</Documentation>
-		</Methode>
+                <UserDocu>Checks if this surface is closed in the u parametric direction.</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="isVClosed" Const="true">
-			<Documentation>
-				<UserDocu>
-					Checks if this surface is closed in the v parametric direction.
-				</UserDocu>
-			</Documentation>
-		</Methode>
+            <Documentation>
+                <UserDocu>Checks if this surface is closed in the v parametric direction.</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="UPeriod" Const="true">
-			<Documentation>
-				<UserDocu>
-					Returns the period of this patch in the u parametric direction.
-				</UserDocu>
-			</Documentation>
-		</Methode>
+            <Documentation>
+                <UserDocu>Returns the period of this patch in the u parametric direction.</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="VPeriod" Const="true">
-			<Documentation>
-				<UserDocu>
-					Returns the period of this patch in the v parametric direction.
-				</UserDocu>
-			</Documentation>
-		</Methode>
+            <Documentation>
+                <UserDocu>Returns the period of this patch in the v parametric direction.</UserDocu>
+            </Documentation>
+        </Methode>
         <Methode Name="parameter" Const="true">
-			<Documentation>
-				<UserDocu>Returns the parameter on the curve
+            <Documentation>
+                <UserDocu>Returns the parameter on the curve
 of the nearest orthogonal projection of the point.</UserDocu>
-			</Documentation>
-		</Methode>
+            </Documentation>
+        </Methode>
         <Methode Name="toBSpline" Const="true" Keyword="true">
-			<Documentation>
-				<UserDocu>
-					Returns a B-Spline representation of this surface.
-					The optional arguments are:
-					* tolerance (default=1e-7)
-					* continuity in u (as string e.g. C0, G0, G1, C1, G2, C3, CN) (default='C1')
-					* continuity in v (as string e.g. C0, G0, G1, C1, G2, C3, CN) (default='C1')
-					* maximum degree in u (default=25)
-					* maximum degree in v (default=25)
-					* maximum number of segments (default=1000)
-					* precision code (default=0)
-					Will raise an exception if surface is infinite in U or V (like planes, cones or cylinders)
-				</UserDocu>
+            <Documentation>
+                <UserDocu>Returns a B-Spline representation of this surface.
+                    The optional arguments are:
+                    * tolerance (default=1e-7)
+                    * continuity in u (as string e.g. C0, G0, G1, C1, G2, C3, CN) (default='C1')
+                    * continuity in v (as string e.g. C0, G0, G1, C1, G2, C3, CN) (default='C1')
+                    * maximum degree in u (default=25)
+                    * maximum degree in v (default=25)
+                    * maximum number of segments (default=1000)
+                    * precision code (default=0)
+                    Will raise an exception if surface is infinite in U or V (like planes, cones or cylinders)</UserDocu>
+            </Documentation>
+        </Methode>
 			</Documentation>
 		</Methode>
         <Methode Name="intersect" Const="true">
             <Documentation>
-                <UserDocu>
-                    Returns all intersection points/curves between the surface and the curve/surface.
-                </UserDocu>
+                <UserDocu>Returns all intersection points/curves between the surface and the curve/surface.</UserDocu>
             </Documentation>
         </Methode>
         <Methode Name="intersectSS" Const="true">
             <Documentation>
-                <UserDocu>
-Returns all intersection curves of this surface and the given surface.
+                <UserDocu>Returns all intersection curves of this surface and the given surface.
 The required arguments are:
 * Second surface
-* precision code (optional, default=0)
-                </UserDocu>
+* precision code (optional, default=0)</UserDocu>
             </Documentation>
         </Methode>
         <Methode Name="toPlane" Const="true">
-          <Documentation>
-            <UserDocu>
-              toPlane(clone=True, tol=1e-7) -- Convert the surface to a plane if it is planar, or else return None.
-            </UserDocu>
-          </Documentation>
+            <Documentation>
+                <UserDocu>toPlane(clone=True, tol=1e-7) -- Convert the surface to a plane if it is planar, or else return None.</UserDocu>
+            </Documentation>
         </Methode>
 	</PythonExport>
 </GenerateModel>

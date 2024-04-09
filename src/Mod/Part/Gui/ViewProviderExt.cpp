@@ -70,9 +70,10 @@
 # include <Inventor/nodes/SoShapeHints.h>
 # include <QAction>
 # include <QMenu>
+
+# include <boost/algorithm/string/predicate.hpp>
 #endif
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 
@@ -500,7 +501,7 @@ void ViewProviderPartExt::onChanged(const App::Property* prop)
 bool ViewProviderPartExt::allowOverride(const App::DocumentObject &) const {
     // Many derived view providers still uses static_cast to get object
     // pointer, so check for exact type here.
-    return getTypeId() == ViewProviderPartExt::getClassTypeId();
+    return is<ViewProviderPartExt>();
 }
 
 void ViewProviderPartExt::attach(App::DocumentObject *pcFeat)
@@ -902,12 +903,12 @@ std::vector<Base::Vector3d> ViewProviderPartExt::getModelPoints(const SoPickedPo
     }
 
     // if something went wrong returns an empty array
-    return std::vector<Base::Vector3d>();
+    return {};
 }
 
 std::vector<Base::Vector3d> ViewProviderPartExt::getSelectionShape(const char* /*Element*/) const
 {
-    return std::vector<Base::Vector3d>();
+    return {};
 }
 
 void ViewProviderPartExt::setHighlightedFaces(const std::vector<App::Color>& colors)
@@ -1922,7 +1923,19 @@ void ViewProviderPartExt::updateVisual()
                         PartParams::getMeshAngularDeflection() : AngularDeflection.getValue()),
                       PartParams::getMinimumAngularDeflection()) / 180.0 * M_PI);
 
-        BRepMesh_IncrementalMesh(cShape,deflection,Standard_False, AngDeflectionRads,Standard_True);
+#if OCC_VERSION_HEX >= 0x070500
+        IMeshTools_Parameters meshParams;
+        meshParams.Deflection = deflection;
+        meshParams.Relative = Standard_False;
+        meshParams.Angle = AngDeflectionRads;
+        meshParams.InParallel = Standard_True;
+        meshParams.AllowQualityDecrease = Standard_True;
+
+        BRepMesh_IncrementalMesh(cShape, meshParams);
+#else
+        BRepMesh_IncrementalMesh(cShape, deflection, Standard_False, AngDeflectionRads, Standard_True);
+#endif
+
 
         // count triangles and nodes in the mesh
         TopTools_IndexedMapOfShape faceMap;
@@ -2213,8 +2226,8 @@ void ViewProviderPartExt::updateVisual()
             norms[i].normalize();
 
         std::vector<int32_t> lineSetCoords;
-        for (std::map<int, std::vector<int32_t> >::iterator it = lineSetMap.begin(); it != lineSetMap.end(); ++it) {
-            lineSetCoords.insert(lineSetCoords.end(), it->second.begin(), it->second.end());
+        for (const auto & it : lineSetMap) {
+            lineSetCoords.insert(lineSetCoords.end(), it.second.begin(), it.second.end());
             lineSetCoords.push_back(-1);
         }
 
@@ -2255,7 +2268,7 @@ void ViewProviderPartExt::updateVisual()
              << " Triangles:" << numTriangles << " IdxVec:" << numLines);
     VisualTouched = false;
 
-    // The material has to be checked again (#0001736)
+    // The material has to be checked again
     setHighlightedFaces(DiffuseColor.getValues());
     setHighlightedEdges(LineColorArray.getValues());
     setHighlightedPoints(PointColorArray.getValue());

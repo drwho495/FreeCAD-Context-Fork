@@ -31,6 +31,7 @@
 QT_BEGIN_NAMESPACE
 class QDir;
 class QIcon;
+class QImage;
 class QGraphicsObject;
 class QGraphicsItem;
 class QObject;
@@ -62,6 +63,9 @@ public:
     Py::Object fromQWidget(QWidget*, const char* className=nullptr);
     Py::Object fromQEvent(QEvent*, const char* className=0);
     const char* getWrapperName(QObject*) const;
+
+    Py::Object fromQImage(const QImage&);
+    QImage *toQImage(PyObject *pyobj);
     /*!
       Create a Python wrapper for the icon. The icon must be created on the heap
       and the Python wrapper takes ownership of it.

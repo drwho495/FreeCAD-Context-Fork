@@ -63,6 +63,7 @@
 #include "DrawViewSection.h"
 #include "GeometryObject.h"
 #include "Preferences.h"
+#include "ShapeUtils.h"
 
 
 using namespace TechDraw;
@@ -84,6 +85,13 @@ DrawViewDetail::DrawViewDetail() : m_saveDvp(nullptr), m_saveDvs(nullptr)
                       "Location of detail in BaseView");
     ADD_PROPERTY_TYPE(Radius, (10.0), dgroup, App::Prop_None, "Size of detail area");
     ADD_PROPERTY_TYPE(Reference, ("1"), dgroup, App::Prop_None, "An identifier for this detail");
+
+    static const char* agroup{"Appearance"};
+    ADD_PROPERTY_TYPE(ShowMatting, (Preferences::showDetailMatting()), agroup, App::Prop_None,
+             "Show or hide the matting around the detail view");
+    ADD_PROPERTY_TYPE(ShowHighlight, (Preferences::showDetailHighlight()), agroup, App::Prop_None,
+             "Show or hide the detail highlight in the source view");
+
 
     getParameters();
     m_fudge = 1.01;
@@ -139,7 +147,7 @@ App::DocumentObjectExecReturn* DrawViewDetail::execute()
         return DrawView::execute();
     }
 
-    if (!baseObj->getTypeId().isDerivedFrom(TechDraw::DrawViewPart::getClassTypeId())) {
+    if (!baseObj->isDerivedFrom<TechDraw::DrawViewPart>()) {
         //this can only happen via scripting?
         return DrawView::execute();
     }
@@ -272,7 +280,6 @@ void DrawViewDetail::makeDetailShape(const DetailParams &params)
     //    anchor.RotateZ(baseRotationRad);
 
     anchor = DrawUtil::toR3(params.viewAxis, anchor);//actual anchor coords in R3
-
 
     Bnd_Box bbxSource;
     bbxSource.SetGap(0.0);

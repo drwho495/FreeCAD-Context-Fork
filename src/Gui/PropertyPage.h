@@ -86,6 +86,7 @@ public:
 public Q_SLOTS:
     virtual void loadSettings()=0;
     virtual void saveSettings()=0;
+    virtual void resetSettingsToDefaults();
 
 protected:
     void changeEvent(QEvent* event) override = 0;

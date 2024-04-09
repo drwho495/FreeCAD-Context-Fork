@@ -23,6 +23,7 @@
 #include "PreCompiled.h"
 #ifndef _PreComp_
 # include <QEvent>
+# include <QGridLayout>
 # include <QSplitter>
 #endif
 
@@ -43,11 +44,8 @@ using namespace Gui::DockWnd;
 
 /* TRANSLATOR Gui::DockWnd::ComboView */
 
-ComboView::ComboView(bool showModel, Gui::Document* pcDocument, QWidget *parent)
-  : DockWindow(pcDocument,parent)
-  , oldTabIndex(0)
-  , modelIndex(-1)
-  , taskIndex(-1)
+ComboView::ComboView(Gui::Document* pcDocument, QWidget *parent)
+  : DockWindow(pcDocument, parent)
 {
     hGrp = App::GetApplication().GetParameterGroupByPath(
                 "User parameter:BaseApp/Preferences/DockWindows/ComboView");
@@ -57,10 +55,8 @@ ComboView::ComboView(bool showModel, Gui::Document* pcDocument, QWidget *parent)
     pLayout->setContentsMargins ( 0, 0, 0, 0 );
 
     // tabs to switch between Tree/Properties and TaskPanel
-    tabs = new QTabWidget ();
-    tabs->setObjectName(QString::fromUtf8("combiTab"));
-    tabs->setTabPosition(QTabWidget::North);
-    pLayout->addWidget( tabs, 0, 0 );
+    auto splitter = new QSplitter();
+    pLayout->addWidget( splitter, 0, 0 );
 
 #if QT_VERSION>=QT_VERSION_CHECK(5,4,0)
     tabs->setTabBarAutoHide(true);

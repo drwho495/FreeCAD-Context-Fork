@@ -132,7 +132,6 @@
 
 #include "SoZoomTranslation.h"
 #include "EditDatumDialog.h"
-#include "ViewProviderSketch.h"
 #include "DrawSketchHandler.h"
 #include "SnapManager.h"
 #include "TaskDlgEditSketch.h"
@@ -140,6 +139,7 @@
 #include "TaskSketcherConstraints.h"
 #include "Workbench.h"
 #include "Utils.h"
+#include "ViewProviderSketch.h"
 #include "ViewProviderSketchGeometryExtension.h"
 #include <Mod/Sketcher/App/SolverGeometryExtension.h>
 
@@ -210,6 +210,51 @@ static const char *_ParamAllowFaceExternal = "AllowFaceExternalPick";
 static const char *_ParamSnapTolerance = "SnapTolerance";
 static const char *_ParamViewBottomOnEdit = "ViewBottomOnEdit";
 static const char *_ParamAdjustCamera = "AdjustCamera";
+
+/************** ViewProviderSketch::ToolManager *********************/
+ViewProviderSketch::ToolManager::ToolManager(ViewProviderSketch * vp): vp(vp)
+{}
+
+std::unique_ptr<QWidget> ViewProviderSketch::ToolManager::createToolWidget() const
+{
+    if(vp && vp->sketchHandler) {
+        return vp->sketchHandler->createToolWidget();
+    }
+    else {
+        return nullptr;
+    }
+}
+
+bool ViewProviderSketch::ToolManager::isWidgetVisible() const
+{
+    if(vp && vp->sketchHandler) {
+        return vp->sketchHandler->isWidgetVisible();
+    }
+    else {
+        return false;
+    }
+}
+
+QPixmap ViewProviderSketch::ToolManager::getToolIcon() const
+{
+    if(vp && vp->sketchHandler) {
+        return vp->sketchHandler->getToolIcon();
+    }
+    else {
+        return QPixmap();
+    }
+}
+
+QString ViewProviderSketch::ToolManager::getToolWidgetText() const
+{
+    if(vp && vp->sketchHandler) {
+        return vp->sketchHandler->getToolWidgetText();
+    }
+    else {
+        return QString();
+    }
+}
+
 
 //**************************************************************************
 // Edit data structure
@@ -420,6 +465,8 @@ const Part::Geometry* GeoById(const std::vector<Part::Geometry*> GeoList, int Id
         return GeoList[GeoList.size()+Id];
 }
 
+/*************************** ViewProviderSketch **************************/
+
 //**************************************************************************
 // Construction/Destruction
 
@@ -430,6 +477,7 @@ PROPERTY_SOURCE_WITH_EXTENSIONS(SketcherGui::ViewProviderSketch, PartGui::ViewPr
 
 ViewProviderSketch::ViewProviderSketch()
   : SelectionObserver(false),
+    toolManager(this),
     _Mode(STATUS_NONE),
     visibleInformationChanged(true),
     combrepscalehyst(0),
@@ -440,16 +488,77 @@ ViewProviderSketch::ViewProviderSketch()
     PartGui::ViewProviderAttachExtension::initExtension(this);
     PartGui::ViewProviderGridExtension::initExtension(this);
 
-    ADD_PROPERTY_TYPE(Autoconstraints,(true),"Auto Constraints",(App::PropertyType)(App::Prop_None),"Create auto constraints");
-    ADD_PROPERTY_TYPE(AvoidRedundant,(true),"Auto Constraints",(App::PropertyType)(App::Prop_None),"Avoid redundant autoconstraint");
-    ADD_PROPERTY_TYPE(TempoVis,(Py::None()),"Visibility automation",(App::PropertyType)(App::Prop_None),"Object that handles hiding and showing other objects when entering/leaving sketch.");
-    ADD_PROPERTY_TYPE(HideDependent,(true),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, all objects that depend on the sketch are hidden when opening editing.");
-    ADD_PROPERTY_TYPE(ShowLinks,(true),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, all objects used in links to external geometry are shown when opening sketch.");
-    ADD_PROPERTY_TYPE(ShowSupport,(true),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, all objects this sketch is attached to are shown when opening sketch.");
-    ADD_PROPERTY_TYPE(RestoreCamera,(true),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, camera position before entering sketch is remembered, and restored after closing it.");
-    ADD_PROPERTY_TYPE(ForceOrtho,(false),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, camera type will be forced to orthographic view when entering editing mode.");
-    ADD_PROPERTY_TYPE(SectionView,(false),"Visibility automation",(App::PropertyType)(App::Prop_None),"If true, only objects (or part of) located behind the sketch plane are visible.");
-    ADD_PROPERTY_TYPE(EditingWorkbench,("SketcherWorkbench"),"Visibility automation",(App::PropertyType)(App::Prop_None),"Name of the workbench to activate when editing this sketch.");
+    ADD_PROPERTY_TYPE(Autoconstraints,
+                      (true),
+                      "Auto Constraints",
+                      (App::PropertyType)(App::Prop_None),
+                      "Create auto constraints");
+    ADD_PROPERTY_TYPE(AvoidRedundant,
+                      (true),
+                      "Auto Constraints",
+                      (App::PropertyType)(App::Prop_None),
+                      "Avoid redundant autoconstraint");
+    ADD_PROPERTY_TYPE(
+        TempoVis,
+        (Py::None()),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "Object that handles hiding and showing other objects when entering/leaving sketch.");
+    ADD_PROPERTY_TYPE(
+        HideDependent,
+        (true),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "If true, all objects that depend on the sketch are hidden when opening editing.");
+    ADD_PROPERTY_TYPE(
+        ShowLinks,
+        (true),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "If true, all objects used in links to external geometry are shown when opening sketch.");
+    ADD_PROPERTY_TYPE(
+        ShowSupport,
+        (true),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "If true, all objects this sketch is attached to are shown when opening sketch.");
+    ADD_PROPERTY_TYPE(RestoreCamera,
+                      (true),
+                      "Visibility automation",
+                      (App::PropertyType)(App::Prop_ReadOnly),
+                      "If true, camera position before entering sketch is remembered, and restored "
+                      "after closing it.");
+    ADD_PROPERTY_TYPE(
+        ForceOrtho,
+        (false),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "If true, camera type will be forced to orthographic view when entering editing mode.");
+    ADD_PROPERTY_TYPE(
+        SectionView,
+        (false),
+        "Visibility automation",
+        (App::PropertyType)(App::Prop_ReadOnly),
+        "If true, only objects (or part of) located behind the sketch plane are visible.");
+    ADD_PROPERTY_TYPE(EditingWorkbench,
+                      ("SketcherWorkbench"),
+                      "Visibility automation",
+                      (App::PropertyType)(App::Prop_ReadOnly),
+                      "Name of the workbench to activate when editing this sketch.");
+    ADD_PROPERTY_TYPE(VisualLayerList,
+                      (VisualLayer()),
+                      "Layers",
+                      (App::PropertyType)(App::Prop_ReadOnly),
+                      "Information about the Visual Representation of layers");
+
+    // TODO: This is part of a naive minimal implementation to substitute rendering order
+    // Three equally visual layers to enable/disable layer.
+    std::vector<VisualLayer> layers;
+    layers.emplace_back();                // Normal layer
+    layers.emplace_back(0x7E7E);          // Discontinuous line layer
+    layers.emplace_back(0xFFFF, 3, false);// Hidden layer
+
+    VisualLayerList.setValues(std::move(layers));
 
     {//visibility automation: update defaults to follow preferences
         ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/General");
@@ -535,6 +644,7 @@ ViewProviderSketch::ViewProviderSketch()
 
 ViewProviderSketch::~ViewProviderSketch()
 {
+    connectionToolWidget.disconnect();
 }
 
 void ViewProviderSketch::setSketchMode(SketchMode mode)
@@ -7267,7 +7377,7 @@ void ViewProviderSketch::setupContextMenu(QMenu *menu, QObject *receiver, const 
 {
     Gui::ActionFunction* func = new Gui::ActionFunction(menu);
     QAction *act = menu->addAction(tr("Edit sketch"), receiver, member);
-    func->trigger(act, boost::bind(&ViewProviderSketch::doubleClicked, this));
+    func->trigger(act, std::bind(&ViewProviderSketch::doubleClicked, this));
 
     inherited::setupContextMenu(menu, receiver, member);
 }
@@ -7377,15 +7487,19 @@ bool ViewProviderSketch::setEdit(int ModNum)
     // start the edit dialog
     if (sketchDlg)
         Gui::Control().showDialog(sketchDlg);
-    else
-        Gui::Control().showDialog(new TaskDlgEditSketch(this));
+    else {
+        sketchDlg = new TaskDlgEditSketch(this);
+        Gui::Control().showDialog(sketchDlg);
+    }
+
+    connectionToolWidget = sketchDlg->registerToolWidgetChanged(std::bind(&SketcherGui::ViewProviderSketch::slotToolWidgetChanged, this, sp::_1));
 
     connectUndoDocument = getDocument()
-        ->signalUndoDocument.connect(boost::bind(&ViewProviderSketch::slotUndoDocument, this, bp::_1));
+        ->signalUndoDocument.connect(std::bind(&ViewProviderSketch::slotUndoDocument, this, sp::_1));
     connectRedoDocument = getDocument()
-        ->signalRedoDocument.connect(boost::bind(&ViewProviderSketch::slotRedoDocument, this, bp::_1));
+        ->signalRedoDocument.connect(std::bind(&ViewProviderSketch::slotRedoDocument, this, sp::_1));
     connectSolverUpdate = getSketchObject()
-        ->signalSolverUpdate.connect(boost::bind(&ViewProviderSketch::slotSolverUpdate, this));
+        ->signalSolverUpdate.connect(std::bind(&ViewProviderSketch::slotSolverUpdate, this));
     connectMoved = getDocument()->signalEditingTransformChanged.connect([this](const Gui::Document &) {
         if (edit && SectionView.getValue()) {
             toggleViewSection(0);
@@ -7486,41 +7600,46 @@ void ViewProviderSketch::UpdateSolverInformation()
     bool hasConflicts = getSketchObject()->getLastHasConflicts();
     bool hasRedundancies = getSketchObject()->getLastHasRedundancies();
     bool hasPartiallyRedundant = getSketchObject()->getLastHasPartialRedundancies();
-    bool hasMalformed    = getSketchObject()->getLastHasMalformedConstraints();
+    bool hasMalformed = getSketchObject()->getLastHasMalformedConstraints();
 
     if (getSketchObject()->Geometry.getSize() == 0) {
         signalSetUp(QString::fromUtf8("empty_sketch"), tr("Empty sketch"), QString(), QString());
     }
-    else if (dofs < 0 || hasConflicts) { // over-constrained sketch
-        signalSetUp(QString::fromUtf8("conflicting_constraints"),
+    else if (dofs < 0 || hasConflicts) {// over-constrained sketch
+        signalSetUp(
+            QString::fromUtf8("conflicting_constraints"),
             tr("Over-constrained: "),
             QString::fromUtf8("#conflicting"),
             QString::fromUtf8("(%1)").arg(intListHelper(getSketchObject()->getLastConflicting())));
     }
-    else if (hasMalformed) { // malformed constraints
+    else if (hasMalformed) {// malformed constraints
         signalSetUp(QString::fromUtf8("malformed_constraints"),
-            tr("Malformed constraints: "),
-            QString::fromUtf8("#malformed"),
-            QString::fromUtf8("(%1)").arg(intListHelper(getSketchObject()->getLastMalformedConstraints())));
+                    tr("Malformed constraints: "),
+                    QString::fromUtf8("#malformed"),
+                    QString::fromUtf8("(%1)").arg(
+                        intListHelper(getSketchObject()->getLastMalformedConstraints())));
     }
     else if (hasRedundancies) {
-        signalSetUp(QString::fromUtf8("redundant_constraints"),
+        signalSetUp(
+            QString::fromUtf8("redundant_constraints"),
             tr("Redundant constraints:"),
             QString::fromUtf8("#redundant"),
             QString::fromUtf8("(%1)").arg(intListHelper(getSketchObject()->getLastRedundant())));
     }
     else if (hasPartiallyRedundant) {
         signalSetUp(QString::fromUtf8("partially_redundant_constraints"),
-            tr("Partially redundant:"),
-            QString::fromUtf8("#partiallyredundant"),
-            QString::fromUtf8("(%1)").arg(intListHelper(getSketchObject()->getLastPartiallyRedundant())));
+                    tr("Partially redundant:"),
+                    QString::fromUtf8("#partiallyredundant"),
+                    QString::fromUtf8("(%1)").arg(
+                        intListHelper(getSketchObject()->getLastPartiallyRedundant())));
     }
     else if (getSketchObject()->getLastSolverStatus() != 0) {
         signalSetUp(QString::fromUtf8("solver_failed"),
-            tr("Solver failed to converge"),
-            QString::fromUtf8(""),
-            QString::fromUtf8(""));
-    } else if (dofs > 0) {
+                    tr("Solver failed to converge"),
+                    QString::fromUtf8(""),
+                    QString::fromUtf8(""));
+    }
+    else if (dofs > 0) {
         signalSetUp(QString::fromUtf8("under_constrained"),
             tr("Under constrained:"),
             QString::fromUtf8("#dofs"),
@@ -7845,6 +7964,7 @@ void ViewProviderSketch::unsetEdit(int ModNum)
     Gui::Selection().clearSelection();
     Gui::Selection().addSelection(editDocName.c_str(),editObjName.c_str(),editSubName.c_str());
 
+    connectionToolWidget.disconnect();
     connectUndoDocument.disconnect();
     connectRedoDocument.disconnect();
     connectSolverUpdate.disconnect();
@@ -7867,8 +7987,10 @@ void ViewProviderSketch::unsetEdit(int ModNum)
         QByteArray cmdstr_bytearray = cmdstr.toUtf8();
         Gui::Command::runCommand(Gui::Command::Gui, cmdstr_bytearray);
     } catch (Base::PyException &e){
-        Base::Console().Error("ViewProviderSketch::unsetEdit: visibility automation failed with an error: \n");
-        e.ReportException();
+        Base::Console().DeveloperError(
+            "ViewProviderSketch",
+            "unsetEdit: visibility automation failed with an error: %s \n",
+            e.what());
     }
 
     inherited::unsetEdit(ModNum); // notify grid that edit mode is being left
