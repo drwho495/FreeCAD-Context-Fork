@@ -1569,9 +1569,10 @@ SoFCUnifiedSelection::Private::handleEvent(SoHandleEventAction * action)
             if (SoMouseButtonEvent::isButtonReleaseEvent(e,SoMouseButtonEvent::BUTTON1)) {
                 // check to see if the mouse is over a geometry...
                 auto infos = this->getPickedList(action,!Selection().needPickedList());
-                if(setSelection(infos,event->wasCtrlDown(),event->wasShiftDown(),event->wasAltDown()))
-                    action->setHandled();
-            } // mouse release
+                //if(setSelection(infos,event->wasCtrlDown(),event->wasShiftDown(),event->wasAltDown()))
+                bool greedySel = Gui::Selection().getSelectionStyle() == Gui::SelectionSingleton::SelectionStyle::GreedySelection;
+                if(setSelection(infos,event->wasCtrlDown() || greedySel,event->wasShiftDown() || greedySel,event->wasAltDown() || greedySel)) action->setHandled();
+                } // mouse release
             res = true;
         } else if (event->isOfType(SoMouseWheelEvent::getClassTypeId())) {
             res = true;

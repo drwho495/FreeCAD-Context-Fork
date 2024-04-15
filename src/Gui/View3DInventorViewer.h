@@ -387,6 +387,12 @@ public:
 
     /** Checks whether a clipping plane is set or not. */
     bool hasClippingPlane() const;
+	
+    SbVec3f getPointOnXYPlaneOfPlacement(const SbVec2s&, Base::Placement&) const;
+
+SbVec3f getPointOnLine(const SbVec2s&, const SbVec3f& axisCenter, const SbVec3f& axis) const;
+//SbLine projectLineOntoPlane(const SbVec3f& p1, const SbVec3f& p2, const SbPlane& plane);
+
 
     /** Project the given normalized 2d point onto the near plane */
     SbVec3f projectOnNearPlane(const SbVec2f&) const;

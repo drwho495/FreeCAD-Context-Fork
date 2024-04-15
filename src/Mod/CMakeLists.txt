@@ -6,6 +6,9 @@ if(BUILD_ARCH)
   add_subdirectory(Arch)
 endif(BUILD_ARCH)
 
+add_subdirectory(Assembly)
+
+
 if(BUILD_CLOUD)
     add_subdirectory(Cloud)
 endif(BUILD_CLOUD)

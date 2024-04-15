@@ -48,6 +48,12 @@ class ResolveMode(IntEnum):
 
 Gui.Selection.ResolveMode = ResolveMode
 
+class SelectionStyle(IntEnum):
+    NormalSelection = 0
+    GreedySelection = 1
+
+Gui.Selection.SelectionStyle = SelectionStyle
+
 # Important definitions
 class Workbench:
     """The workbench base class."""

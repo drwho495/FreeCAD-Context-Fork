@@ -594,7 +594,19 @@ public:
      */
     std::vector<Gui::SelectionObject> getSelectionEx(const char* pDocName=nullptr,
             Base::Type typeId=App::DocumentObject::getClassTypeId(), ResolveMode resolve = ResolveMode::OldStyleElement, bool single=false) const;
+	
+	//@}
 
+    /** @name Selection style functions
+     *
+     * The selection style changes the way selection works. In Greedy selection
+     * it is as if you were pressing Ctrl.
+     */
+    //@{
+    enum class SelectionStyle {
+        NormalSelection,
+        GreedySelection
+    };
     /** Returns the first selected object if there is one
      *
      * @param sel: returns the selected object
@@ -619,6 +631,11 @@ public:
         return true;
     }
 
+
+void setSelectionStyle(SelectionStyle selStyle);
+    /// Get the style of selection.
+    SelectionStyle getSelectionStyle();
+    //@}
 
     /**
      * @brief getAsPropertyLinkSubList fills PropertyLinkSubList with current selection.
@@ -698,6 +715,8 @@ public:
     std::vector<App::SubObjectT> selStackGetT(const char* pDocName=0,
                                               ResolveMode resolve = ResolveMode::OldStyleElement,
                                               int index=0) const;
+
+    SelectionStyle selectionStyle;
 
     /** Go back selection history
      *
@@ -793,6 +812,7 @@ protected:
     static PyObject *sNeedPickedList      (PyObject *self,PyObject *args);
     static PyObject *sPreselect           (PyObject *self,PyObject *args);
     static PyObject *sSetVisible          (PyObject *self,PyObject *args);
+    static PyObject *sSetSelectionStyle   (PyObject *self,PyObject *args);
     static PyObject *sPushSelStack        (PyObject *self,PyObject *args);
     static PyObject *sHasSelection        (PyObject *self,PyObject *args);
     static PyObject *sHasSubSelection     (PyObject *self,PyObject *args);

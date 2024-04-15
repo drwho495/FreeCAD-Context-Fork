@@ -40,6 +40,7 @@
 #include <Base/Exception.h>
 #include <Base/Interpreter.h>
 #include <Base/Tools.h>
+//#include <Base/PyWrapParseTupleAndKeywords.h>
 #include <Base/UnitsApi.h>
 #include <Gui/SelectionObjectPy.h>
 
@@ -52,6 +53,7 @@
 #include "MainWindow.h"
 #include "MDIView.h"
 #include "SelectionFilter.h"
+//#include "SelectionFilterPy.h"
 #include "SelectionObserverPython.h"
 #include "Tree.h"
 #include "TreeParams.h"
@@ -2007,6 +2009,16 @@ void SelectionSingleton::slotDeletedObject(const App::DocumentObject& Obj)
 }
 
 
+void SelectionSingleton::setSelectionStyle(SelectionStyle selStyle)
+{
+    selectionStyle = selStyle;
+}
+
+SelectionSingleton::SelectionStyle SelectionSingleton::getSelectionStyle()
+{
+    return selectionStyle;
+}
+
 //**************************************************************************
 // Construction/Destruction
 
@@ -2014,9 +2026,9 @@ void SelectionSingleton::slotDeletedObject(const App::DocumentObject& Obj)
  * A constructor.
  * A more elaborate description of the constructor.
  */
-SelectionSingleton::SelectionSingleton()
-    :CurrentPreselection(SelectionChanges::ClrSelection)
-    ,_needPickedList(false)
+SelectionSingleton::SelectionSingleton() :
+    CurrentPreselection(SelectionChanges::ClrSelection),
+    selectionStyle(SelectionStyle::NormalSelection)
 {
     hx = 0;
     hy = 0;
@@ -2200,6 +2212,12 @@ PyMethodDef SelectionSingleton::Methods[] = {
      "objName : str\n    Name of the `App.DocumentObject` to select.\n"
      "subName : str\n    Subelement name.\n"
      "point : tuple\n    Coordinates of the point to pick."},
+    {"setSelectionStyle",         (PyCFunction) SelectionSingleton::sSetSelectionStyle, METH_VARARGS,
+     "setSelectionStyle(selectionStyle) -> None\n"
+     "\n"
+     "Change the selection style. 0 for normal selection, 1 for greedy selection\n"
+     "\n"
+     "selectionStyle : int"},
     {"addObserver",         (PyCFunction) SelectionSingleton::sAddSelObserver, METH_VARARGS,
      "addObserver(object, resolve=ResolveMode.OldStyleElement) -> None\n"
      "\n"
@@ -2749,6 +2767,19 @@ PyObject *SelectionSingleton::sGetSelectionObject(PyObject * /*self*/, PyObject 
         e.setPyException();
         return nullptr;
     }
+}
+
+PyObject *SelectionSingleton::sSetSelectionStyle(PyObject * /*self*/, PyObject *args)
+{
+    int selStyle = 0;
+    if (!PyArg_ParseTuple(args, "i", &selStyle))
+        return nullptr;
+
+    PY_TRY {
+        Selection().setSelectionStyle(selStyle == 0 ? SelectionStyle::NormalSelection : SelectionStyle::GreedySelection);
+        Py_Return;
+    }
+    PY_CATCH;
 }
 
 PyObject *SelectionSingleton::sAddSelObserver(PyObject * /*self*/, PyObject *args)
