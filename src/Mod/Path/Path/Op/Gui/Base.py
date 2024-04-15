@@ -116,6 +116,7 @@ class ViewProvider(object):
         """setupTaskPanel(panel) ... internal function to start the editor."""
         self.panel = panel
         FreeCADGui.Control.closeDialog()
+        FreeCADGui.Selection.setSelectionStyle(FreeCADGui.Selection.SelectionStyle.GreedySelection) #enable greedy selection
         FreeCADGui.Control.showDialog(panel)
         panel.setupUi()
         job = self.Object.Proxy.getJob(self.Object)
@@ -1226,6 +1227,7 @@ class TaskPanel(object):
         """cleanup() ... implements common cleanup tasks."""
         self.panelCleanup()
         FreeCADGui.Control.closeDialog()
+        FreeCADGui.Selection.setSelectionStyle(FreeCADGui.Selection.SelectionStyle.NormalSelection)
         if resetEdit:
             FreeCADGui.ActiveDocument.resetEdit()
         FreeCAD.ActiveDocument.recompute()
