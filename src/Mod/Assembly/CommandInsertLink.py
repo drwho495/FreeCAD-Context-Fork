@@ -394,6 +394,8 @@ class TaskAssemblyInsertLink(QtCore.QObject):
             self.dismissPart()
 
     def dismissPart(self):
+
+    
         self.endMove()
         stack_item = self.insertionStack.pop()
         self.totalTranslation -= stack_item["translation"]

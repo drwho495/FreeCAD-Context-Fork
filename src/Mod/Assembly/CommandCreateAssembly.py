@@ -40,6 +40,7 @@ __url__ = "https://www.freecad.org"
 
 class CommandCreateAssembly:
     def __init__(self):
+        print("awegergaegaeraeagergaergaergaer")
         pass
 
     def GetResources(self):

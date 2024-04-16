@@ -48,6 +48,8 @@ class TaskPanelOpPage(PathOpGui.TaskPanelPage):
     def initPage(self, obj):
         self.setTitle("Profile - " + obj.Label)
         self.updateVisibility()
+        FreeCAD.Console.PrintLog("working")
+       	print("working")
 
     def profileFeatures(self):
         """profileFeatures() ... return which of the optional profile features are supported.

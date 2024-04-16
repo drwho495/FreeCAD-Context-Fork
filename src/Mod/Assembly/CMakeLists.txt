@@ -7,6 +7,8 @@ endif(BUILD_GUI)
 set(Assembly_Scripts
     Init.py
     CommandCreateAssembly.py
+    CommandCreateAssemblyContext.py
+    ContextCreatorLibrary.py
     CommandInsertLink.py
     CommandSolveAssembly.py
     CommandCreateJoint.py
