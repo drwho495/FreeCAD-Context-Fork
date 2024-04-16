@@ -1,5 +1,5 @@
 # FreeCAD Context Fork
-This is my small fork to get features (like assembly context editing) into FreeCAD Link Stage 3 and to implement features to make my life easier.
+This is my small fork to get features into FreeCAD Link Stage 3 and to implement features to make my life easier.
 
 This fork has the Ondsel Assembly Workbench built in now.
 
