@@ -1,3 +1,7 @@
+<details>
+  <summary>Original FreeCAD ReadMe. Click to Expand.</summary>
+
+
 ![Logo](https://github.com/realthunder/FreeCADMakeImage/raw/master/conda/branding/asm3/icons/hicolor/64x64/apps/freecad_link.png)
 
 This is the Link branch FreeCAD, with lots of new features and enhancement.
