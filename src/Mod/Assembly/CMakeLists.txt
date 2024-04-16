@@ -9,6 +9,7 @@ set(Assembly_Scripts
     CommandCreateAssembly.py
     CommandCreateAssemblyContext.py
     ContextCreatorLibrary.py
+    CommandUpdateAssemblyContext.py
     CommandInsertLink.py
     CommandSolveAssembly.py
     CommandCreateJoint.py

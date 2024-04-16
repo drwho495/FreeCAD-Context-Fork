@@ -6,6 +6,8 @@ if App.GuiUp:
     import FreeCADGui as Gui
     from PySide import QtCore, QtGui, QtWidgets
 
+transparency_level = 75
+
 import UtilsAssembly
 import Preferences
 
@@ -160,20 +162,6 @@ class ContextCreationSystem:
                 print(type(parent).__name__)
         return final_obj
 
-        def __init__(self):
-            self.current_selection = 1
-            self.first_selection = None
-            self.objects = []
-            self.edit_selection = None
-            super().__init__() 
-            self.setWindowTitle("Context Creator for Assembly 3, 4 and Default.")
-
-            self.createGridLayout()
-            
-            windowLayout = QtGui.QVBoxLayout()
-            windowLayout.addWidget(self.horizontalGroupBox)
-            self.setLayout(windowLayout)
-            self.show()
 
         def createGridLayout(self):
             self.horizontalGroupBox = QtGui.QGroupBox("Assembly Context Creator")
@@ -194,32 +182,34 @@ class ContextCreationSystem:
             
             self.horizontalGroupBox.setLayout(self.layout)
 
-        def UpdateContext(self):
-            selection = Gui.Selection.getSelection()[0]
-            if "EditedPart" in selection.PropertiesList:
-                self.editedPart = App.ActiveDocument.getObject(selection.EditedPart)
-                self.objectToUpdate = getCopyableObjectsInSelection()
+    def UpdateContext(self):
+        selection = Gui.Selection.getSelection()[0]
+        if "EditedPart" in selection.PropertiesList:
+            self.editedPart = App.ActiveDocument.getObject(selection.EditedPart)
+            self.objectToUpdate = self.getCopyableObjectsInAssembly(selection)
                 
-                EditedPartLink = getObjFromRefString(selection.EditedPartLink)
-                self.editedPart.Placement = EditedPartLink.Placement
+            EditedPartLink = self.getObjFromRefString(selection.EditedPartLink)
+            self.editedPart.Placement = EditedPartLink.Placement
                 
-                for obj in self.objectToUpdate:
-                    if "RefObj" in obj.PropertiesList:
-                        refObj = getObjFromRefString(obj.RefObj)
-                        assemblyDocument = refObj.Document
+            for obj in self.objectToUpdate:
+                if "RefObj" in obj.PropertiesList:
+                    refObj = self.getObjFromRefString(obj.RefObj)
+                    assemblyDocument = refObj.Document
                         
-                        try:
-                            obj.Placement = refObj.Placement
-                            #obj.Shape = Part.Shape()
-                            updateShape(obj, refObj)
-                            App.ActiveDocument.recompute()
-                        except:
-                            print("could not update object: " + refObj.Label)
-                App.ActiveDocument.recompute()
-                documentFileName = App.ActiveDocument.FileName
-                App.ActiveDocument.save()
-                App.closeDocument(App.ActiveDocument.Name)
-                App.openDocument(documentFileName)
+                    try:
+                        obj.Placement = refObj.Placement
+                        #obj.Shape = Part.Shape()
+                        self.updateShape(obj, refObj)
+                        App.ActiveDocument.recompute()
+                    except:
+                        print("could not update object: " + refObj.Label)
+            App.ActiveDocument.recompute()
+            documentFileName = App.ActiveDocument.FileName
+            App.ActiveDocument.save()
+            App.closeDocument(App.ActiveDocument.Name)
+            App.openDocument(documentFileName)
+        else:
+            App.Console.PrintWarning("The selection is not an assembly context!")
 
         def SelectPartButton(self): # slot: PushButton
             ''' Push Button 01 clicked  '''
