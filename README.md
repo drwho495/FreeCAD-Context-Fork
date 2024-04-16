@@ -1,5 +1,13 @@
+# My FreeCAD Fork
+This is my small fork to get features into FreeCAD Link Stage 3 and to implement features to make my life easier.
+
+This fork has the Ondsel Assembly Workbench built in now.
+
+I will be implementing context editing for assemblies here. It will be turning this macro: https://github.com/drwho495/freecad-assembly-context-macro
+into a tool in the Assembly wb.
+
 <details>
-  <summary>Original FreeCAD ReadMe. Click to Expand.</summary>
+  <summary>Original FreeCAD Link Stage 3 ReadMe. Click to Expand.</summary>
 
 
 ![Logo](https://github.com/realthunder/FreeCADMakeImage/raw/master/conda/branding/asm3/icons/hicolor/64x64/apps/freecad_link.png)
