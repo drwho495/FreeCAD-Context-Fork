@@ -3,8 +3,7 @@ This is my small fork to get features into FreeCAD Link Stage 3 and to implement
 
 This fork has the Ondsel Assembly Workbench built in now.
 
-I will be implementing context editing for assemblies here. It will be turning this macro: https://github.com/drwho495/freecad-assembly-context-macro
-into a tool in the Assembly wb.
+It also supports a new tool I made called the "assembly context creator". This lets you create assembly contexts in your part. This makes designing considerably easier. A gif will be provided soon.
 
 <details>
   <summary>Original FreeCAD Link Stage 3 ReadMe. Click to Expand.</summary>
