@@ -15,20 +15,12 @@ class ContextCreationSystem:
     COPYABLE_OBJECT_TYPES = ["Body", "Part", "LinkedObject", "DocumentObject", "Feature"]
 
     def __init__(self, editPart, assembly):
+        self.mainDocumentFileName = App.ActiveDocument.FileName
         pass
 
-    def getObjFromRefString(self, ref):
-        if "." in ref:
-            splitRef = ref.split(".")
-            print(splitRef[0])
-            document = splitRef[0]
-            splitRef.pop(0)
-            refObj = splitRef
-            refObj = ".".join(splitRef)
-            print(document)
-            print(refObj)
-            document = App.getDocument(document.replace("-", "_"))
-            return document.getObject(refObj)
+    def getObjFromRefString(self, objName, location):
+        document = App.openDocument(location)
+        return document.getObject(objName)
 
     def getLinkedDoc(self, obj):
         document = None
@@ -78,7 +70,9 @@ class ContextCreationSystem:
         group.addProperty("App::PropertyString", "EditedPart")
         group.EditedPart = linked_obj.Name
         group.addProperty("App::PropertyString", "EditedPartLink")
-        group.EditedPartLink = App.ActiveDocument.Name + "." + edit_selection.Name
+        group.addProperty("App::PropertyString", "EditedPartLinkLocation")
+        group.EditedPartLink = edit_selection.Name
+        group.EditedPartLinkLocation = self.mainDocumentFileName
         
         for obj in objects:
             group.addObject(obj)
@@ -105,13 +99,18 @@ class ContextCreationSystem:
         for obj in objects:
             if(obj is edit_obj):
                 continue
-            propertyString = App.ActiveDocument.Name + "." + obj.Name
+            propertyString = obj.Name
             #copiedObj = App.ActiveDocument.copyObject(obj, True)
             copiedObj = App.ActiveDocument.addObject("Part::Feature", obj.Label)
-            copiedObj.Shape = obj.Shape
+            try:
+                copiedObj.Shape = obj.Shape
+            except:
+                print("error while copying Shape attributes")
             copiedObj.ViewObject.Transparency = transparency_level
             copiedObj.addProperty("App::PropertyString", "RefObj")
+            copiedObj.addProperty("App::PropertyString", "RefObjLocation")
             copiedObj.RefObj = propertyString
+            copiedObj.RefObjLocation = self.mainDocumentFileName
             copiedObjects.append(copiedObj)
             
             
@@ -136,6 +135,10 @@ class ContextCreationSystem:
     def move_group_to_doc(self, dest_doc, group, deleteOriginal):
         # Get the source and destination documents
         source_doc = App.ActiveDocument
+
+        dest_doc = App.openDocument(dest_doc.FileName) #reload dest_doc to avoid errors
+        source_doc = App.openDocument(source_doc.FileName)
+        App.ActiveDocument = source_doc
 
         # Copy the object to the destination document
         new_obj = dest_doc.copyObject(group, True)
@@ -162,38 +165,18 @@ class ContextCreationSystem:
                 print(type(parent).__name__)
         return final_obj
 
-
-        def createGridLayout(self):
-            self.horizontalGroupBox = QtGui.QGroupBox("Assembly Context Creator")
-            self.layout = QtGui.QGridLayout()
-            
-            label = QtGui.QLabel(self.horizontalGroupBox)
-            label.setText("In Assembly 3, select the 'Parts' object,\n In the default assembly wb, select the 'Assembly' Object")
-
-            self.updateButton = QtGui.QPushButton(self.horizontalGroupBox)
-            self.updateButton.setText("Update Selected Context")
-            self.updateButton.clicked.connect(self.UpdateContext)
-            self.PB_01= QtGui.QPushButton(self.horizontalGroupBox)
-            self.PB_01.setText("Select the Assembly Part")
-            self.PB_01.clicked.connect(self.SelectPartButton) # slot: "PB 01"
-            self.layout.addWidget(self.PB_01,1,0)
-            self.layout.addWidget(self.updateButton,2,0)
-            self.layout.addWidget(label, 0,0)
-            
-            self.horizontalGroupBox.setLayout(self.layout)
-
     def UpdateContext(self):
         selection = Gui.Selection.getSelection()[0]
         if "EditedPart" in selection.PropertiesList:
             self.editedPart = App.ActiveDocument.getObject(selection.EditedPart)
             self.objectToUpdate = self.getCopyableObjectsInAssembly(selection)
                 
-            EditedPartLink = self.getObjFromRefString(selection.EditedPartLink)
+            EditedPartLink = self.getObjFromRefString(selection.EditedPartLink, selection.EditedPartLinkLocation)
             self.editedPart.Placement = EditedPartLink.Placement
                 
             for obj in self.objectToUpdate:
                 if "RefObj" in obj.PropertiesList:
-                    refObj = self.getObjFromRefString(obj.RefObj)
+                    refObj = self.getObjFromRefString(obj.RefObj, obj.RefObjLocation)
                     assemblyDocument = refObj.Document
                         
                     try:
@@ -203,54 +186,12 @@ class ContextCreationSystem:
                         App.ActiveDocument.recompute()
                     except:
                         print("could not update object: " + refObj.Label)
+            current_doc = App.open(self.mainDocumentFileName)
+            current_doc_filename = current_doc.FileName
+            
             App.ActiveDocument.recompute()
-            documentFileName = App.ActiveDocument.FileName
             App.ActiveDocument.save()
-            App.closeDocument(App.ActiveDocument.Name)
-            App.openDocument(documentFileName)
+            App.closeDocument(current_doc.Name)
+            App.open(current_doc_filename)
         else:
             App.Console.PrintWarning("The selection is not an assembly context!")
-
-        def SelectPartButton(self): # slot: PushButton
-            ''' Push Button 01 clicked  '''
-            print('Select Button Pressed')
-            
-            selection = Gui.Selection.getSelection()
-            if selection:
-                if self.current_selection == 1:
-                    self.objects = getCopyableObjectsInSelection()
-                    if len(self.objects) == 0:
-                        print("No suitable objects could be found. The suitable object types are: ", COPYABLE_OBJECT_TYPES, "\n")
-                        print("To add a datatype, change the 'COPYABLE_OBJECT_TYPES' variable in this macro.")
-                        print(self.objects)
-                    else:
-                        self.PB_01.setText("Select the Part to Edit")
-                        self.layout.removeWidget(self.updateButton)
-                        self.updateButton = None
-                        self.current_selection = 2
-                else:
-                    self.edit_selection = selection[0]
-                    print(self.edit_selection.Name)
-                    
-                    #self.first_selection = getPartParent(self.first_selection)
-                    
-                    if(self.edit_selection is None):
-                        print("You must select a part")
-                    else:
-                        if self.edit_selection in self.objects:
-                            print("in objects")
-                            self.objects.remove(self.edit_selection)
-                        linked_placement = self.edit_selection.Placement
-                        target_document = getLinkedDoc(self.edit_selection)
-                        linked_object = getLinkedObj(self.edit_selection)
-
-                        print(linked_object.Placement)
-                        
-                        if target_document is None:
-                            print("Could not locate the document of the original part.\n The selected part must be a link or have a link as a child")
-                        else:
-                            createContext(linked_object, target_document, self.objects, linked_placement, self.edit_selection)
-                    
-                    Gui.Control.closeDialog()
-            else:
-                print("Nothing is selected!")
