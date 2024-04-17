@@ -5,6 +5,8 @@ This fork has the Ondsel Assembly Workbench built in now.
 
 It also supports a new tool I made called the "assembly context creator". This lets you create assembly contexts in your part. This makes designing considerably easier. A gif will be provided soon.
 
+![]https://github.com/drwho495/FreeCAD-Context-Fork/blob/LinkStable/assembly-context-ex2.mp4
+
 <details>
   <summary>Original FreeCAD Link Stage 3 ReadMe. Click to Expand.</summary>
 
