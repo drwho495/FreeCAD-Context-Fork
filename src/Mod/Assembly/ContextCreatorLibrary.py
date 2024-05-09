@@ -7,9 +7,11 @@ if App.GuiUp:
     from PySide import QtCore, QtGui, QtWidgets
 
 transparency_level = 75
+experimental_mode = True
 
 import UtilsAssembly
 import Preferences
+import Part
 
 class ContextCreationSystem:
     COPYABLE_OBJECT_TYPES = ["Body", "Part", "LinkedObject", "DocumentObject", "Feature"]
@@ -57,6 +59,14 @@ class ContextCreationSystem:
             if type(obj).__name__ in self.COPYABLE_OBJECT_TYPES and "Placement" in obj.PropertiesList:
                 objects.append(obj)
         return objects
+    
+    def restartDocument(self, doc):
+        docFileName = doc.FileName
+        doc.save()
+        App.closeDocument(doc.Name)
+        print(docFileName)
+        print("doc closed")
+        App.open(docFileName)
 
 
     def addOffsets(self, objects,linked_obj, linked_placement):
@@ -77,7 +87,9 @@ class ContextCreationSystem:
         for obj in objects:
             group.addObject(obj)
         group.Label = "AssemblyContext"
-        self.move_group_to_doc(target_document, group, True)
+        groupName = self.move_group_to_doc(target_document, group, True)
+
+        return groupName
 
     def _removeChildren(self, obj):
         for child in obj.OutList:
@@ -115,20 +127,50 @@ class ContextCreationSystem:
             
             
         return copiedObjects
+    
+    
+    def redoShapes(self, createdGroupName):
+        '''
+        #self.restartDocument(App.ActiveDocument)
+        currentDoc = App.ActiveDocument
+        print(createdGroupName)
+        print(currentDoc.FileName)
+        group = currentDoc.getObject(createdGroupName)
+        for obj in group.OutList:
+                if "RefObj" in obj.PropertiesList:
+                    refObj = self.getObjFromRefString(obj.RefObj, obj.RefObjLocation)
+                    assemblyDocument = refObj.Document
+                        
+                    try:
+                        obj.Placement = refObj.Placement
+                        #obj.Shape = Part.Shape()
+                        self.updateShape(obj, refObj)
+                        currentDoc.recompute()
+                    except:
+                        print("could not update object: " + refObj.Label)
+        self.restartDocument(currentDoc)
+        '''
+        pass
+
 
     def createContext(self, linkedObj, target_document, normalObjects, linked_placement, edit_selection):
         Gui.setActiveDocument(target_document.Name)
         objects = self.createCopy(normalObjects, edit_selection)
         self.addOffsets(objects, linkedObj, linked_placement)
-        self.createGroup(objects, target_document, linkedObj, edit_selection)
+        createdGroupName = self.createGroup(objects, target_document, linkedObj, edit_selection)
+        #self.restartDocument(App.ActiveDocument)
+        if experimental_mode:
+            self.redoShapes(createdGroupName)
 
     def _copy_selection_test(self):
         objects = App.ActiveDocument.copyObject(Gui.Selection.getSelection(), True)
         self.createGroup(objects)
         
     def updateShape(self, obj, refObj):
-        obj.Shape = refObj.Shape
-        obj.recompute(True)
+        print("Updating Shape....")
+        solid = Part.Solid(refObj.Shape)
+        obj.Shape = solid
+        #obj.recompute(True)
         App.ActiveDocument=App.ActiveDocument
         documentFileName = App.ActiveDocument.FileName
         
@@ -152,6 +194,8 @@ class ContextCreationSystem:
                 source_doc.removeObject(obj.Name)
             source_doc.removeObject(group.Name)
 
+        return new_obj.Name
+
     def getPartParent(self, obj):
         final_obj = None
         
@@ -164,6 +208,9 @@ class ContextCreationSystem:
             else:
                 print(type(parent).__name__)
         return final_obj
+    
+    def getSubShapeBinders(self, document):
+        return [obj for obj in document.Objects if obj.isDerivedFrom("PartDesign::SubShapeBinder")]
 
     def UpdateContext(self):
         selection = Gui.Selection.getSelection()[0]
@@ -183,15 +230,21 @@ class ContextCreationSystem:
                         obj.Placement = refObj.Placement
                         #obj.Shape = Part.Shape()
                         self.updateShape(obj, refObj)
-                        App.ActiveDocument.recompute()
+                        #App.ActiveDocument.recompute()
                     except:
                         print("could not update object: " + refObj.Label)
             current_doc = App.open(self.mainDocumentFileName)
             current_doc_filename = current_doc.FileName
             
-            App.ActiveDocument.recompute()
-            App.ActiveDocument.save()
-            App.closeDocument(current_doc.Name)
-            App.open(current_doc_filename)
+            # App.ActiveDocument.recompute()
+            self.restartDocument(App.ActiveDocument)
+
+            if experimental_mode:
+                subShapeBinders = self.getSubShapeBinders(App.ActiveDocument)
+
+                for binder in subShapeBinders:
+                    binder.touch()
+                    binder.recompute()
+                App.ActiveDocument.recompute()
         else:
             App.Console.PrintWarning("The selection is not an assembly context!")
