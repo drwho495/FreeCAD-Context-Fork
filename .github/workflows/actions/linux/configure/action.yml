@@ -52,7 +52,7 @@ runs:
       id: configure
       shell: bash
       run: |
-        (stdbuf -oL -eL cmake -S ${{ inputs.sourcedir }} -B ${{ inputs.builddir }} -D CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE ${{inputs.extraParameters }}) \
+        (stdbuf -oL -eL cmake -S ${{ inputs.sourcedir }} -B ${{ inputs.builddir }} -DCMAKE_CXX_FLAGS=-DFC_USE_TNP_FIX -D CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE ${{inputs.extraParameters }}) \
         2> >(tee -a ${{ inputs.errorFile }}) | tee -a ${{ inputs.logFile }}
     - name: Write report
       shell: bash
