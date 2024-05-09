@@ -2080,37 +2080,37 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
             // is it this object??
             if (selObj == getObject()) {
                 if (msg.pSubName) {
-                    std::string shapetype(msg.pSubName);
-                    if (shapetype.size() > 4 && shapetype.substr(0,4) == "Edge") {
+                    const char *shapetype = msg.pSubName;
+                    if (boost::starts_with(shapetype, "Edge")) {
                         int GeoId = std::atoi(&shapetype[4]) - 1;
                         ++edit->SelCurveMap[GeoId];
                         this->updateColor();
                     }
-                    else if (shapetype.size() > 12 && shapetype.substr(0,12) == "ExternalEdge") {
+                    else if (boost::starts_with(shapetype, "ExternalEdge")) {
                         int GeoId = std::atoi(&shapetype[12]) - 1;
                         GeoId = -GeoId - 3;
                         ++edit->SelCurveMap[GeoId];
                         this->updateColor();
                     }
-                    else if (shapetype.size() > 6 && shapetype.substr(0,6) == "Vertex") {
+                    else if (boost::starts_with(shapetype, "Vertex")) {
                         int VtId = std::atoi(&shapetype[6]) - 1;
                         addSelectPoint(VtId);
                         this->updateColor();
                     }
-                    else if (shapetype == "RootPoint") {
+                    else if (boost::equals(shapetype, "RootPoint")) {
                         addSelectPoint(Sketcher::GeoEnum::RtPnt);
                         this->updateColor();
                     }
-                    else if (shapetype == "H_Axis") {
+                    else if (boost::equals(shapetype, "H_Axis")) {
                         ++edit->SelCurveMap[Sketcher::GeoEnum::HAxis];
                         this->updateColor();
                     }
-                    else if (shapetype == "V_Axis") {
+                    else if (boost::equals(shapetype, "V_Axis")) {
                         ++edit->SelCurveMap[Sketcher::GeoEnum::VAxis];
                         this->updateColor();
                     }
-                    else if (shapetype.size() > 10 && shapetype.substr(0,10) == "Constraint") {
-                        int ConstrId = Sketcher::PropertyConstraintList::getIndexFromConstraintName(shapetype);
+                    else if (boost::starts_with(shapetype, "Constraint")) {
+                        int ConstrId = std::atoi(&shapetype[10]) - 1;
                         edit->SelConstraintSet.insert(ConstrId);
                         this->drawConstraintIcons();
                         this->updateColor();
@@ -2124,37 +2124,37 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
                 // is it this object??
                 if (selObj == getObject()) {
                     if (msg.pSubName) {
-                        std::string shapetype(msg.pSubName);
-                        if (shapetype.size() > 4 && shapetype.substr(0,4) == "Edge") {
+                        const char *shapetype = msg.pSubName;
+                        if (boost::starts_with(shapetype, "Edge")) {
                             int GeoId = std::atoi(&shapetype[4]) - 1;
                             edit->removeSelectEdge(GeoId);
                             this->updateColor();
                         }
-                        else if (shapetype.size() > 12 && shapetype.substr(0,12) == "ExternalEdge") {
+                        else if (boost::starts_with(shapetype, "ExternalEdge")) {
                             int GeoId = std::atoi(&shapetype[12]) - 1;
                             GeoId = -GeoId - 3;
                             edit->removeSelectEdge(GeoId);
                             this->updateColor();
                         }
-                        else if (shapetype.size() > 6 && shapetype.substr(0,6) == "Vertex") {
+                        else if (boost::starts_with(shapetype, "Vertex")) {
                             int VtId = std::atoi(&shapetype[6]) - 1;
                             removeSelectPoint(VtId);
                             this->updateColor();
                         }
-                        else if (shapetype == "RootPoint") {
+                        else if (boost::equals(shapetype, "RootPoint")) {
                             removeSelectPoint(Sketcher::GeoEnum::RtPnt);
                             this->updateColor();
                         }
-                        else if (shapetype == "H_Axis") {
+                        else if (boost::equals(shapetype, "H_Axis")) {
                             edit->removeSelectEdge(Sketcher::GeoEnum::HAxis);
                             this->updateColor();
                         }
-                        else if (shapetype == "V_Axis") {
+                        else if (boost::equals(shapetype, "V_Axis")) {
                             edit->removeSelectEdge(Sketcher::GeoEnum::VAxis);
                             this->updateColor();
                         }
-                        else if (shapetype.size() > 10 && shapetype.substr(0,10) == "Constraint") {
-                            int ConstrId = Sketcher::PropertyConstraintList::getIndexFromConstraintName(shapetype);
+                        else if (boost::starts_with(shapetype, "Constraint")) {
+                            int ConstrId = std::atoi(&shapetype[10]) - 1;
                             edit->SelConstraintSet.erase(ConstrId);
                             this->drawConstraintIcons();
                             this->updateColor();
@@ -3541,9 +3541,6 @@ void ViewProviderSketch::updateColor(void)
 
     auto setConstraintColors = [&](int i, const SbColor *highlightColor) {
         SoSeparator *s = static_cast<SoSeparator *>(edit->constrGroup->getChild(i));
-        if (s->getNumChildren() == 0) {
-            return;
-        }
 
         // Check Constraint Type
         Sketcher::Constraint* constraint = getSketchObject()->Constraints.getValues()[i];
@@ -4022,9 +4019,6 @@ void ViewProviderSketch::drawConstraintIcons()
         SoSeparator *sep = static_cast<SoSeparator *>(edit->constrGroup->getChild(constrId));
         int numChildren = sep->getNumChildren();
         if (numChildren <= CONSTRAINT_SEPARATOR_INDEX_FIRST_CONSTRAINTID) {
-#ifdef FC_DEBUG
-            FC_ERR("Invalid constraint node " << constrId);
-#endif
             break;
         }
 
