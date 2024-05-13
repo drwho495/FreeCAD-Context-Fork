@@ -1,6 +1,10 @@
 # FreeCAD Context Fork
 This is my small fork to get features into FreeCAD Link Stage 3 and to implement features to make my life easier.
 
+https://github.com/drwho495/FreeCAD-Context-Bundle/releases/tag/weekly-builds AppImages for the main branch are here now!
+
+There will be a linkstage branch eventually.
+
 This fork has the Ondsel Assembly Workbench built in now.
 
 It also supports a new tool I made called the "assembly context creator". This lets you create assembly contexts in your part. This makes designing considerably easier. A gif will be provided soon.
