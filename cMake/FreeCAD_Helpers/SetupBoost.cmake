@@ -27,14 +27,5 @@ macro(SetupBoost)
                             " ${NO_BOOST_COMPONENTS}\n"
                             "=============================================\n")
     endif(NOT Boost_FOUND)
-    
-    if (WIN32)
-        if (Boost_VERSION_STRING VERSION_GREATER_EQUAL "1.78.0")
-            message("-- NOTE: Boost version ${Boost_VERSION} >= 1.78 and building on Windows: (1) disabling Win32 Regex Localization (2) enabling generic cmath.")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_REGEX_NO_W32 -DBOOST_CORE_USE_GENERIC_CMATH")
-        endif()
-    endif(WIN32)
-    
-    
 
 endmacro(SetupBoost)
