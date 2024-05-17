@@ -10,6 +10,12 @@ if (POLICY CMP0072)
     set(OpenGL_GL_PREFERENCE LEGACY)
 endif(POLICY CMP0072)
 
+# FindPythonInterp and FindPythonLibs modules are deprecated.
+# Currently, they are still used by shiboken's CMake files
+if (POLICY CMP0148)
+    cmake_policy(SET CMP0148 OLD)
+endif()
+
 find_program(CCACHE_PROGRAM ccache)  #This check should occur before project()
 if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
@@ -57,16 +63,13 @@ if(NOT FREECAD_LIBPACK_USE OR FREECAD_LIBPACK_CHECKFILE_CLBUNDLER)
         # OPENGL_gl_LIBRARY empty that results into linker errors
         SetupOpenGL()
     endif(BUILD_GUI)
-    if (FREECAD_USE_EXTERNAL_SMESH)
-    	find_package(SMESH REQUIRED)
-    endif(FREECAD_USE_EXTERNAL_SMESH)
     SetupSalomeSMESH()
     SetupBoost()
     if (BUILD_FEM_NETGEN)
         find_package(NETGEN)
     endif(BUILD_FEM_NETGEN)
     # not needed at the moment
-    #find_package(OpenCV REQUIRED)
+    ##find_package(OpenCV REQUIRED)
     SetupSwig()
     SetupEigen()
     # This file is included directly due to some cMake macros that are defined within.
