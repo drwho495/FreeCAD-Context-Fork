@@ -22,14 +22,22 @@
 
 #include "PreCompiled.h"
 #ifndef _PreComp_
-#include <cstdlib>
-#include <memory>
+# include <cstdlib>
+# include <memory>
 
-#include <QApplication>
-#include <QString>
+# include <QApplication>
+# include <QString>
 #endif
 
+#include <boost/algorithm/string/predicate.hpp>
+
+#include <App/MappedElement.h>
+#include <Base/Console.h>
+#include <Base/Interpreter.h>
 #include <App/OriginFeature.h>
+#include <Base/Console.h>
+#include <Base/Exception.h>
+#include <Base/Tools.h>
 #include <Gui/Action.h>
 #include <Gui/Application.h>
 #include <Gui/BitmapFactory.h>
@@ -48,6 +56,14 @@
 #include "GeometryCreationMode.h"
 #include "Utils.h"
 #include "ViewProviderSketch.h"
+
+#include <Gui/View3DInventor.h>
+#include <Gui/View3DInventorViewer.h>
+#include <Gui/SoFCUnifiedSelection.h>
+#include <Gui/ViewParams.h>
+#include <Gui/ToolBarManager.h>
+
+#include "GeometryCreationMode.h"
 
 // DrawSketchHandler* must be last includes
 #include "DrawSketchHandler.h"
@@ -1362,7 +1378,72 @@ bool CmdSketcherSplit::isActive()
     return isCommandActive(getActiveGuiDocument());
 }
 
-// Comp for curve edition tools =======================================================
+DEF_STD_CMD_A(CmdSketcherExternal)
+
+CmdSketcherExternal::CmdSketcherExternal()
+  : Command("Sketcher_External")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = "Sketcher";
+    sMenuText       = QT_TR_NOOP("Create an external geometry");
+    sToolTipText    = QT_TR_NOOP("Create an edge linked to an external geometry");
+    sWhatsThis      = "Sketcher_External";
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_External";
+    sAccel          = "G, X";
+    eType           = ForEdit;
+}
+
+void CmdSketcherExternal::activated(int iMsg)
+{
+    Q_UNUSED(iMsg);
+    ActivateHandler(getActiveGuiDocument(), new DrawSketchHandlerExternal());
+}
+
+bool CmdSketcherExternal::isActive()
+{
+    return isCommandActive(getActiveGuiDocument());
+}
+
+DEF_STD_CMD_A(CmdSketcherDefining);
+
+CmdSketcherDefining::CmdSketcherDefining()
+  : Command("Sketcher_Defining")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Add/toggle defining geometry");
+    sToolTipText    = QT_TR_NOOP("Import an external geometry as defining geometry that can be use for extrusion.\n"
+                                 "Or toggle the defining status of an already imported external geometry.");
+    sWhatsThis      = "Sketcher_Defining";
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_Defining";
+    sAccel          = "X, C";
+    eType           = ForEdit;
+}
+
+static Sketcher::SketchObject *getExternalSelection(std::vector<int> *sels=0, bool force=false) {
+    auto doc = Gui::Application::Instance->editDocument();
+    if(!doc)
+        return 0;
+    auto sketchgui = dynamic_cast<ViewProviderSketch*>(doc->getInEdit());
+    if (!sketchgui)
+        return 0;
+    auto sketch = static_cast<Sketcher::SketchObject*>(sketchgui->getObject());
+    for(auto &sel : Gui::Selection().getCompleteSelection()) {
+        int geoId;
+        if(sel.pObject != sketch
+                || !sketch->geoIdFromShapeType(sel.SubName,geoId)
+                || geoId>Sketcher::GeoEnum::RefExt)
+            continue;
+        if(!sels)
+            return sketch;
+        sels->push_back(geoId);
+    }
+    if(!force && (!sels || sels->empty()))
+        return 0;
+    return sketch;
+}
 
 class CmdSketcherCompCurveEdition: public Gui::GroupCommand
 {
@@ -1391,24 +1472,33 @@ public:
     }
 };
 
-// ======================================================================================
-
-DEF_STD_CMD_A(CmdSketcherExternal)
-
-CmdSketcherExternal::CmdSketcherExternal()
-    : Command("Sketcher_External")
+void CmdSketcherDefining::activated(int iMsg)
 {
-    sAppModule = "Sketcher";
-    sGroup = "Sketcher";
-    sMenuText = QT_TR_NOOP("Create external geometry");
-    sToolTipText = QT_TR_NOOP("Create an edge linked to an external geometry");
-    sWhatsThis = "Sketcher_External";
-    sStatusTip = sToolTipText;
-    sPixmap = "Sketcher_External";
-    sAccel = "G, X";
-    eType = ForEdit;
+    Q_UNUSED(iMsg);
+
+    std::vector<int> sels;
+    auto sketch = getExternalSelection(&sels);
+    /*
+    if(!sketch)
+        ActivateHandler(getActiveGuiDocument(), new DrawSketchHandlerExternal());
+    else {
+    */
+        Gui::Selection().clearSelection();
+        openCommand("Toggle defining geometry");
+	for(auto &sel : sels) {
+		std::cout << "Sel" + std::to_string(sel) << "\n";
+        sketch->toggleConstruction(sel);
+	}        
+	tryAutoRecomputeIfNotSolve(sketch);
+        //commitCommand();
+    //}
 }
 
+
+
+// ======================================================================================
+
+/*
 void CmdSketcherExternal::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
@@ -1419,7 +1509,7 @@ bool CmdSketcherExternal::isActive()
 {
     return isCommandActive(getActiveGuiDocument());
 }
-
+*/
 // ======================================================================================
 
 DEF_STD_CMD_AU(CmdSketcherCarbonCopy)
@@ -1437,6 +1527,93 @@ CmdSketcherCarbonCopy::CmdSketcherCarbonCopy()
     sAccel = "G, W";
     eType = ForEdit;
 }
+
+bool CmdSketcherDefining::isActive(void)
+{
+    return isCommandActive(getActiveGuiDocument());
+}
+
+/*
+DEF_STD_CMD_A(CmdSketcherIntersection)
+
+CmdSketcherIntersection::CmdSketcherIntersection()
+  : Command("Sketcher_Intersection")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = "Sketcher";
+    sMenuText       = QT_TR_NOOP("Add/toggle intersection geometry");
+    sToolTipText    = QT_TR_NOOP("Import an external geometry with intersection to the sketch plane.\n"
+                                 "Or toggle the intersection of an already imported external geometry.");
+    sWhatsThis      = "Sketcher_Intersection";
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_Intersection";
+    sAccel          = "G, 6";
+    eType           = ForEdit;
+}
+*/
+
+/*
+void CmdSketcherIntersection::activated(int iMsg)
+{
+    Q_UNUSED(iMsg);
+    std::vector<int> sels;
+    auto sketch = getExternalSelection(&sels);
+    if(!sketch)
+        ActivateHandler(getActiveGuiDocument(), new DrawSketchHandlerExternal());
+    else {
+        Gui::Selection().clearSelection();
+        openCommand("Toggle intersection geometry");
+        sketch->toggleIntersection(sels);
+        tryAutoRecomputeIfNotSolve(sketch);
+        commitCommand();
+    }
+}
+
+
+bool CmdSketcherIntersection::isActive(void)
+{
+    return isCommandActive(getActiveGuiDocument());
+}
+
+DEF_STD_CMD_A(CmdSketcherIntersectionDefining)
+
+CmdSketcherIntersectionDefining::CmdSketcherIntersectionDefining()
+  : Command("Sketcher_IntersectionDefining")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = "Sketcher";
+    sMenuText       = QT_TR_NOOP("Add/toggle intersection defining");
+    sToolTipText    = QT_TR_NOOP("Import as an defining external geometry with intersection to the sketch plane.\n"
+                                 "Or toggle the intersection of an already imported external geometry and make it defining.");
+    sWhatsThis      = "Sketcher_IntersectionDefining";
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_IntersectionDefining";
+    sAccel          = "G, 5";
+    eType           = ForEdit;
+}
+
+void CmdSketcherIntersectionDefining::activated(int iMsg)
+{
+    Q_UNUSED(iMsg);
+    std::vector<int> sels;
+    auto sketch = getExternalSelection(&sels);
+    if(!sketch)
+        ActivateHandler(getActiveGuiDocument(), new DrawSketchHandlerExternal());
+    else {
+        Gui::Selection().clearSelection();
+        openCommand("Toggle intersection defining");
+        //sketch->toggleIntersection(sels, true);
+        tryAutoRecomputeIfNotSolve(sketch);
+        commitCommand();
+    }
+}
+
+bool CmdSketcherIntersectionDefining::isActive(void)
+{
+    return isCommandActive(getActiveGuiDocument());
+}
+*/
+
 
 CONSTRUCTION_UPDATE_ACTION(CmdSketcherCarbonCopy, "Sketcher_CarbonCopy")
 
@@ -1501,7 +1678,6 @@ public:
         return "CmdSketcherCompSlot";
     }
 };
-
 /* Create Slot =============================================================*/
 
 DEF_STD_CMD_AU(CmdSketcherCreateSlot)
@@ -1532,6 +1708,32 @@ bool CmdSketcherCreateSlot::isActive()
 {
     return isCommandActive(getActiveGuiDocument());
 }
+class CmdSketcherExternalCmds : public Gui::GroupCommand
+{
+public:
+    CmdSketcherExternalCmds():GroupCommand("Sketcher_ExternalCmds") {
+        sGroup        = QT_TR_NOOP("Sketcher");
+        sMenuText     = QT_TR_NOOP("External geometry actions");
+        sToolTipText  = QT_TR_NOOP("Sketcher external geometry actions");
+        sWhatsThis    = "Sketcher_ExternalCmds";
+        sStatusTip    = QT_TR_NOOP("Sketcher external geometry actions");
+        eType         = 0;
+        bCanLog       = false;
+
+        addCommand(new CmdSketcherExternal());
+        addCommand(new CmdSketcherDefining());
+        //addCommand(new CmdSketcherIntersection());
+        //addCommand(new CmdSketcherIntersectionDefining());
+        //addCommand(new CmdSketcherDetach());
+        //addCommand(new CmdSketcherAttach());
+        //addCommand(new CmdSketcherToggleFreeze());
+        //addCommand(new CmdSketcherSync());
+        //addCommand(new CmdSketcherFixExternal());
+    }
+
+    virtual const char* className() const {return "CmdSketcherExternalCmds";}
+};
+
 
 /* Create Arc Slot =========================================================*/
 
@@ -2008,6 +2210,7 @@ void CreateSketcherCommandsCreateGeo()
     rcCmdMgr.addCommand(new CmdSketcherCreateArcSlot());
     rcCmdMgr.addCommand(new CmdSketcherCompSlot());
     rcCmdMgr.addCommand(new CmdSketcherCreateFillet());
+    rcCmdMgr.addCommand(new CmdSketcherExternalCmds());
     rcCmdMgr.addCommand(new CmdSketcherCreateChamfer());
     rcCmdMgr.addCommand(new CmdSketcherCompCreateFillets());
     // rcCmdMgr.addCommand(new CmdSketcherCreateText());

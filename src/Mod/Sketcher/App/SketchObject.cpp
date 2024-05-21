@@ -59,7 +59,7 @@
 #endif
 
 #include <boost/algorithm/string/predicate.hpp>
-
+#include <Mod/Sketcher/App/ExternalGeometryFacade.h>
 #include <App/Application.h>
 #include <App/Document.h>
 #include <App/ElementNamingUtils.h>
@@ -288,7 +288,7 @@ void SketchObject::buildShape()
 
     // FIXME: Commented since ExternalGeometryFacade is not added
     // for(i=2;i<ExternalGeo.getSize();++i) {
-    //     auto geo = ExternalGeo[i];
+        // auto geo = ExternalGeo[i];
     //     auto egf = ExternalGeometryFacade::getFacade(geo);
     //     if(!egf->testFlag(ExternalGeometryExtension::Defining))
     //         continue;
@@ -1473,10 +1473,21 @@ int SketchObject::toggleConstruction(int GeoId)
 {
     // no need to check input data validity as this is an sketchobject managed operation.
     Base::StateLocker lock(managedoperation, true);
+    FC_MSG("Toggling Geometry");
+    FC_MSG("GeoID: " + std::to_string(GeoId));
 
     const std::vector<Part::Geometry*>& vals = getInternalGeometry();
-    if (GeoId < 0 || GeoId >= int(vals.size()))
-        return -1;
+    std::vector<Part::Geometry*> extGeo;
+    if (GeoId < 0 || GeoId >= int(vals.size())) { // this is external geo
+        // return -1;
+        extGeo = ExternalGeo;
+        auto &geo = extGeo[-GeoId-1];
+        geo = geo->clone();
+        auto egf = ExternalGeometryFacade::getFacade(geo);
+        egf->setFlag(ExternalGeometryExtension::Defining,!egf->testFlag(ExternalGeometryExtension::Defining));
+        FC_MSG("Set ExtGeo Flag.");
+        return 0;
+    }
 
     if (getGeometryFacade(GeoId)->isInternalAligned())
         return -1;
