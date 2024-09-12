@@ -4237,7 +4237,11 @@ View3DInventorViewer::Private::checkElementIntersection(ViewProviderDocumentObje
             pointNormals.clear();
             faces.clear();
             // Call getFacesFromSubElement to obtain the triangulation of this face.
-            data->getFacesFromSubElement(segment.get(),points,pointNormals,faces);
+            try {
+                data->getFacesFromSubElement(segment.get(),points,pointNormals,faces);
+            } catch (const Base::Exception &) {
+            }
+
             if(faces.empty())
                 continue;
             res = 0;
@@ -4268,7 +4272,10 @@ View3DInventorViewer::Private::checkElementIntersection(ViewProviderDocumentObje
                 continue;
             points.clear();
             lines.clear();
-            data->getLinesFromSubElement(segment.get(),points,lines);
+            try {
+                data->getLinesFromSubElement(segment.get(),points,lines);
+            } catch (const Base::Exception &) {
+            }
             if(lines.empty())
                 continue;
             res = 0;
@@ -4286,7 +4293,10 @@ View3DInventorViewer::Private::checkElementIntersection(ViewProviderDocumentObje
     if (res < 0) {
         std::vector<Base::Vector3d> pointNormals; // not used
         std::vector<Base::Vector3d> points;
-        data->getPoints(points,pointNormals,-1.0);
+        try {
+            data->getPoints(points,pointNormals,-1.0);
+        } catch (const Base::Exception &) {
+        }
         if (points.size()) {
             res = 0;
             for (auto &pt : points) {
