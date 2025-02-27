@@ -32,6 +32,7 @@
 #include <BRepAlgoAPI_Section.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepBuilderAPI_MakeVertex.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepOffsetAPI_NormalProjection.hxx>
@@ -53,6 +54,7 @@
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomLProp_CLProps.hxx>
 #include <Standard_Version.hxx>
+#include <ShapeAnalysis_Wire.hxx>
 #include <TColStd_Array1OfInteger.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -316,14 +318,6 @@ App::DocumentObjectExecReturn* SketchObject::execute()
     return App::DocumentObject::StdReturn;
 }
 
-static bool inline checkSmallEdge(const Part::TopoShape &s)
-{
-    if (s.shapeType() != TopAbs_EDGE)
-        return false;
-    BRepAdaptor_Curve adapt(TopoDS::Edge(s.getShape()));
-    return GCPnts_AbscissaPoint::Length(adapt, Precision::Confusion()) <= Precision::Confusion();
-}
-
 void SketchObject::buildShape() {
 
     // Shape.setValue(solvedSketch.toShape());
@@ -347,9 +341,6 @@ void SketchObject::buildShape() {
         } else {
             auto indexedName = Data::IndexedName::fromConst("Edge", i);
             shapes.push_back(getEdge(geo,convertSubName(indexedName, false).c_str()));
-            if (checkSmallEdge(shapes.back())) {
-                FC_WARN("Edge too small: " << indexedName);
-            }
         }
     }
 
@@ -360,9 +351,6 @@ void SketchObject::buildShape() {
             continue;
         auto indexedName = Data::IndexedName::fromConst("ExternalEdge", i-1);
         shapes.push_back(getEdge(geo, convertSubName(indexedName, false).c_str()));
-        if (checkSmallEdge(shapes.back())) {
-            FC_WARN("Edge too small: " << indexedName);
-        }
     }
 
     internalElementMap.clear();
@@ -5270,12 +5258,30 @@ int SketchObject::addCopy(const std::vector<int>& geoIdList, const Base::Vector3
         newgeoVals.reserve(geovals.size() + geoIdList.size());
     }
 
-    std::vector<int> newgeoIdList(geoIdList);
+    std::vector<int> newgeoIdList;
 
-    if (newgeoIdList.empty()) {// default option to operate on all the geometry
+    if (geoIdList.empty()) {// default option to operate on all the geometry
         for (int i = 0; i < int(geovals.size()); i++)
             newgeoIdList.push_back(i);
     }
+    else {
+        for (const auto &GeoId : geoIdList) {
+            if ((GeoId >= 0 && GeoId >= static_cast<int>(geovals.size()))
+                  || (GeoId < 0 && -GeoId-1 >= ExternalGeo.getSize())) {
+                FC_ERR("Invalid geometry index");
+                break;
+            }
+            else if (moveonly && GeoId < 0) {
+                FC_ERR("Cannot move external geometry");
+                break;
+            }
+            newgeoIdList.push_back(GeoId);
+        }
+        if (newgeoIdList.size() != geoIdList.size()) {
+            return Geometry.getSize() - 1;
+        }
+    }
+
 
     int cgeoid = getHighestCurveIndex() + 1;
 
@@ -5388,6 +5394,12 @@ int SketchObject::addCopy(const std::vector<int>& geoIdList, const Base::Vector3
                 // moving
                 if (!moveonly) {
                     geocopy = geo->copy();
+                    if (auto egf = ExternalGeometryFacade::getFacade(geo)) {
+                        if(egf->testFlag(ExternalGeometryExtension::Defining)) {
+                            GeometryFacade::setConstruction(geocopy, false);
+                        }
+                        geocopy->deleteExtension(ExternalGeometryExtension::getClassTypeId());
+                    }
                     generateId(geocopy);
                 } else
                     geocopy = newgeoVals[*it];
@@ -8199,6 +8211,8 @@ void getParameterRange(Handle(Geom_Curve) curve,
     GeomAPI_ProjectPointOnCurve plast(lastPoint, curve);
     firstParameter = pfirst.LowerDistanceParameter();
     lastParameter = plast.LowerDistanceParameter();
+    if (firstParameter > lastParameter)
+        std::swap(firstParameter, lastParameter);
 }
 
 void adjustParameterRange(const TopoDS_Edge &edge,
@@ -8335,6 +8349,27 @@ static Part::Geometry *fitArcs(std::vector<std::unique_ptr<Part::Geometry> > &ar
         geo->setHandle(arc.Value());
         return geo;
     }
+}
+
+bool SketchObject::simplifyBSpline(Part::GeomBSplineCurve *bspline, const std::string &key)
+{
+    if (int maxDegree = ExternalBSplineMaxDegree.getValue()) {
+        if (bspline->getDegree() > maxDegree) {
+            std::string err;
+            try {
+                if (bspline->approximate(ExternalBSplineTolerance.getValue(), 20,
+                                         ExternalBSplineMaxDegree.getValue(), 0))
+                    return true;
+                err = "not done";
+            } catch (Base::Exception &e) {
+                err = e.what();
+            }
+            if (err.size())
+                FC_WARN("Failed to simplify external imported bspline "
+                        << getFullName() << ": " << key << ", " << err);
+        }
+    }
+    return false;
 }
 
 void SketchObject::rebuildExternalGeometry(bool defining, bool addIntersection)
@@ -8511,8 +8546,37 @@ void SketchObject::rebuildExternalGeometry(bool defining, bool addIntersection)
                 }
             };
 
+            auto checkEdge = [&](const Part::TopoShape &s) {
+                if (s.shapeType() != TopAbs_EDGE)
+                    return false;
+                ShapeAnalysis_Wire saw;
+                BRepBuilderAPI_MakeWire mkWire;
+                mkWire.Add(TopoDS::Edge(s.getShape()));
+                saw.Load(mkWire.Wire());
+                double tol = InternalTolerance.getValue();
+                if (tol < Precision::Confusion())
+                    tol = Precision::Confusion();
+                saw.SetPrecision(tol);
+                if (saw.CheckSmall(tol)) {
+                    FC_WARN("Skip small edge: " << getFullName() << ": " << key);
+                    return true;
+                }
+                if (saw.CheckDegenerated()) {
+                    FC_WARN("Skip degenerated edge: " << getFullName() << ": " << key);
+                    return true;
+                }
+                // if (saw.CheckSelfIntersection()) {
+                //     FC_WARN("Skip self intersecting edge: " << getFullName() << ": " << key);
+                //     return true;
+                // }
+                return false;
+            };
+
             auto importEdge = [&](const TopoDS_Shape &refSubShape) {
                 TopoDS_Edge edge = TopoDS::Edge(refSubShape);
+                if (checkEdge(edge)) {
+                    return;
+                }
                 BRepAdaptor_Curve curve(edge);
                 Handle(Geom_Curve) origCurve = curve.Curve().Curve();
                 gp_Pnt firstPoint, lastPoint;
@@ -8550,13 +8614,22 @@ void SketchObject::rebuildExternalGeometry(bool defining, bool addIntersection)
                     // Precision::AngleConfusion()) difference to the sketch
                     // plane may actually result in the major and minor raidus
                     // being essentially equal (within Precision::Confusion()).
-                    // In other words, it is essentially a circule after all.
+                    // In other words, it is essentially a circle after all.
                     // So it is better to compare the projected major and minor
                     // radius directly here.
                     //
                     // if (vec1.IsParallel(vec2, Precision::Confusion()))
                     if (fabs(circle.Radius() - minorRadius) < Precision::Confusion()) {
-                        if (firstPoint.SquareDistance(lastPoint) < Precision::Confusion()) {
+                        double length = GCPnts_AbscissaPoint::Length(curve, Precision::Confusion());
+                        // Checking close distance of two endpoints is not
+                        // enough to decide whether the edge is a complete
+                        // circle. It cloud also be a very small arc, whose
+                        // curve length is longer than Confusion(), but the
+                        // endpoints distance is shorter than Confusion(). So
+                        // add one more condition, that is, the whole curve
+                        // length should be greater than 6 * radius (about 2 * pi * r).
+                        if (length > 6*circle.Radius() 
+                                && firstPoint.SquareDistance(lastPoint) < Precision::SquareConfusion()) {
                             Part::GeomCircle* gCircle = new Part::GeomCircle();
                             gCircle->setRadius(circle.Radius());
                             cnt.Transform(mov);
@@ -8919,21 +8992,7 @@ void SketchObject::rebuildExternalGeometry(bool defining, bool addIntersection)
 
                             if (!bspline)
                                 bspline.reset(new Part::GeomBSplineCurve(projCurve));
-                            if (int maxDegree = ExternalBSplineMaxDegree.getValue()) {
-                                if (bspline->getDegree() > maxDegree) {
-                                    std::string err;
-                                    try {
-                                        if (!bspline->approximate(ExternalBSplineTolerance.getValue(), 20,
-                                                                ExternalBSplineMaxDegree.getValue(), 0))
-                                            err = "not done";
-                                    } catch (Base::Exception &e) {
-                                        err = e.what();
-                                    }
-                                    if (err.size())
-                                        FC_WARN("Failed to simplify external imported bspline "
-                                                << getFullName() << ": " << key << ", " << err);
-                                }
-                            }
+                            simplifyBSpline(bspline.get(), key);
                             GeometryFacade::setConstruction(bspline.get(), true);
                             geos.emplace_back(bspline.release());
 
@@ -9027,8 +9086,36 @@ void SketchObject::rebuildExternalGeometry(bool defining, bool addIntersection)
                             }
                         }
                         else {
-                            FC_ERR("Not supported projected geometry in sketch " << getFullName() << ": " << key);
-                            geos.clear();
+                            TopoDS_Edge e = TopoDS::Edge(projEdge.Located(TopLoc_Location()));
+                            P1 = BRep_Tool::Pnt(TopExp::FirstVertex(e));
+                            P2 = BRep_Tool::Pnt(TopExp::LastVertex(e));
+
+                            double Param1, Param2;
+                            BRepAdaptor_Curve bac(e);
+                            Handle(Geom_Curve) c = bac.Curve().Curve();
+                            try {
+                                getParameterRange(c, P1, P2, Param1, Param2);
+                            }
+                            catch (Standard_Failure &) {
+                                Param1 = bac.FirstParameter();
+                                Param2 = bac.LastParameter();
+                                FC_WARN("Failed to get projected curve parameters. Using fall backs, " << Param1 << ", " << Param2);
+                                Part::Feature::create(edge, "failed");
+                                if (Param1 > Param2)
+                                    std::swap(Param1, Param2);
+                            }
+                            auto bspline = Part::GeomCurve::toBSpline(c, Param1, Param2);
+                            if (!bspline) {
+                                FC_ERR("Not supported projected geometry in sketch " << getFullName() << ": " << key);
+                                geos.clear();
+                            }
+                            else {
+                                simplifyBSpline(bspline, key);
+                                TopLoc_Location loc = projEdge.Location();
+                                bspline->handle()->Transform(loc.Transformation());
+                                GeometryFacade::setConstruction(bspline, true);
+                                geos.emplace_back(bspline);
+                            }
                         }
                     }
                 }

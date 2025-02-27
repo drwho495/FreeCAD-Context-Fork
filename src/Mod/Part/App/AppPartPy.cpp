@@ -83,6 +83,7 @@
 #include <App/Application.h>
 #include <App/Document.h>
 #include <App/DocumentObjectPy.h>
+#include <App/DocumentObserver.h>
 #include <App/ExpressionParser.h>
 #include <App/MappedElement.h>
 #include <Base/Console.h>
@@ -133,16 +134,35 @@ extern const char* BRepBuilderAPI_FaceErrorText(BRepBuilderAPI_FaceError fe);
 namespace Part
 {
 
-PartExport void getPyShapes(PyObject *obj, std::vector<TopoShape> &shapes) {
+PartExport void getPyShapes(PyObject *obj, std::vector<TopoShape> &shapes, std::vector<App::DocumentObjectT> *objs) {
     if(!obj)
         return;
-    if(PyObject_TypeCheck(obj,&Part::TopoShapePy::Type))
+    if (objs && PyObject_TypeCheck(obj, &App::DocumentObjectPy::Type)) {
+        App::DocumentObject *docObj = static_cast<App::DocumentObjectPy*>(obj)->getDocumentObjectPtr();
+        objs->emplace_back(docObj);
+        shapes.push_back(Part::Feature::getTopoShape(docObj));
+    }
+    else if(PyObject_TypeCheck(obj,&Part::TopoShapePy::Type)) {
         shapes.push_back(*static_cast<TopoShapePy*>(obj)->getTopoShapePtr());
-    else if (PyObject_TypeCheck(obj, &GeometryPy::Type))
+        if (objs)
+            objs->emplace_back();
+    }
+    else if (PyObject_TypeCheck(obj, &GeometryPy::Type)) {
         shapes.emplace_back(static_cast<GeometryPy*>(obj)->getGeometryPtr()->toShape());
+        if (objs)
+            objs->emplace_back();
+    }
     else if(PySequence_Check(obj)) {
         Py::Sequence list(obj);
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
+            if (objs && PyObject_TypeCheck((*it).ptr(), &App::DocumentObjectPy::Type)) {
+                App::DocumentObject *docObj = static_cast<App::DocumentObjectPy*>((*it).ptr())->getDocumentObjectPtr();
+                objs->emplace_back(docObj);
+                shapes.push_back(Part::Feature::getTopoShape(docObj));
+                continue;
+            }
+            if (objs)
+                objs->emplace_back();
             if (PyObject_TypeCheck((*it).ptr(), &(Part::TopoShapePy::Type)))
                 shapes.push_back(*static_cast<TopoShapePy*>((*it).ptr())->getTopoShapePtr());
             else if (PyObject_TypeCheck((*it).ptr(), &GeometryPy::Type))
@@ -155,9 +175,9 @@ PartExport void getPyShapes(PyObject *obj, std::vector<TopoShape> &shapes) {
         throw Py::TypeError("expect shape or sequence of shapes");
 }
 
-PartExport std::vector<TopoShape> getPyShapes(PyObject *obj) {
+PartExport std::vector<TopoShape> getPyShapes(PyObject *obj, std::vector<App::DocumentObjectT> *objs) {
     std::vector<TopoShape> ret;
-    getPyShapes(obj,ret);
+    getPyShapes(obj,ret,objs);
     return ret;
 }
 
@@ -326,33 +346,56 @@ public:
     ~ChFi2dModule() override {}
 };
 
-static std::set<std::string> _OCCTKeys;
-static bool _OCCTShowAll;
+namespace {
 
-typedef Standard_Boolean FuncShowTopoShape(const char *Key, const TopoDS_Shape &s, const char *name);
+struct KeyCompare {
+    bool operator()(const std::string &a, const std::string &b) const {
+        return a < b;
+    }
+    bool operator()(const std::string &a, const char *b) const {
+        return a.compare(b) < 0;
+    }
+    bool operator()(const char *a, const std::string &b) const {
+        return b.compare(a) > 0;
+    }
+};
+
+std::map<std::string, std::set<int>, KeyCompare> _OCCTKeys;
+bool _OCCTShowAll;
+} // anonymous namespace
+
+typedef Standard_Boolean FuncShowTopoShape(const char *Key, int line, const TopoDS_Shape &s, const char *name);
 typedef Standard_Integer (*FuncSetFuncShowTopoShape)(FuncShowTopoShape *func);
 
 // backdoor to be called inside OCC for showing intermediate results
 extern "C" {
- Standard_Boolean showTopoShape(const char *key, const TopoDS_Shape &s, const char *name);
+ Standard_Boolean showTopoShape(const char *key, int line, const TopoDS_Shape &s, const char *name);
 }
 
-Standard_Boolean showTopoShape(const char *key, const TopoDS_Shape &s, const char *name)
+Standard_Boolean showTopoShape(const char *key, int line, const TopoDS_Shape &s, const char *name)
 {
+    (void)line;
     if (!_OCCTShowAll && key) {
 #ifdef FC_OS_WIN32
-        const char *k = strchr(key, '\\');
+        const char *k = strrchr(key, '\\');
 #else
-        const char *k = strchr(key, '/');
+        const char *k = strrchr(key, '/');
 #endif
         if (k)
-            key = k;
-        if (!_OCCTKeys.count(key))
+            key = k+1;
+        auto it = _OCCTKeys.find(key);
+        if (it == _OCCTKeys.end())
+            return Standard_False;
+        if (line != 0 && (*it->second.begin()) != 0 && !it->second.count(line))
             return Standard_False;
     }
     if (!s.IsNull()) {
         char _name[256];
+#if OCC_VERSION_HEX >= 0x070800
+        snprintf(_name, sizeof(_name), "%s_%x_", name, std::hash<TopoDS_Shape>{}(s));
+#else
         snprintf(_name, sizeof(_name), "%s_%x_", name, s.HashCode(0xffff));
+#endif
         auto obj = Part::Feature::create(s, name);
         obj->Label.setValue(_name);
     }
@@ -2853,7 +2896,16 @@ private:
         if (!pyKey) {
             Py::List list;
             for (const auto &k : _OCCTKeys) {
-                list.append(Py::String(k));
+                if (k.second.size() == 1 && (*k.second.begin()) == 0)
+                    list.append(Py::String(k.first));
+                else {
+                    Py::Tuple tuple(k.second.size());
+                    int i = 0;
+                    for (const auto &l : k.second) {
+                        tuple.setItem(i++, Py::Int(l));
+                    }
+                    list.append(Py::TupleN(Py::String(k.first), tuple));
+                }
             }
             if (_OCCTShowAll)
                 list.append(Py::String("*"));
@@ -2869,30 +2921,46 @@ private:
             return Py::Object();
         }
 
-        std::vector<std::string> keys;
-        if(PySequence_Check(pyKey)) {
+        std::vector<std::pair<std::string,int>> keys;
+        auto readKey = [](const Py::Object &pyObj) {
+            std::string key = pyObj.as_string();
+            size_t pos = key.find(':');
+            if (pos == std::string::npos)
+                return std::make_pair(key, 0);
+            else
+                return std::make_pair(key.substr(0, pos), atoi(key.c_str()+pos+1));
+        };
+
+        if (!PyUnicode_Check(pyKey)) {
             Py::Sequence seq(pyKey);
             for (Py::Sequence::iterator it = seq.begin(); it != seq.end(); ++it) {
-                keys.push_back(Py::Object((*it).ptr()).as_string());
+                keys.push_back(readKey(Py::Object((*it).ptr())));
             }
         }
         else {
-            keys.push_back(Py::Object(pyKey).as_string());
+            keys.push_back(readKey(Py::Object(pyKey)));
         }
         if (!Base::asBoolean(pyEnable)) {
             for (const auto &key : keys) {
-                if (key == "*")
+                if (key.first == "*")  {
+                    _OCCTKeys.clear();
                     _OCCTShowAll = false;
-                else
-                    _OCCTKeys.erase(key);
+                    break;
+                }
+                auto it = _OCCTKeys.find(key.first);
+                if (it != _OCCTKeys.end()) {
+                    it->second.erase(key.second);
+                    if (it->second.empty())
+                        _OCCTKeys.erase(it);
+                }
             }
             return Py::Object();
         }
         for (const auto &key : keys) {
-            if (key == "*")
+            if (key.first== "*")
                 _OCCTShowAll = true;
             else
-                _OCCTKeys.insert(key);
+                _OCCTKeys[key.first].insert(key.second);
         }
         return Py::Object();
     }
